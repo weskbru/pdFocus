@@ -1,0 +1,11 @@
+# Normaliza quebras de linha para arquivos de texto
+* text=auto
+
+# Evita conversão em arquivos binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.class binary
+*.jar binary

@@ -1,0 +1,36 @@
+### Gradle ###
+.gradle/               # Cache do Gradle (oculto, importante!)
+build/                 # Pasta de build geral
+!gradle/wrapper/gradle-wrapper.jar  # Mantém o wrapper
+
+### IntelliJ IDEA ###
+.idea/                 # Configuração da IDE
+*.iml                  # Arquivos de módulo
+*.iws                  # Workspace settings
+*.ipr                  # Project settings
+out/                   # Pasta de output
+
+### VS Code ###
+.vscode/               # Configurações da IDE
+
+### Java ###
+*.class                # Arquivos compilados
+*.jar                  # JARs, artefatos
+*.war                  # WARs (se usar deploy)
+*.ear                  # EARs (se usar deploy)
+
+### Arquivos de Desenvolvimento ###
+*.log                  # Logs
+*.swp                  # Arquivos temporários do Vim
+*.bak                  # Backups
+
+### Sistema ###
+.DS_Store              # Metadados do macOS
+Thumbs.db              # Metadados do Windows
+
+### Ambiente Virtual ###
+.env                   # Variáveis de ambiente
+.env.*                 # Outros arquivos de configuração local
+
+### Logs ###
+logs/                  # Pasta de logs (se usada)
