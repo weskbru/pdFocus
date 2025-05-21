@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ResumoTeste {
+public class ResumoTest {
 
     /**
      * Teste de criação bem-sucedida de um resumo com todos os dados válidos.

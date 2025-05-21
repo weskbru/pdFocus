@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f637058b-a87c-44e7-84dc-6ee200e7910b" name="Changes" comment="chore: Reaalizando a aplicação dos comentarios nas classes PdfDocumentoTest e ResumoTeste">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/pdfocus/core/shared/Validador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/pdfocus/core/shared/Validador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/pdfocus/core/models/ResumoTeste.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/pdfocus/core/models/ResumoTest.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="pdFocus" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;weskbru&quot;
+  }
+}</component>
+  <component name="GitToolBoxStore">
+    <option name="recentBranches">
+      <RecentBranches>
+        <option name="branchesForRepo">
+          <list>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="develop" />
+                    <option name="lastUsedInstant" value="1747332881" />
+                  </RecentBranch>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1747329769" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$" />
+            </RecentBranchesForRepo>
+          </list>
+        </option>
+      </RecentBranches>
+    </option>
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/weskbru/pdFocus.git&quot;,
+    &quot;accountId&quot;: &quot;b818b5d5-0689-476a-8a9f-d7f47d299cbf&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="QODANA_PROBLEMS_VIEW_TAB" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2x8WKtmKw9IWikU7LcMcwXkH6se" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Gradle.DisciplinaTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PdfDocumentoTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PdfocusApplicationTest.testSomar.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.deveLancarExcecaoQuandoConteudoForApenasEspaco.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.deveLancarExcecaoQuandoConteudoForVazio.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.deveLancarExcecaoQuandoTituloForInvalido.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.deveLancarExcecaoQuandoUsuarioIdForNulo.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ResumoTeste.naoPermitirIdNulo.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.pdFocus [:com.pdfocus.Main.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.pdFocus [:com.pdfocus.PdfocusApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/projetos/pdFocus&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;C:/projetos/pdFocus/src/main/java/com/pdfocus/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.1150748&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;AtomSelectConfig&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Gradle.ResumoTeste">
+    <configuration name="ResumoTeste" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;com.pdfocus.core.models.ResumoTeste&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ResumoTeste.deveLancarExcecaoQuandoConteudoForApenasEspaco" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;com.pdfocus.core.models.ResumoTeste.deveLancarExcecaoQuandoConteudoForApenasEspaco&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ResumoTeste.deveLancarExcecaoQuandoConteudoForVazio" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;com.pdfocus.core.models.ResumoTeste.deveLancarExcecaoQuandoConteudoForVazio&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ResumoTeste.deveLancarExcecaoQuandoTituloForInvalido" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;com.pdfocus.core.models.ResumoTeste.deveLancarExcecaoQuandoTituloForInvalido&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ResumoTeste.deveLancarExcecaoQuandoUsuarioIdForNulo" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;com.pdfocus.core.models.ResumoTeste.deveLancarExcecaoQuandoUsuarioIdForNulo&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.ResumoTeste" />
+        <item itemvalue="Gradle.ResumoTeste.deveLancarExcecaoQuandoConteudoForApenasEspaco" />
+        <item itemvalue="Gradle.ResumoTeste.deveLancarExcecaoQuandoConteudoForVazio" />
+        <item itemvalue="Gradle.ResumoTeste.deveLancarExcecaoQuandoTituloForInvalido" />
+        <item itemvalue="Gradle.ResumoTeste.deveLancarExcecaoQuandoUsuarioIdForNulo" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f637058b-a87c-44e7-84dc-6ee200e7910b" name="Changes" comment="" />
+      <created>1747320120991</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747320120991</updated>
+    </task>
+    <task id="LOCAL-00001" summary="test: adiciona testes unitários para Resumo com validações completas de campos obrigatórios">
+      <option name="closed" value="true" />
+      <created>1747453430648</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1747453430648</updated>
+    </task>
+    <task id="LOCAL-00002" summary="chore: Reaalizando a aplicação dos comentarios nas classes PdfDocumentoTest e ResumoTeste">
+      <option name="closed" value="true" />
+      <created>1747794809076</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1747794809076</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="test: adiciona testes unitários para Resumo com validações completas de campos obrigatórios" />
+    <MESSAGE value="chore: Reaalizando a aplicação dos comentarios nas classes PdfDocumentoTest e ResumoTeste" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: Reaalizando a aplicação dos comentarios nas classes PdfDocumentoTest e ResumoTeste" />
+  </component>
+</project>
