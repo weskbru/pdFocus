@@ -34,3 +34,19 @@ Thumbs.db              # Metadados do Windows
 
 ### Logs ###
 logs/                  # Pasta de logs (se usada)
+
+# Build e IDE
+/build/
+/.gradle/
+/out/
+/.idea/
+/*.iml
+/.vscode/
+/*.class
+
+# Logs e temp
+*.log
+*.tmp
+
+# Outros
+.DS_Store
