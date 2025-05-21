@@ -7,7 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PdfDocumentoTest {
 
-    // Teste básico: cria um PdfDocumento com dados válidos e verifica se os getters retornam o esperado
+    /**
+     * Teste positivo: criação de um PdfDocumento com todos os dados válidos.
+     * Garante que os valores passados ao construtor são corretamente atribuídos aos campos.
+     */
     @Test
         void criaPdfDocumentoComDadosValidos() {
             UUID id = UUID.randomUUID();
@@ -22,7 +25,10 @@ public class PdfDocumentoTest {
             assertEquals(disciplina, pdf.getDisciplina());
         }
 
-    // Teste que verifica se o construtor lança exceção quando o ID for nulo
+    /**
+     * Teste negativo: impede criação de PdfDocumento com ID nulo.
+     * Espera-se uma IllegalArgumentException com mensagem apropriada.
+     */
     @Test
     void naoCriaComIdNulo() {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Descrição");
@@ -34,7 +40,10 @@ public class PdfDocumentoTest {
         assertEquals("ID não pode ser nulo", exception.getMessage());
     }
 
-    // Teste que verifica se o construtor lança exceção quando o nome do PDF for nulo ou vazio
+    /**
+     * Teste negativo: impede criação de PdfDocumento com nome nulo ou apenas espaços.
+     * Valida obrigatoriedade do campo nome.
+     */
     @Test
     void naoCriaComNomeNuloOuVazio() {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Descrição");
@@ -52,7 +61,10 @@ public class PdfDocumentoTest {
         assertEquals("Nome do PDF é obrigatório", exception2.getMessage());
     }
 
-    // Teste que verifica se o construtor lança exceção quando o caminho do PDF for nulo ou vazio
+    /**
+     * Teste negativo: impede criação de PdfDocumento com caminho nulo ou em branco.
+     * Garante que o caminho do arquivo seja informado corretamente.
+     */
     @Test
     void naoCriaComCaminhoNuloOuVazio() {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Descrição");
@@ -70,7 +82,10 @@ public class PdfDocumentoTest {
         assertEquals("Caminho do PDF é obrigatório", exception2.getMessage());
     }
 
-    // Teste que verifica se o construtor lança exceção quando a disciplina for nula
+    /**
+     * Teste negativo: impede criação de PdfDocumento com disciplina nula.
+     * Verifica que um PDF precisa estar vinculado a uma disciplina válida.
+     */
     @Test
     void naoCriaComDisciplinaNula() {
         // Espera que o construtor lance IllegalArgumentException com a mensagem "Disciplina não pode ser nula"

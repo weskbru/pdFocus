@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ResumoTeste {
 
-    // Teste positivo: deve criar um resumo válido com todos os campos corretos
+    /**
+     * Teste de criação bem-sucedida de um resumo com todos os dados válidos.
+     * Verifica se os campos são corretamente atribuídos ao objeto `Resumo`.
+     */
     @Test
     void deveCriarResumoComDadosValidos() {
         UUID id = UUID.randomUUID();
@@ -24,8 +27,11 @@ public class ResumoTeste {
         assertEquals(disciplina, resumo.getDisciplina());
     }
 
-    // Testes negativos (validação de dados obrigatórios)
 
+    /**
+     * Teste de falha ao criar resumo com ID nulo.
+     * Espera-se uma exceção indicando que o ID é obrigatório.
+     */
     @Test
     void deveLancarExcecaoQuandoIdForNulo() {
         UUID usuarioId = UUID.randomUUID();
@@ -38,6 +44,10 @@ public class ResumoTeste {
         assertEquals("ID não pode ser nulo", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com usuarioId nulo.
+     * Garante que não é possível criar um resumo sem vincular a um usuário.
+     */
     @Test
     void deveLancarExcecaoQuandoUsuarioIdForNulo() {
         UUID id = UUID.randomUUID();
@@ -52,6 +62,10 @@ public class ResumoTeste {
         assertEquals("Usuario responsavel não pode ser nulo", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com título nulo.
+     * Valida que o campo título é obrigatório.
+     */
     @Test
     void deveLancarExcecaoQuandoTituloForNulo() {
         UUID id = UUID.randomUUID();
@@ -66,6 +80,10 @@ public class ResumoTeste {
         assertEquals("Título é obrigatório", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com título vazio.
+     * Verifica a rejeição de string vazia no campo título.
+     */
     @Test
     void deveLancarExcecaoQuandoTituloForVazio() {
         UUID id = UUID.randomUUID();
@@ -80,6 +98,10 @@ public class ResumoTeste {
         assertEquals("Título é obrigatório", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com título contendo apenas espaços.
+     * Garante que espaços em branco também sejam considerados inválidos.
+     */
     @Test
     void deveLancarExcecaoQuandoTituloForApenasEspaco() {
         UUID id = UUID.randomUUID();
@@ -94,6 +116,10 @@ public class ResumoTeste {
         assertEquals("Título é obrigatório", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com conteúdo nulo.
+     * Garante que o conteúdo do resumo é obrigatório.
+     */
     @Test
     void deveLancarExcecaoQuandoConteudoForNulo() {
         UUID id = UUID.randomUUID();
@@ -108,6 +134,10 @@ public class ResumoTeste {
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com conteúdo vazio.
+     * Valida que um conteúdo em branco não é aceito.
+     */
     @Test
     void deveLancarExcecaoQuandoConteudoForVazio() {
         UUID id = UUID.randomUUID();
@@ -122,6 +152,11 @@ public class ResumoTeste {
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
     }
 
+
+    /**
+     * Teste de falha ao criar resumo com conteúdo contendo apenas espaços.
+     * Verifica se o sistema impede criação de resumos "vazios disfarçados".
+     */
     @Test
     void deveLancarExcecaoQuandoConteudoForApenasEspaco() {
         UUID id = UUID.randomUUID();
@@ -136,6 +171,10 @@ public class ResumoTeste {
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
     }
 
+    /**
+     * Teste de falha ao criar resumo com disciplina nula.
+     * Garante que cada resumo esteja vinculado a uma disciplina válida.
+     */
     @Test
     void deveLancarExcecaoQuandoDisciplinaForNula() {
         UUID id = UUID.randomUUID();
