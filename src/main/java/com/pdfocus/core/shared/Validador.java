@@ -11,10 +11,12 @@ public class Validador {
     }
 
     // Verifica se a String é nula, vazia ou só com espaços em branco. Se for, lança IllegalArgumentException com a mensagem.
-    public static String r3equireNotEmpty(String valor, String mensagem) {
+    public static String requireNotEmpty(String valor, String mensagem) {
         if (valor == null || valor.trim().isEmpty()) {
             throw new IllegalArgumentException(mensagem);
         }
         return valor;
     }
+
+
 }
