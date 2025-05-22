@@ -1,7 +1,9 @@
 package com.pdfocus.core.models;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ResumoTest {
@@ -18,7 +20,7 @@ public class ResumoTest {
         String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Conteúdo de exatas");
 
-        Resumo resumo = new Resumo(id, titulo, conteudo, usuarioId, disciplina);
+        Resumo resumo = new Resumo(id, usuarioId, titulo, conteudo, disciplina);
 
         assertEquals(id, resumo.getId());
         assertEquals(usuarioId, resumo.getUsuarioId());
@@ -38,7 +40,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(null, "Título", "Conteúdo", usuarioId, disciplina);
+            new Resumo(null, usuarioId, "Título", "Conteúdo", disciplina);
         });
 
         assertEquals("ID não pode ser nulo", exception.getMessage());
@@ -56,7 +58,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, titulo, conteudo, null, disciplina);
+            new Resumo(id, null, titulo, conteudo, disciplina);
         });
 
         assertEquals("Usuario responsavel não pode ser nulo", exception.getMessage());
@@ -74,7 +76,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, null, conteudo, usuarioId, disciplina);
+            new Resumo(id, usuarioId, null, conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -92,7 +94,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, "", conteudo, usuarioId, disciplina);
+            new Resumo(id, usuarioId, "", conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -110,7 +112,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, "   ", conteudo, usuarioId, disciplina);
+            new Resumo(id, usuarioId, "   ", conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -128,7 +130,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, titulo, null, usuarioId, disciplina);
+            new Resumo(id, usuarioId, titulo, null, disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
@@ -146,7 +148,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, titulo, "", usuarioId, disciplina);
+            new Resumo(id, usuarioId, titulo, "", disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
@@ -165,7 +167,7 @@ public class ResumoTest {
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, titulo, "    ", usuarioId, disciplina);
+            new Resumo(id, usuarioId, titulo, "    ", disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
@@ -183,7 +185,7 @@ public class ResumoTest {
         String conteudo = "Este é um resumo válido";
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, titulo, conteudo, usuarioId, null);
+            new Resumo(id, usuarioId, titulo, conteudo, null);
         });
 
         assertEquals("Disciplina não pode ser nula", exception.getMessage());
