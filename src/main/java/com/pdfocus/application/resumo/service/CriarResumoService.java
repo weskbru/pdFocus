@@ -1,13 +1,14 @@
 package com.pdfocus.application.resumo.service;
 
 
-import com.pdfocus.application.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.resumo.port.entrada.CriarResumoUseCase;
+import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Resumo;
+
 
 import java.util.UUID;
 
@@ -34,7 +35,6 @@ public class CriarResumoService implements CriarResumoUseCase {
     }
 
 
-
     /**
      * Cria um novo resumo a partir dos dados do comando.
      *
@@ -46,21 +46,19 @@ public class CriarResumoService implements CriarResumoUseCase {
     public Resumo execute(CriarResumoCommand command) {
 
         Disciplina disciplina = disciplinaRepository.findById(command.getIdDisciplina())
-                .orElseThrow(() -> new DisciplinaNaoEncontradaException());
+                .orElseThrow(() -> new DisciplinaNaoEncontradaException(command.getIdDisciplina()));
 
-        UUID id = UUID.randomUUID();
-
-        Resumo resumo = new Resumo(
-                id,
-                command.getIdUsuario(),
-                command.getTitulo(),
-                command.getConteudo(),
-                disciplina
+        return resumoRepository.salvar(
+                Resumo.criar(
+                        UUID.randomUUID(),
+                        command.getIdUsuario(),
+                        command.getTitulo(),
+                        command.getConteudo(),
+                        disciplina
+                )
         );
-
-        resumoRepository.salvar(resumo);
-        return resumo;
     }
+
 
 
 }

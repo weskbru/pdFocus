@@ -1,5 +1,7 @@
 package com.pdfocus.core.models;
 
+import com.pdfocus.core.exceptions.CampoNuloException;
+import com.pdfocus.core.exceptions.CampoVazioException;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class ResumoTest {
         String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Conteúdo de exatas");
 
-        Resumo resumo = new Resumo(id, usuarioId, titulo, conteudo, disciplina);
+        Resumo resumo = Resumo.criar(id, usuarioId, titulo, conteudo, disciplina);
 
         assertEquals(id, resumo.getId());
         assertEquals(usuarioId, resumo.getUsuarioId());
@@ -28,7 +30,6 @@ public class ResumoTest {
         assertEquals(conteudo, resumo.getConteudo());
         assertEquals(disciplina, resumo.getDisciplina());
     }
-
 
     /**
      * Teste de falha ao criar resumo com ID nulo.
@@ -39,11 +40,11 @@ public class ResumoTest {
         UUID usuarioId = UUID.randomUUID();
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(null, usuarioId, "Título", "Conteúdo", disciplina);
+        Exception exception = assertThrows(CampoNuloException.class, () -> {
+            Resumo.criar(null, usuarioId, "Título", "Conteúdo", disciplina);
         });
 
-        assertEquals("ID não pode ser nulo", exception.getMessage());
+        assertEquals("Id não pode ser nulo", exception.getMessage());
     }
 
     /**
@@ -57,11 +58,11 @@ public class ResumoTest {
         String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, null, titulo, conteudo, disciplina);
+        Exception exception = assertThrows(CampoNuloException.class, () -> {
+            Resumo.criar(id, null, titulo, conteudo, disciplina);
         });
 
-        assertEquals("Usuario responsavel não pode ser nulo", exception.getMessage());
+        assertEquals("Usuário responsável não pode ser nulo", exception.getMessage());
     }
 
     /**
@@ -75,8 +76,8 @@ public class ResumoTest {
         String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, null, conteudo, disciplina);
+        Exception exception = assertThrows(CampoNuloException.class, () -> {
+            Resumo.criar(id, usuarioId, null, conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -93,8 +94,8 @@ public class ResumoTest {
         String conteudo = "Este é um conteúdo válido";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, "", conteudo, disciplina);
+        Exception exception = assertThrows(CampoVazioException.class, () -> {
+            Resumo.criar(id, usuarioId, "", conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -111,8 +112,8 @@ public class ResumoTest {
         String conteudo = "Este é um conteúdo válido";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, "   ", conteudo, disciplina);
+        Exception exception = assertThrows(CampoVazioException.class, () -> {
+            Resumo.criar(id, usuarioId, "   ", conteudo, disciplina);
         });
 
         assertEquals("Título é obrigatório", exception.getMessage());
@@ -129,8 +130,8 @@ public class ResumoTest {
         String titulo = "Resumo de Física";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, titulo, null, disciplina);
+        Exception exception = assertThrows(CampoNuloException.class, () -> {
+            Resumo.criar(id, usuarioId, titulo, null, disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
@@ -147,13 +148,12 @@ public class ResumoTest {
         String titulo = "Resumo de Física";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, titulo, "", disciplina);
+        Exception exception = assertThrows(CampoVazioException.class, () -> {
+            Resumo.criar(id, usuarioId, titulo, "", disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
     }
-
 
     /**
      * Teste de falha ao criar resumo com conteúdo contendo apenas espaços.
@@ -166,8 +166,8 @@ public class ResumoTest {
         String titulo = "Resumo de Física";
         Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, titulo, "    ", disciplina);
+        Exception exception = assertThrows(CampoVazioException.class, () -> {
+            Resumo.criar(id, usuarioId, titulo, "    ", disciplina);
         });
 
         assertEquals("Conteúdo é obrigatório", exception.getMessage());
@@ -184,11 +184,10 @@ public class ResumoTest {
         String titulo = "Resumo de Física";
         String conteudo = "Este é um resumo válido";
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Resumo(id, usuarioId, titulo, conteudo, null);
+        Exception exception = assertThrows(CampoNuloException.class, () -> {
+            Resumo.criar(id, usuarioId, titulo, conteudo, null);
         });
 
         assertEquals("Disciplina não pode ser nula", exception.getMessage());
     }
-
 }

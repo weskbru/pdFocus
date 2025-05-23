@@ -1,9 +1,8 @@
 package com.pdfocus.core.models;
 
-import com.pdfocus.core.shared.Validador;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
+import com.pdfocus.core.shared.Validador;
 
 
 public class Resumo {
@@ -14,13 +13,25 @@ public class Resumo {
     private final String conteudo;
     private final Disciplina disciplina;
 
-    public Resumo(UUID id, UUID usuarioId, String titulo, String conteudo, Disciplina disciplina) {
-        this.id = Validador.requireNotNull(id, "ID não pode ser nulo");
-        this.usuarioId = Validador.requireNotNull(usuarioId, "Usuario responsavel não pode ser nulo");
-        this.titulo = Validador.requireNotEmpty(titulo, "Título é obrigatório");
-        this.conteudo = Validador.requireNotEmpty(conteudo, "Conteúdo é obrigatório");
-        this.disciplina = Validador.requireNotNull(disciplina, "Disciplina não pode ser nula");
+    private Resumo(UUID id, UUID usuarioId, String titulo, String conteudo, Disciplina disciplina) {
+        this.id = id;
+        this.usuarioId = usuarioId;
+        this.titulo = titulo;
+        this.conteudo = conteudo;
+        this.disciplina = disciplina;
     }
+
+    public static Resumo criar(UUID id, UUID usuarioId, String titulo, String conteudo, Disciplina disciplina) {
+        Validador.requireNotNull(id, "Id não pode ser nulo");
+        Validador.requireNotNull(usuarioId, "Usuário responsável não pode ser nulo");
+        Validador.requireNotEmpty(titulo, "Título é obrigatório");
+        Validador.requireNotEmpty(conteudo, "Conteúdo é obrigatório");
+        Validador.requireNotNull(disciplina, "Disciplina não pode ser nula");
+
+        return new Resumo(id, usuarioId, titulo, conteudo, disciplina);
+    }
+
+
 
     public UUID getId() {
         return id;
@@ -41,4 +52,6 @@ public class Resumo {
     public String getTitulo() {
         return titulo;
     }
+
+
 }
