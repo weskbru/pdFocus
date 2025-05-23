@@ -2,6 +2,8 @@ plugins {
     id("java")
 }
 
+
+
 group = "com.pdfocus"
 version = "1.0-SNAPSHOT"
 
@@ -17,6 +19,12 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 tasks.test {
     useJUnitPlatform()
 }
+
