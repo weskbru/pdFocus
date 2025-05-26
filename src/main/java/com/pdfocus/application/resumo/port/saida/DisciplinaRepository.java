@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface DisciplinaRepository {
     Optional<Disciplina> findById(UUID id);
+    Disciplina salvar(Disciplina disciplina);
 }
