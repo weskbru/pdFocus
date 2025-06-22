@@ -46,6 +46,6 @@ public interface ResumoJpaRepository extends JpaRepository<ResumoEntity, UUID> {
      * @return O número de registros deletados (pode ser usado para verificar se a deleção ocorreu).
      * Se retornar void, a operação é "dispare e esqueça" do ponto de vista do retorno do método.
      */
-    void deleteByIdAndUsuarioId(UUID id, UUID usuarioId);
+    long deleteByIdAndUsuarioId(UUID id, UUID usuarioId);
 
 }
