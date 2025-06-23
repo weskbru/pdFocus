@@ -4,10 +4,11 @@ package com.pdfocus.application.resumo.service;
 import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.resumo.port.entrada.CriarResumoUseCase;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Resumo;
+import org.springframework.stereotype.Service;
 
 
 import java.util.UUID;
@@ -18,6 +19,7 @@ import java.util.UUID;
  * Recebe dados através do comando {@link CriarResumoCommand}, valida a existência da disciplina,
  * cria a entidade Resumo e persiste usando o repositório.
  */
+@Service
 public class CriarResumoService implements CriarResumoUseCase {
 
     private final ResumoRepository resumoRepository;

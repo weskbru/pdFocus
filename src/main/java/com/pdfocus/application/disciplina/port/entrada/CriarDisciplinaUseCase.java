@@ -1,6 +1,6 @@
-package com.pdfocus.application.resumo.port.entrada;
+package com.pdfocus.application.disciplina.port.entrada;
 
-import com.pdfocus.application.resumo.dto.CriarDisciplinaCommand;
+import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.core.models.Disciplina;
 
 /**

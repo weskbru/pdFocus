@@ -1,10 +1,11 @@
-package com.pdfocus.application.resumo.service;
+package com.pdfocus.application.disciplina.service;
 
 
-import com.pdfocus.application.resumo.dto.CriarDisciplinaCommand;
-import com.pdfocus.application.resumo.port.entrada.CriarDisciplinaUseCase;
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
+import com.pdfocus.application.disciplina.port.entrada.CriarDisciplinaUseCase;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.models.Disciplina;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
  * Responsável por criar uma nova {@link Disciplina} e persistí-la
  * utilizando o {@link DisciplinaRepository}.
  */
+@Service
 public class CriarDisciplinaService implements CriarDisciplinaUseCase {
 
     private final DisciplinaRepository disciplinaRepository;

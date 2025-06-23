@@ -1,4 +1,4 @@
-package com.pdfocus.application.resumo.dto;
+package com.pdfocus.application.disciplina.dto;
 
 /**
  * DTO (Data Transfer Object) para o comando de criação de uma nova {@link com.pdfocus.core.models.Disciplina}.

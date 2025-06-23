@@ -59,8 +59,6 @@ public class ResumoRepositoryAdapter implements ResumoRepository {
     @Transactional
     public boolean deletarPorIdEUsuario(UUID id, UUID usuarioId) {
 
-        // O metodo no ResumoJpaRepository retorna o número de linhas deletadas (long).
-        // Se o número for maior que 0, a deleção foi bem-sucedida.
         return jpaRepository.deleteByIdAndUsuarioId(id, usuarioId) > 0;
     }
 }

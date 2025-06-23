@@ -1,4 +1,4 @@
-package com.pdfocus.application.resumo.port.entrada;
+package com.pdfocus.application.disciplina.port.entrada;
 
 import com.pdfocus.core.models.Disciplina;
 

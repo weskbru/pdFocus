@@ -1,7 +1,7 @@
 package com.pdfocus.application.resumo.service;
 
 import com.pdfocus.application.resumo.dto.CriarResumoCommand;
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.exceptions.CampoNuloException;
 import com.pdfocus.core.exceptions.CampoVazioException;

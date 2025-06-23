@@ -1,6 +1,6 @@
 package com.pdfocus.infra.persistence.adapter;
 
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import com.pdfocus.infra.persistence.mapper.DisciplinaMapper;

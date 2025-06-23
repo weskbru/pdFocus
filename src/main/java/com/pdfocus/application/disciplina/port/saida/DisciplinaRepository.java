@@ -1,4 +1,4 @@
-package com.pdfocus.application.resumo.port.saida;
+package com.pdfocus.application.disciplina.port.saida;
 
 import com.pdfocus.core.models.Disciplina;
 

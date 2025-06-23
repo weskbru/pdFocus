@@ -1,6 +1,6 @@
-package com.pdfocus.application.resumo.service;
+package com.pdfocus.application.disciplina.service;
 
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.models.Disciplina;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

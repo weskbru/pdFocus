@@ -1,8 +1,10 @@
-package com.pdfocus.application.resumo.service;
+package com.pdfocus.application.disciplina.service;
 
-import com.pdfocus.application.resumo.port.entrada.ListarDisciplinasUseCase;
-import com.pdfocus.application.resumo.port.saida.DisciplinaRepository;
+import com.pdfocus.application.disciplina.port.entrada.ListarDisciplinasUseCase;
+import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.models.Disciplina;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +20,7 @@ import java.util.Objects;
  * {@code com.pdfocus.application.disciplina.port.entrada} respectivamente.
  * </p>
  */
+@Service
 public class ListarDisciplinasService implements ListarDisciplinasUseCase {
 
     private final DisciplinaRepository disciplinaRepository;
@@ -42,6 +45,7 @@ public class ListarDisciplinasService implements ListarDisciplinasUseCase {
      * Retorna uma lista vazia se nenhuma disciplina for encontrada.
      */
     @Override
+    @Transactional(readOnly = true)
     public List<Disciplina> listarTodas() {
         return disciplinaRepository.listarTodas();
     }
