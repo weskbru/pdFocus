@@ -2,33 +2,17 @@ package com.pdfocus.application.resumo.dto;
 
 import java.util.UUID;
 
-public class CriarResumoCommand {
-
-    private final UUID idUsuario;
-    private final UUID idDisciplina;
-    private final String titulo;
-    private final String conteudo;
-
-    public CriarResumoCommand(UUID idUsuario, UUID idDisciplina, String titulo, String conteudo) {
-        this.idUsuario = idUsuario;
-        this.idDisciplina = idDisciplina;
-        this.titulo = titulo;
-        this.conteudo = conteudo;
-    }
-
-    public UUID getIdUsuario() {
-        return idUsuario;
-    }
-
-    public String getConteudo() {
-        return conteudo;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public UUID getIdDisciplina() {
-        return idDisciplina;
-    }
-}
+/**
+ * Comando para carregar os dados necessários para criar um novo resumo.
+ *
+ * @param usuarioId O ID do usuário proprietário do resumo.
+ * @param disciplinaId O ID da disciplina à qual o resumo está associado.
+ * @param titulo O título do resumo.
+ * @param conteudo O conteúdo textual do resumo.
+ */
+public record CriarResumoCommand(
+        UUID usuarioId,
+        UUID disciplinaId, // Nome do campo agora corresponde exatamente ao JSON
+        String titulo,
+        String conteudo
+) {}
