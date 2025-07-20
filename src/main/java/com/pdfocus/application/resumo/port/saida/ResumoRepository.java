@@ -1,5 +1,6 @@
 package com.pdfocus.application.resumo.port.saida;
 
+import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
 
 import java.util.List;
@@ -48,8 +49,7 @@ public interface ResumoRepository {
      *
      * @param id O ID do resumo a ser deletado.
      * @param usuarioId O ID do usuário proprietário do resumo.
-     * @return true se o resumo foi deletado, false caso contrário (ex: não encontrado ou não pertence ao usuário).
-     * (Alternativamente, pode ser void e lançar exceção se não puder deletar)
+     * @throws ResumoNaoEncontradoException se o resumo não for encontrado ou não pertencer ao usuário.
      */
-    boolean deletarPorIdEUsuario(UUID id, UUID usuarioId); // Ou void, dependendo da sua preferência de design para feedback de deleção
+    void deletarPorIdEUsuario(UUID id, UUID usuarioId); // Ou void, dependendo da sua preferência de design para feedback de deleção
 }

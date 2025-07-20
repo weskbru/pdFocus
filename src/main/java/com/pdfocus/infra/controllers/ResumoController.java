@@ -132,14 +132,11 @@ public class ResumoController {
             @PathVariable UUID id,
             @RequestParam UUID usuarioId) {
 
-        // Chama o caso de uso, que retorna true se deletou, false se não encontrou
-        boolean foiDeletado = deletarResumoUseCase.executar(id, usuarioId);
+        // Apenas chama o caso de uso.
+        // Se o resumo não for encontrado, o serviço/repositório lançará uma exceção.
+        deletarResumoUseCase.executar(id, usuarioId);
 
-        // Retorna a resposta HTTP apropriada
-        if (foiDeletado) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-        } else {
-            return ResponseEntity.notFound().build(); // 404 Not Found
-        }
+        // Se o metodo chegar até aqui sem lançar uma exceção, a deleção foi bem-sucedida.
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content
     }
 }

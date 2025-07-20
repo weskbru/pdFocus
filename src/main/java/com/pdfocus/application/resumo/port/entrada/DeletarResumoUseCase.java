@@ -1,5 +1,7 @@
 package com.pdfocus.application.resumo.port.entrada;
 
+import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+
 import java.util.UUID;
 
 /**
@@ -12,8 +14,7 @@ public interface DeletarResumoUseCase {
      *
      * @param id O ID do resumo a ser deletado.
      * @param usuarioId O ID do usuário que deve ser o proprietário do resumo.
-     * @return {@code true} se o resumo foi encontrado e deletado com sucesso,
-     * {@code false} caso contrário (não encontrado ou não pertence ao usuário).
+     * @throws ResumoNaoEncontradoException se o resumo não for encontrado ou não pertencer ao usuário.
      */
-    boolean executar(UUID id, UUID usuarioId);
+    void executar(UUID id, UUID usuarioId);
 }

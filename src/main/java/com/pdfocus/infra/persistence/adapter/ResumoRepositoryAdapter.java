@@ -1,6 +1,7 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
+import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
 import com.pdfocus.infra.persistence.entity.ResumoEntity;
 import com.pdfocus.infra.persistence.mapper.ResumoMapper;
@@ -57,8 +58,13 @@ public class ResumoRepositoryAdapter implements ResumoRepository {
 
     @Override
     @Transactional
-    public boolean deletarPorIdEUsuario(UUID id, UUID usuarioId) {
+    public void deletarPorIdEUsuario(UUID id, UUID usuarioId) {
 
-        return jpaRepository.deleteByIdAndUsuarioId(id, usuarioId) > 0;
+        // Usamos o metodo de busca que já valida a propriedade do resumo
+        ResumoEntity resumoParaDeletar = jpaRepository.findByIdAndUsuarioId(id, usuarioId)
+                .orElseThrow(() -> new ResumoNaoEncontradoException(id));
+
+        // Se encontrou, o jpaRepository o deleta.
+        jpaRepository.delete(resumoParaDeletar);
     }
 }
