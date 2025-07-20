@@ -1,16 +1,16 @@
 package com.pdfocus.infra.web.exception;
 
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.EmailJaCadastradoException;
 import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-
 
 /**
  * Handler de exceções global para a API REST.
@@ -53,4 +53,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().build();
     }
 
+    /**
+     * Manipula a exceção de e-mail já cadastrado.
+     * Retorna o status HTTP 409 (Conflict).
+     */
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    protected ResponseEntity<Object> handleEmailJaCadastrado(EmailJaCadastradoException ex) {
+        logger.warn("Tentativa de cadastro com e-mail duplicado: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 }
