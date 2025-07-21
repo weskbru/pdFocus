@@ -24,6 +24,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     runtimeOnly("com.h2database:h2")
 
+    // Dependências para JSON Web Tokens (JWT)
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5") // Para serialização
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
