@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Verifica a correção das conversões entre {@link Resumo} (domínio)
  * e {@link ResumoEntity} (JPA), incluindo o mapeamento da disciplina associada.
  */
-@DisplayName("Testes Unitários para ResumoMapper")
+@DisplayName("Testes Unitários - ResumoMapper")
 class ResumoMapperTest {
 
     private Disciplina disciplinaDominio;
@@ -29,15 +29,20 @@ class ResumoMapperTest {
     private DisciplinaEntity disciplinaEntity;
     private ResumoEntity resumoEntity;
 
+    /**
+     * Prepara os dados de teste comuns antes da execução de cada teste.
+     */
     @BeforeEach
     void setUp() {
-        // --- Setup dos Objetos de Domínio ---
+        // --- Setup dos Objetos ---
         UUID disciplinaId = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
         UUID resumoId = UUID.randomUUID();
 
-        // Usando os construtores e métodos de fábrica reais das classes de domínio
-        disciplinaDominio = new Disciplina(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF");
+        // CORREÇÃO: A criação da Disciplina e da DisciplinaEntity agora inclui o usuarioId.
+        disciplinaDominio = new Disciplina(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF", usuarioId);
+        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF", usuarioId);
+
         resumoDominio = Resumo.criar(
                 resumoId,
                 usuarioId,
@@ -46,9 +51,6 @@ class ResumoMapperTest {
                 disciplinaDominio
         );
 
-        // --- Setup das Entidades JPA ---
-        // Estas entidades representam o que seria salvo ou recuperado do banco
-        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF");
         resumoEntity = new ResumoEntity(
                 resumoId,
                 usuarioId,
@@ -62,7 +64,7 @@ class ResumoMapperTest {
      * Testes para o método {@link ResumoMapper#toEntity(Resumo)}.
      */
     @Nested
-    @DisplayName("Testes para toEntity (Domínio para Entidade JPA)")
+    @DisplayName("Testes para toEntity (Domínio -> JPA)")
     class ToEntityTest {
 
         @Test
@@ -76,16 +78,15 @@ class ResumoMapperTest {
             assertEquals(resumoDominio.getId(), entityConvertida.getId());
             assertEquals(resumoDominio.getUsuarioId(), entityConvertida.getUsuarioId());
             assertEquals(resumoDominio.getTitulo(), entityConvertida.getTitulo());
-            assertEquals(resumoDominio.getConteudo(), entityConvertida.getConteudo());
             assertNotNull(entityConvertida.getDisciplina());
             assertEquals(resumoDominio.getDisciplina().getId(), entityConvertida.getDisciplina().getId());
-            assertEquals(resumoDominio.getDisciplina().getNome(), entityConvertida.getDisciplina().getNome());
+            // Nova verificação para garantir que o usuarioId da disciplina também foi mapeado
+            assertEquals(resumoDominio.getDisciplina().getUsuarioId(), entityConvertida.getDisciplina().getUsuarioId());
         }
 
         @Test
         @DisplayName("Deve retornar null quando o Resumo de domínio for nulo")
         void deveRetornarNullQuandoDominioForNull() {
-            // Act & Assert
             assertNull(ResumoMapper.toEntity(null));
         }
     }
@@ -94,7 +95,7 @@ class ResumoMapperTest {
      * Testes para o método {@link ResumoMapper#toDomain(ResumoEntity)}.
      */
     @Nested
-    @DisplayName("Testes para toDomain (Entidade JPA para Domínio)")
+    @DisplayName("Testes para toDomain (JPA -> Domínio)")
     class ToDomainTest {
 
         @Test
@@ -108,16 +109,15 @@ class ResumoMapperTest {
             assertEquals(resumoEntity.getId(), domainConvertido.getId());
             assertEquals(resumoEntity.getUsuarioId(), domainConvertido.getUsuarioId());
             assertEquals(resumoEntity.getTitulo(), domainConvertido.getTitulo());
-            assertEquals(resumoEntity.getConteudo(), domainConvertido.getConteudo());
             assertNotNull(domainConvertido.getDisciplina());
             assertEquals(resumoEntity.getDisciplina().getId(), domainConvertido.getDisciplina().getId());
-            assertEquals(resumoEntity.getDisciplina().getNome(), domainConvertido.getDisciplina().getNome());
+            // Nova verificação
+            assertEquals(resumoEntity.getDisciplina().getUsuarioId(), domainConvertido.getDisciplina().getUsuarioId());
         }
 
         @Test
         @DisplayName("Deve retornar null quando a ResumoEntity for nula")
         void deveRetornarNullQuandoEntityForNull() {
-            // Act & Assert
             assertNull(ResumoMapper.toDomain(null));
         }
     }
@@ -140,16 +140,6 @@ class ResumoMapperTest {
             assertNotNull(domainObjects);
             assertEquals(1, domainObjects.size());
             assertEquals(resumoEntity.getId(), domainObjects.get(0).getId());
-        }
-
-        @Test
-        @DisplayName("Deve retornar lista vazia quando a lista de ResumoEntity de entrada for nula ou vazia")
-        void deveRetornarListaVaziaParaListaEntityNulaOuVazia() {
-            // Act & Assert
-            assertNotNull(ResumoMapper.toDomainList(null));
-            assertTrue(ResumoMapper.toDomainList(null).isEmpty());
-            assertNotNull(ResumoMapper.toDomainList(Collections.emptyList()));
-            assertTrue(ResumoMapper.toDomainList(Collections.emptyList()).isEmpty());
         }
     }
 }

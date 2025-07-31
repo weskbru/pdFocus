@@ -25,22 +25,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Testes unitários para {@link DefaultCriarResumoService}.
+ * Testes unitários para a classe {@link DefaultCriarResumoService}.
  * Valida a lógica de negócio para a criação de novos resumos.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - DefaultCriarResumoService")
 public class DefaultCriarResumoServiceTest {
 
-    /** Mock para simular o repositório de resumos. */
     @Mock
     private ResumoRepository resumoRepository;
 
-    /** Mock para simular o repositório de disciplinas, uma dependência do serviço. */
     @Mock
     private DisciplinaRepository disciplinaRepository;
 
-    /** Instância de {@link DefaultCriarResumoService} a ser testada, com os mocks injetados. */
     @InjectMocks
     private DefaultCriarResumoService service;
 
@@ -48,7 +45,7 @@ public class DefaultCriarResumoServiceTest {
     private final UUID ID_USUARIO = UUID.randomUUID();
     private final UUID ID_DISCIPLINA = UUID.randomUUID();
     private final String TITULO = "Resumo de Direito Constitucional";
-    private final String CONTEUDO = "Artigo 5º - Direitos e Deveres Individuais e Coletivos.";
+    private final String CONTEUDO = "Artigo 5º da Constituição Federal.";
     private Disciplina disciplinaValida;
 
     /**
@@ -56,7 +53,7 @@ public class DefaultCriarResumoServiceTest {
      */
     @BeforeEach
     void setUp() {
-        disciplinaValida = new Disciplina(ID_DISCIPLINA, "Direito Constitucional", "Estudo da Constituição Federal.");
+        disciplinaValida = new Disciplina(ID_DISCIPLINA, "Direito Constitucional", "Estudo da CF.", ID_USUARIO);
     }
 
     /**
@@ -65,20 +62,22 @@ public class DefaultCriarResumoServiceTest {
     @Test
     @DisplayName("Deve criar um resumo com sucesso quando todos os dados são válidos")
     void deveCriarResumoComSucesso() {
-        // Arrange
-        CriarResumoCommand command = new CriarResumoCommand(ID_USUARIO, ID_DISCIPLINA, TITULO, CONTEUDO);
+        // Arrange (Preparação)
+        // 1. O comando agora não contém mais o ID do usuário.
+        CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, TITULO, CONTEUDO);
         when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
         when(resumoRepository.salvar(any(Resumo.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        Resumo resultado = service.executar(command);
+        // Act (Ação)
+        // 2. A chamada ao serviço agora passa o ID do usuário como um segundo argumento.
+        Resumo resultado = service.executar(command, ID_USUARIO);
 
-        // Assert
+        // Assert (Verificação)
         assertNotNull(resultado);
         assertNotNull(resultado.getId());
         assertEquals(TITULO, resultado.getTitulo());
         assertEquals(CONTEUDO, resultado.getConteudo());
-        assertEquals(ID_USUARIO, resultado.getUsuarioId());
+        assertEquals(ID_USUARIO, resultado.getUsuarioId()); // Verifica se o ID do usuário foi atribuído corretamente.
         assertEquals(disciplinaValida, resultado.getDisciplina());
         verify(disciplinaRepository).findById(ID_DISCIPLINA);
         verify(resumoRepository).salvar(any(Resumo.class));
@@ -96,10 +95,10 @@ public class DefaultCriarResumoServiceTest {
         void deveLancarExcecaoQuandoDisciplinaNaoExistir() {
             // Arrange
             when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.empty());
-            CriarResumoCommand command = new CriarResumoCommand(ID_USUARIO, ID_DISCIPLINA, TITULO, CONTEUDO);
+            CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, TITULO, CONTEUDO);
 
             // Act & Assert
-            assertThrows(DisciplinaNaoEncontradaException.class, () -> service.executar(command));
+            assertThrows(DisciplinaNaoEncontradaException.class, () -> service.executar(command, ID_USUARIO));
             verify(resumoRepository, never()).salvar(any());
         }
 
@@ -107,7 +106,7 @@ public class DefaultCriarResumoServiceTest {
         @DisplayName("Deve lançar exceção quando o comando de criação for nulo")
         void deveLancarExcecaoQuandoComandoForNulo() {
             // Act & Assert
-            assertThrows(NullPointerException.class, () -> service.executar(null));
+            assertThrows(NullPointerException.class, () -> service.executar(null, ID_USUARIO));
             verifyNoInteractions(resumoRepository, disciplinaRepository);
         }
 
@@ -116,10 +115,10 @@ public class DefaultCriarResumoServiceTest {
         void deveRejeitarTituloVazio() {
             // Arrange
             when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
-            CriarResumoCommand command = new CriarResumoCommand(ID_USUARIO, ID_DISCIPLINA, "  ", CONTEUDO);
+            CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, "  ", CONTEUDO);
 
             // Act & Assert
-            assertThrows(CampoVazioException.class, () -> service.executar(command));
+            assertThrows(CampoVazioException.class, () -> service.executar(command, ID_USUARIO));
         }
 
         @Test
@@ -127,10 +126,10 @@ public class DefaultCriarResumoServiceTest {
         void deveRejeitarTituloNulo() {
             // Arrange
             when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
-            CriarResumoCommand command = new CriarResumoCommand(ID_USUARIO, ID_DISCIPLINA, null, CONTEUDO);
+            CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, null, CONTEUDO);
 
             // Act & Assert
-            assertThrows(CampoNuloException.class, () -> service.executar(command));
+            assertThrows(CampoNuloException.class, () -> service.executar(command, ID_USUARIO));
         }
     }
 }

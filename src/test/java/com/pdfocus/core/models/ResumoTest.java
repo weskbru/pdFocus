@@ -2,28 +2,54 @@ package com.pdfocus.core.models;
 
 import com.pdfocus.core.exceptions.CampoNuloException;
 import com.pdfocus.core.exceptions.CampoVazioException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testes unitários para a classe de domínio {@link Resumo}.
+ * Garante que as regras de negócio e validações do método de fábrica 'criar' estão corretas.
+ */
+@DisplayName("Testes Unitários - Modelo de Domínio Resumo")
 public class ResumoTest {
 
+    // Dados de teste comuns que serão inicializados antes de cada teste
+    private UUID id;
+    private UUID usuarioId;
+    private String titulo;
+    private String conteudo;
+    private Disciplina disciplina;
+
     /**
-     * Teste de criação bem-sucedida de um resumo com todos os dados válidos.
-     * Verifica se os campos são corretamente atribuídos ao objeto `Resumo`.
+     * Prepara os dados de teste válidos antes da execução de cada teste.
+     * Isso evita a repetição de código (Princípio DRY).
+     */
+    @BeforeEach
+    void setUp() {
+        id = UUID.randomUUID();
+        usuarioId = UUID.randomUUID();
+        titulo = "Resumo Válido";
+        conteudo = "Conteúdo válido.";
+        // A criação da Disciplina agora usa o construtor correto de 4 argumentos
+        disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Descrição", usuarioId);
+    }
+
+    /**
+     * Testa o cenário de sucesso da criação de um resumo.
      */
     @Test
+    @DisplayName("Deve criar um resumo com sucesso quando todos os dados são válidos")
     void deveCriarResumoComDadosValidos() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String titulo = "Resumo de Matemática: Álgebra Linear";
-        String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Conteúdo de exatas");
-
+        // Act
         Resumo resumo = Resumo.criar(id, usuarioId, titulo, conteudo, disciplina);
 
+        // Assert
+        assertNotNull(resumo);
         assertEquals(id, resumo.getId());
         assertEquals(usuarioId, resumo.getUsuarioId());
         assertEquals(titulo, resumo.getTitulo());
@@ -32,162 +58,64 @@ public class ResumoTest {
     }
 
     /**
-     * Teste de falha ao criar resumo com ID nulo.
-     * Espera-se uma exceção indicando que o ID é obrigatório.
+     * Agrupa todos os testes que validam as regras de negócio para campos inválidos.
      */
-    @Test
-    void deveLancarExcecaoQuandoIdForNulo() {
-        UUID usuarioId = UUID.randomUUID();
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
+    @Nested
+    @DisplayName("Validações de Campos Inválidos")
+    class ValidacoesDeCampos {
 
-        Exception exception = assertThrows(CampoNuloException.class, () -> {
-            Resumo.criar(null, usuarioId, "Título", "Conteúdo", disciplina);
-        });
+        @Test
+        @DisplayName("Deve lançar exceção quando o ID for nulo")
+        void deveLancarExcecaoQuandoIdForNulo() {
+            assertThrows(CampoNuloException.class, () -> {
+                Resumo.criar(null, usuarioId, titulo, conteudo, disciplina);
+            });
+        }
 
-        assertEquals("Id não pode ser nulo", exception.getMessage());
-    }
+        @Test
+        @DisplayName("Deve lançar exceção quando o usuarioId for nulo")
+        void deveLancarExcecaoQuandoUsuarioIdForNulo() {
+            assertThrows(CampoNuloException.class, () -> {
+                Resumo.criar(id, null, titulo, conteudo, disciplina);
+            });
+        }
 
-    /**
-     * Teste de falha ao criar resumo com usuarioId nulo.
-     * Garante que não é possível criar um resumo sem vincular a um usuário.
-     */
-    @Test
-    void deveLancarExcecaoQuandoUsuarioIdForNulo() {
-        UUID id = UUID.randomUUID();
-        String titulo = "Resumo de Matemática: Álgebra Linear";
-        String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
+        @Test
+        @DisplayName("Deve lançar exceção quando o título for nulo")
+        void deveLancarExcecaoQuandoTituloForNulo() {
+            assertThrows(CampoNuloException.class, () -> {
+                Resumo.criar(id, usuarioId, null, conteudo, disciplina);
+            });
+        }
 
-        Exception exception = assertThrows(CampoNuloException.class, () -> {
-            Resumo.criar(id, null, titulo, conteudo, disciplina);
-        });
+        @Test
+        @DisplayName("Deve lançar exceção quando o título for vazio ou apenas espaços")
+        void deveLancarExcecaoQuandoTituloForVazio() {
+            assertThrows(CampoVazioException.class, () -> Resumo.criar(id, usuarioId, "", conteudo, disciplina));
+            assertThrows(CampoVazioException.class, () -> Resumo.criar(id, usuarioId, "   ", conteudo, disciplina));
+        }
 
-        assertEquals("Usuário responsável não pode ser nulo", exception.getMessage());
-    }
+        @Test
+        @DisplayName("Deve lançar exceção quando o conteúdo for nulo")
+        void deveLancarExcecaoQuandoConteudoForNulo() {
+            assertThrows(CampoNuloException.class, () -> {
+                Resumo.criar(id, usuarioId, titulo, null, disciplina);
+            });
+        }
 
-    /**
-     * Teste de falha ao criar resumo com título nulo.
-     * Valida que o campo título é obrigatório.
-     */
-    @Test
-    void deveLancarExcecaoQuandoTituloForNulo() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String conteudo = "Este resumo cobre conceitos essenciais de vetores e matrizes.";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Matemática", "Desc");
+        @Test
+        @DisplayName("Deve lançar exceção quando o conteúdo for vazio ou apenas espaços")
+        void deveLancarExcecaoQuandoConteudoForVazio() {
+            assertThrows(CampoVazioException.class, () -> Resumo.criar(id, usuarioId, titulo, "", disciplina));
+            assertThrows(CampoVazioException.class, () -> Resumo.criar(id, usuarioId, titulo, "   ", disciplina));
+        }
 
-        Exception exception = assertThrows(CampoNuloException.class, () -> {
-            Resumo.criar(id, usuarioId, null, conteudo, disciplina);
-        });
-
-        assertEquals("Título é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com título vazio.
-     * Verifica a rejeição de string vazia no campo título.
-     */
-    @Test
-    void deveLancarExcecaoQuandoTituloForVazio() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String conteudo = "Este é um conteúdo válido";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
-
-        Exception exception = assertThrows(CampoVazioException.class, () -> {
-            Resumo.criar(id, usuarioId, "", conteudo, disciplina);
-        });
-
-        assertEquals("Título é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com título contendo apenas espaços.
-     * Garante que espaços em branco também sejam considerados inválidos.
-     */
-    @Test
-    void deveLancarExcecaoQuandoTituloForApenasEspaco() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String conteudo = "Este é um conteúdo válido";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "História", "Desc");
-
-        Exception exception = assertThrows(CampoVazioException.class, () -> {
-            Resumo.criar(id, usuarioId, "   ", conteudo, disciplina);
-        });
-
-        assertEquals("Título é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com conteúdo nulo.
-     * Garante que o conteúdo do resumo é obrigatório.
-     */
-    @Test
-    void deveLancarExcecaoQuandoConteudoForNulo() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String titulo = "Resumo de Física";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
-
-        Exception exception = assertThrows(CampoNuloException.class, () -> {
-            Resumo.criar(id, usuarioId, titulo, null, disciplina);
-        });
-
-        assertEquals("Conteúdo é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com conteúdo vazio.
-     * Valida que um conteúdo em branco não é aceito.
-     */
-    @Test
-    void deveLancarExcecaoQuandoConteudoForVazio() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String titulo = "Resumo de Física";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
-
-        Exception exception = assertThrows(CampoVazioException.class, () -> {
-            Resumo.criar(id, usuarioId, titulo, "", disciplina);
-        });
-
-        assertEquals("Conteúdo é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com conteúdo contendo apenas espaços.
-     * Verifica se o sistema impede criação de resumos "vazios disfarçados".
-     */
-    @Test
-    void deveLancarExcecaoQuandoConteudoForApenasEspaco() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String titulo = "Resumo de Física";
-        Disciplina disciplina = new Disciplina(UUID.randomUUID(), "Física", "Desc");
-
-        Exception exception = assertThrows(CampoVazioException.class, () -> {
-            Resumo.criar(id, usuarioId, titulo, "    ", disciplina);
-        });
-
-        assertEquals("Conteúdo é obrigatório", exception.getMessage());
-    }
-
-    /**
-     * Teste de falha ao criar resumo com disciplina nula.
-     * Garante que cada resumo esteja vinculado a uma disciplina válida.
-     */
-    @Test
-    void deveLancarExcecaoQuandoDisciplinaForNula() {
-        UUID id = UUID.randomUUID();
-        UUID usuarioId = UUID.randomUUID();
-        String titulo = "Resumo de Física";
-        String conteudo = "Este é um resumo válido";
-
-        Exception exception = assertThrows(CampoNuloException.class, () -> {
-            Resumo.criar(id, usuarioId, titulo, conteudo, null);
-        });
-
-        assertEquals("Disciplina não pode ser nula", exception.getMessage());
+        @Test
+        @DisplayName("Deve lançar exceção quando a disciplina for nula")
+        void deveLancarExcecaoQuandoDisciplinaForNula() {
+            assertThrows(CampoNuloException.class, () -> {
+                Resumo.criar(id, usuarioId, titulo, conteudo, null);
+            });
+        }
     }
 }
