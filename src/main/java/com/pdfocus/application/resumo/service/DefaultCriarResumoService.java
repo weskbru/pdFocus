@@ -53,10 +53,10 @@ public class DefaultCriarResumoService implements CriarResumoUseCase {
      */
     @Override
     @Transactional // Garante a atomicidade da operação (ou tudo funciona, ou nada é salvo)
-    public Resumo executar(CriarResumoCommand command) {
+    public Resumo executar(CriarResumoCommand command, UUID usuarioId) {
         // Validação da entrada do caso de uso
         Objects.requireNonNull(command, "O comando de criação não pode ser nulo.");
-
+        Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
         // Busca a disciplina para garantir que ela existe
         Disciplina disciplina = disciplinaRepository.findById(command.disciplinaId())
                 .orElseThrow(() -> new DisciplinaNaoEncontradaException(command.disciplinaId()));
@@ -65,7 +65,7 @@ public class DefaultCriarResumoService implements CriarResumoUseCase {
         // Isso dispara as validações internas do próprio Resumo (ex: título não pode ser vazio)
         Resumo novoResumo = Resumo.criar(
                 UUID.randomUUID(), // Gera um novo ID para o resumo
-                command.usuarioId(),
+                usuarioId,
                 command.titulo(),
                 command.conteudo(),
                 disciplina

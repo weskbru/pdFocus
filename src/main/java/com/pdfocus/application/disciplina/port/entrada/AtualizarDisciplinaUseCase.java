@@ -19,5 +19,5 @@ public interface AtualizarDisciplinaUseCase {
      * @return Um {@link Optional} contendo a {@link Disciplina} atualizada se a original for encontrada,
      * ou um Optional vazio se nenhuma disciplina com o ID fornecido for encontrada.
      */
-    Optional<Disciplina> executar(UUID id, AtualizarDisciplinaCommand command);
+    Optional<Disciplina> executar(UUID id, AtualizarDisciplinaCommand command, UUID usuarioId);
 }

@@ -41,4 +41,12 @@ public class DisciplinaEntity {
     @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
 
+    /**
+     * O identificador único do usuário proprietário desta disciplina.
+     * Garante que cada disciplina pertença a um usuário específico.
+     * Mapeado para a coluna "usuario_id", que não pode ser nula.
+     */
+    @Column(name = "usuario_id", nullable = false)
+    private UUID usuarioId;
+
 }

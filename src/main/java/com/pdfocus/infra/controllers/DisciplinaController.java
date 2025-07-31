@@ -1,24 +1,23 @@
 package com.pdfocus.infra.controllers;
 
-// Novos imports
-
 import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.application.disciplina.port.entrada.*;
 import com.pdfocus.core.models.Disciplina;
-
-// Novos imports
+import com.pdfocus.infra.security.AuthenticationHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-// Se precisar de URI para o cabeçalho Location
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.net.URI;
-
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Controller REST para gerenciar as operações relacionadas às Disciplinas de um usuário.
+ * Todos os endpoints são protegidos e operam no contexto do usuário autenticado.
+ */
 @RestController
 @RequestMapping("/disciplinas")
 public class DisciplinaController {
@@ -27,49 +26,48 @@ public class DisciplinaController {
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
     private final ObterDisciplinaPorIdUseCase obterDisciplinaPorIdUseCase;
     private final DeletarDisciplinaUseCase deletarDisciplinaUseCase;
-    private final AtualizarDisciplinaUseCase atualizarDisciplinaUseCase; // 1. Adicionar como dependência
+    private final AtualizarDisciplinaUseCase atualizarDisciplinaUseCase;
+    private final AuthenticationHelper authenticationHelper;
 
     public DisciplinaController(
             ListarDisciplinasUseCase listarDisciplinasUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             ObterDisciplinaPorIdUseCase obterDisciplinaPorIdUseCase,
             DeletarDisciplinaUseCase deletarDisciplinaUseCase,
-            AtualizarDisciplinaUseCase atualizarDisciplinaUseCase) { // 2. Injetar no construtor
+            AtualizarDisciplinaUseCase atualizarDisciplinaUseCase,
+            AuthenticationHelper authenticationHelper) {
         this.listarDisciplinasUseCase = listarDisciplinasUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
         this.obterDisciplinaPorIdUseCase = obterDisciplinaPorIdUseCase;
         this.deletarDisciplinaUseCase = deletarDisciplinaUseCase;
         this.atualizarDisciplinaUseCase = atualizarDisciplinaUseCase;
+        this.authenticationHelper = authenticationHelper;
     }
 
+    /**
+     * Endpoint para listar todas as disciplinas do usuário autenticado.
+     * Responde a requisições GET em /disciplinas.
+     *
+     * @return Uma lista de disciplinas pertencentes ao usuário logado.
+     */
     @GetMapping
-    public ResponseEntity<List<Disciplina>> listarTodas() {
-        List<Disciplina> disciplinas = listarDisciplinasUseCase.listarTodas();
+    public ResponseEntity<List<Disciplina>> listarPorUsuario() {
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+        List<Disciplina> disciplinas = listarDisciplinasUseCase.executar(usuarioId);
         return ResponseEntity.ok(disciplinas);
     }
 
     /**
-     * Endpoint para buscar uma única disciplina pelo seu ID.
-     * Responde a requisições GET em /disciplinas/{id}.
+     * Endpoint para criar uma nova disciplina para o usuário autenticado.
+     * Responde a requisições POST em /disciplinas.
      *
-     * @param id O UUID da disciplina a ser buscada, vindo da URL.
-     * @return Resposta 200 (OK) com a disciplina se encontrada,
-     * ou 404 (Not Found) se não for encontrada.
+     * @param command O comando com os dados para criar a disciplina.
+     * @return Resposta 201 (Created) com a nova disciplina e a URL do recurso no cabeçalho 'Location'.
      */
-    @GetMapping("/{id}") // 4. Novo endpoint para GET com um ID na URL
-    public ResponseEntity<Disciplina> obterPorId(@PathVariable UUID id) {
-        // 5. Chama o caso de uso para buscar a disciplina
-        Optional<Disciplina> disciplinaOptional = obterDisciplinaPorIdUseCase.executar(id);
-
-        // 6. Retorna 200 OK com o corpo se encontrou, ou 404 Not Found se não encontrou
-        return disciplinaOptional
-                .map(ResponseEntity::ok) // Se o Optional contém um valor, cria um ResponseEntity.ok(valor)
-                .orElseGet(() -> ResponseEntity.notFound().build()); // Se o Optional estiver vazio, cria um ResponseEntity 404
-    }
-
     @PostMapping
     public ResponseEntity<Disciplina> criar(@RequestBody CriarDisciplinaCommand command) {
-        Disciplina novaDisciplina = criarDisciplinaUseCase.criar(command);
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+        Disciplina novaDisciplina = criarDisciplinaUseCase.executar(command, usuarioId);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -81,36 +79,54 @@ public class DisciplinaController {
     }
 
     /**
-     * Endpoint para deletar uma disciplina pelo seu ID.
-     * Responde a requisições DELETE em /disciplinas/{id}.
+     * Endpoint para buscar uma única disciplina do usuário autenticado pelo seu ID.
+     * Responde a requisições GET em /disciplinas/{id}.
+     *
+     * @param id O UUID da disciplina a ser buscada.
+     * @return Resposta 200 (OK) com a disciplina se encontrada, ou 404 (Not Found).
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPorId(@PathVariable UUID id) {
-        // 3. Chama o caso de uso para executar a deleção
-        deletarDisciplinaUseCase.executar(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<Disciplina> obterPorId(@PathVariable UUID id) {
+        // 1. Obtemos o ID do usuário logado a partir do token
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
 
-        // Retorna 204 No Content para indicar sucesso na operação
-        return ResponseEntity.noContent().build();
+        // 2. Chamamos o método 'executar' com ambos os IDs (o da disciplina e o do usuário)
+        Optional<Disciplina> disciplinaOptional = obterDisciplinaPorIdUseCase.executar(id, usuarioId);
+
+        // O resto da lógica para retornar 200 OK ou 404 Not Found continua a mesma
+        return disciplinaOptional
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**
-     * Endpoint para atualizar uma disciplina existente.
+     * Endpoint para atualizar uma disciplina existente do usuário autenticado.
      * Responde a requisições PUT em /disciplinas/{id}.
-     * O corpo da requisição deve conter um JSON com os novos "nome" e "descricao".
      *
-     * @param id O UUID da disciplina a ser atualizada, vindo da URL.
-     * @param command O comando com os novos dados para a disciplina.
-     * @return Resposta 200 (OK) com a disciplina atualizada se encontrada,
-     * ou 404 (Not Found) se a disciplina não for encontrada.
+     * @param id O UUID da disciplina a ser atualizada.
+     * @param command O comando com os novos dados.
+     * @return Resposta 200 (OK) com a disciplina atualizada, ou 404 (Not Found).
      */
-    @PutMapping("/{id}") // 3. Novo endpoint para PUT
+    @PutMapping("/{id}")
     public ResponseEntity<Disciplina> atualizar(@PathVariable UUID id, @RequestBody AtualizarDisciplinaCommand command) {
-        // 4. Chama o caso de uso para atualizar
-        Optional<Disciplina> disciplinaAtualizadaOptional = atualizarDisciplinaUseCase.executar(id, command);
-
-        // 5. Retorna 200 OK com o corpo se atualizou, ou 404 Not Found se não encontrou
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+        Optional<Disciplina> disciplinaAtualizadaOptional = atualizarDisciplinaUseCase.executar(id, command, usuarioId);
         return disciplinaAtualizadaOptional
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Endpoint para deletar uma disciplina existente do usuário autenticado.
+     * Responde a requisições DELETE em /disciplinas/{id}.
+     *
+     * @param id O UUID da disciplina a ser deletada.
+     * @return Resposta 204 (No Content) se a deleção for bem-sucedida, ou 404 (Not Found).
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarPorId(@PathVariable UUID id) {
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+        deletarDisciplinaUseCase.executar(id, usuarioId);
+        return ResponseEntity.noContent().build();
     }
 }

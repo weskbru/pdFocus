@@ -4,6 +4,8 @@ import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -19,4 +21,14 @@ import java.util.UUID;
 @Repository
 public interface DisciplinaJpaRepository  extends JpaRepository<DisciplinaEntity, UUID> {
 
+    /**
+     * Busca todas as disciplinas pertencentes a um usuário específico.
+     * O Spring Data JPA criará a consulta automaticamente com base no nome do método.
+     *
+     * @param usuarioId O ID do usuário.
+     * @return Uma lista de {@link DisciplinaEntity} do usuário.
+     */
+    List<DisciplinaEntity> findAllByUsuarioId(UUID usuarioId);
+
+    Optional<DisciplinaEntity> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 }

@@ -14,5 +14,5 @@ public interface DeletarDisciplinaUseCase {
      * @throws com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException se nenhuma disciplina com o ID fornecido for encontrada.
      * (Definir esta exceção no contrato é uma boa prática).
      */
-    void executar(UUID id);
+    void executar(UUID id, UUID usuarioId);
 }

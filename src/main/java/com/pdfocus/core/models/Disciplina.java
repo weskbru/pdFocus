@@ -12,7 +12,7 @@ public class Disciplina {
     private final UUID id;
     private final String nome;
     private final String descricao;
-
+    private final UUID usuarioId;
     /**
      * Construtor para criar uma nova instância de {@code Disciplina}.
      *
@@ -22,13 +22,15 @@ public class Disciplina {
      * @throws CampoNuloException Se o {@code id} ou o {@code nome} forem nulos.
      * @throws CampoVazioException Se o {@code nome} estiver em branco.
      */
-    public Disciplina(UUID id, String nome, String descricao) {
+    public Disciplina(UUID id, String nome, String descricao, UUID usuarioId) {
         if (id == null) throw new CampoNuloException("ID não pode ser nulo");
         if (nome == null) throw new CampoNuloException("Nome não pode ser nulo");
         if (nome.isBlank()) throw new CampoVazioException("Nome não pode estar em branco");
+        if (usuarioId == null) throw new CampoNuloException("ID do usuário não pode ser nulo"); // Adicionar validação
         this.id = id;
         this.nome = nome;
-        this.descricao = descricao; // pode ser null ou vazio, opcional
+        this.descricao = descricao;
+        this.usuarioId = usuarioId;
     }
 
     /**
@@ -56,5 +58,14 @@ public class Disciplina {
      */
     public String getDescricao() {
         return descricao;
+    }
+
+    /**
+     * Obtém o identificador único do usuário proprietário da disciplina.
+     *
+     * @return O {@link UUID} do usuário proprietário.
+     */
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 }

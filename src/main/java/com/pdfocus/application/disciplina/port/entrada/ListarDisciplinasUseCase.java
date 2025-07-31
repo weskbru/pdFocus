@@ -1,19 +1,19 @@
 package com.pdfocus.application.disciplina.port.entrada;
 
 import com.pdfocus.core.models.Disciplina;
-
 import java.util.List;
+import java.util.UUID;
 
 /**
- * Caso de uso para listar todas as disciplinas existentes.
+ * Caso de uso para listar as disciplinas de um usuário específico.
  */
-public  interface ListarDisciplinasUseCase {
+public interface ListarDisciplinasUseCase {
 
     /**
-     * Retorna uma lista de todas as disciplinas cadastradas.
+     * Executa a busca de todas as disciplinas pertencentes a um usuário específico.
      *
-     * @return Uma lista contendo todas as disciplinas.
-     * Retorna uma lista vazia se nenhuma disciplina estiver cadastrada.
+     * @param usuarioId O identificador único do usuário. Não pode ser nulo.
+     * @return Uma lista de {@link Disciplina} do usuário.
      */
-    List<Disciplina> listarTodas();
+    List<Disciplina> executar(UUID usuarioId);
 }

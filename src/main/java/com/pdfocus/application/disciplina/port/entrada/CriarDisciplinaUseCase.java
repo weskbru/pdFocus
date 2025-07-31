@@ -3,6 +3,8 @@ package com.pdfocus.application.disciplina.port.entrada;
 import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.core.models.Disciplina;
 
+import java.util.UUID;
+
 /**
  * Interface que define o caso de uso para a criação de uma nova {@link Disciplina}.
  * As classes que implementarem esta interface serão responsáveis por orquestrar
@@ -17,5 +19,5 @@ public interface CriarDisciplinaUseCase {
      * @param command O DTO contendo os dados necessários para criar a disciplina.
      * @return A {@link Disciplina} criada e persistida.
      */
-    Disciplina criar(CriarDisciplinaCommand command);
+    Disciplina executar(CriarDisciplinaCommand command, UUID usuarioId);
 }

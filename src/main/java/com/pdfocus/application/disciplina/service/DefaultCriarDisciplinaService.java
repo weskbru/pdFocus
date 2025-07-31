@@ -6,7 +6,9 @@ import com.pdfocus.application.disciplina.port.entrada.CriarDisciplinaUseCase;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.models.Disciplina;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,7 +17,7 @@ import java.util.UUID;
  * utilizando o {@link DisciplinaRepository}.
  */
 @Service
-public class CriarDisciplinaService implements CriarDisciplinaUseCase {
+public class DefaultCriarDisciplinaService implements CriarDisciplinaUseCase {
 
     private final DisciplinaRepository disciplinaRepository;
 
@@ -25,7 +27,7 @@ public class CriarDisciplinaService implements CriarDisciplinaUseCase {
      *
      * @param disciplinaRepository O repositório de disciplinas.
      */
-    public CriarDisciplinaService(DisciplinaRepository disciplinaRepository) {
+    public DefaultCriarDisciplinaService(DisciplinaRepository disciplinaRepository) {
         this.disciplinaRepository = disciplinaRepository;
     }
 
@@ -37,9 +39,19 @@ public class CriarDisciplinaService implements CriarDisciplinaUseCase {
      * @return A {@link Disciplina} criada e salva.
      */
     @Override
-    public Disciplina criar(CriarDisciplinaCommand command) {
-        UUID novoId = UUID.randomUUID();
-        Disciplina novaDisciplina = new Disciplina(novoId, command.getNome(), command.getDescricao());
+    @Transactional
+    public Disciplina executar(CriarDisciplinaCommand command, UUID usuarioId) { // <-- Assinatura atualizada
+        Objects.requireNonNull(command, "O comando de criação não pode ser nulo.");
+        Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
+
+        // Cria o objeto de domínio Disciplina, agora com o ID do usuário
+        Disciplina novaDisciplina = new Disciplina(
+                UUID.randomUUID(),
+                command.nome(),
+                command.descricao(),
+                usuarioId // <-- Usa o ID do usuário autenticado
+        );
+
         return disciplinaRepository.salvar(novaDisciplina);
     }
 }
