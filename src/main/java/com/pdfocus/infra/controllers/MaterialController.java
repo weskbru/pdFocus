@@ -1,6 +1,8 @@
 package com.pdfocus.infra.controllers;
 
 import com.pdfocus.application.material.dto.UploadMaterialCommand;
+import com.pdfocus.application.material.port.entrada.DeletarMaterialUseCase;
+import com.pdfocus.application.material.port.entrada.ListarMateriaisUseCase;
 import com.pdfocus.application.material.port.entrada.UploadMaterialUseCase;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.infra.security.AuthenticationHelper;
@@ -11,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,11 +24,38 @@ import java.util.UUID;
 public class MaterialController {
 
     private final UploadMaterialUseCase uploadMaterialUseCase;
+    private final ListarMateriaisUseCase listarMateriaisUseCase;
+    private final DeletarMaterialUseCase deletarMaterialUseCase;
     private final AuthenticationHelper authenticationHelper;
 
-    public MaterialController(UploadMaterialUseCase uploadMaterialUseCase, AuthenticationHelper authenticationHelper) {
+    public MaterialController(
+            UploadMaterialUseCase uploadMaterialUseCase,
+            ListarMateriaisUseCase listarMateriaisUseCase,
+            DeletarMaterialUseCase deletarMaterialUseCase, // 3. Injetar no construtor
+            AuthenticationHelper authenticationHelper) {
         this.uploadMaterialUseCase = uploadMaterialUseCase;
+        this.listarMateriaisUseCase = listarMateriaisUseCase;
+        this.deletarMaterialUseCase = deletarMaterialUseCase;
         this.authenticationHelper = authenticationHelper;
+    }
+
+    /**
+     * Endpoint para listar todos os materiais de uma disciplina específica do utilizador autenticado.
+     * Responde a requisições GET em /materiais?disciplinaId={id-da-disciplina}
+     *
+     * @param disciplinaId O ID da disciplina cujos materiais serão listados.
+     * @return Uma lista de materiais pertencentes à disciplina e ao utilizador logado.
+     */
+    @GetMapping
+    public ResponseEntity<List<Material>> listarPorDisciplina(@RequestParam UUID disciplinaId) {
+        // Obtém o ID do utilizador autenticado
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+
+        // Chama o caso de uso para obter a lista de materiais
+        List<Material> materiais = listarMateriaisUseCase.executar(disciplinaId, usuarioId);
+
+        // Retorna a lista com um status HTTP 200 OK
+        return ResponseEntity.ok(materiais);
     }
 
     /**
@@ -66,5 +96,27 @@ public class MaterialController {
 
         // 5. Retorna a resposta 201 Created.
         return ResponseEntity.created(location).body(novoMaterial);
+    }
+
+    /**
+     * Endpoint para apagar um material existente do utilizador autenticado.
+     * Responde a requisições DELETE em /materiais/{id}.
+     *
+     * @param id O UUID do material a ser apagado.
+     * @return Resposta 204 (No Content) se a deleção for bem-sucedida.
+     * O RestExceptionHandler tratará do caso 404 se o material não for encontrado.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable UUID id) {
+        // Obtém o ID do utilizador autenticado a partir do token
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+
+        // Chama o caso de uso para executar a deleção
+        deletarMaterialUseCase.executar(id, usuarioId);
+
+        // Se o metodo chegar até aqui, a deleção foi um sucesso.
+        // Se o material não for encontrado, uma exceção será lançada e o
+        // RestExceptionHandler cuidará de retornar o 404 Not Found.
+        return ResponseEntity.noContent().build();
     }
 }
