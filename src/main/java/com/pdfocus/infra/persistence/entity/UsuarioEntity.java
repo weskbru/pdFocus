@@ -32,6 +32,7 @@ public class UsuarioEntity implements UserDetails {
      * O identificador único do usuário (Chave Primária).
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     /**

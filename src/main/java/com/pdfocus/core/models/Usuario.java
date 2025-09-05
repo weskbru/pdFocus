@@ -43,6 +43,13 @@ public class Usuario {
         this.senhaHash = senhaHash;
     }
 
+    public Usuario(String nome, String email, String senhaHash) {
+        this.id = null; // O ID é nulo porque ainda não foi gerado pelo banco
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+    }
+
     public UUID getId() {
         return id;
     }

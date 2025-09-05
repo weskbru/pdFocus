@@ -51,7 +51,6 @@ public class DefaultCadastrarUsuarioService implements CadastrarUsuarioUseCase {
 
         // Cria o novo objeto de domínio Usuario
         Usuario novoUsuario = new Usuario(
-                UUID.randomUUID(),
                 command.nome(),
                 command.email(),
                 senhaCriptografada
