@@ -31,4 +31,8 @@ public interface DisciplinaJpaRepository  extends JpaRepository<DisciplinaEntity
     List<DisciplinaEntity> findAllByUsuarioId(UUID usuarioId);
 
     Optional<DisciplinaEntity> findByIdAndUsuarioId(UUID id, UUID usuarioId);
+
+
+    long countByUsuarioId(UUID usuarioId);
+
 }

@@ -3,6 +3,7 @@ package com.pdfocus.infra.persistence.adapter;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.core.exceptions.MaterialNaoEncontradoException; // Será criada em breve
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import com.pdfocus.infra.persistence.entity.MaterialEntity;
 import com.pdfocus.infra.persistence.mapper.MaterialMapper;
@@ -98,5 +99,19 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
 
         // Se encontrou, deleta.
         jpaRepository.delete(materialParaDeletar);
+    }
+
+    /**
+     * Implementa o método de contagem de materiais por usuário, conforme definido
+     * no contrato da interface {@link MaterialRepository}.
+     *
+     * @param usuario O usuário para o qual os materiais serão contados.
+     * @return O número total de materiais associados ao usuário.
+     */
+    @Override
+    public long countByUsuario(Usuario usuario) {
+        // A lógica é delegada para o MaterialJpaRepository, que usa a convenção
+        // de nomes do Spring Data JPA para gerar a query de contagem de forma otimizada.
+        return jpaRepository.countByUsuarioId(usuario.getId());
     }
 }

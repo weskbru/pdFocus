@@ -3,6 +3,7 @@ package com.pdfocus.infra.persistence.adapter;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
+import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import com.pdfocus.infra.persistence.mapper.DisciplinaMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
@@ -82,4 +83,12 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
         return jpaRepository.findByIdAndUsuarioId(id, usuarioId)
                 .map(DisciplinaMapper::toDomain);
     }
+
+    @Override
+    public long countByUsuario(Usuario usuario) {
+        // A lógica é simples: o "chef" pega o ID do usuário
+        // e usa a "receita mágica" do nosso livro de receitas (o jpaRepository).
+        return jpaRepository.countByUsuarioId(usuario.getId());
+    }
+
 }

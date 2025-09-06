@@ -2,6 +2,7 @@ package com.pdfocus.application.disciplina.port.saida;
 
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.models.Usuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,4 +65,6 @@ public interface DisciplinaRepository {
      * pertencer ao usuário, ou vazio caso contrário.
      */
     Optional<Disciplina> findByIdAndUsuarioId(UUID id, UUID usuarioId);
+
+    long countByUsuario(Usuario usuario);
 }

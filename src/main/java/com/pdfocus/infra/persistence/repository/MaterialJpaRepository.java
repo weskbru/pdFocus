@@ -25,4 +25,6 @@ public interface MaterialJpaRepository extends JpaRepository<MaterialEntity, UUI
      * Busca um material pelo seu ID e pelo ID do usuário proprietário.
      */
     Optional<MaterialEntity> findByIdAndUsuarioId(UUID id, UUID usuarioId);
+
+    long countByUsuarioId(UUID usuarioId);
 }

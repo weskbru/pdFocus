@@ -1,6 +1,7 @@
 package com.pdfocus.application.material.port.saida;
 
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,4 +46,6 @@ public interface MaterialRepository {
      * @param usuarioId O ID do usuário proprietário.
      */
     void deletarPorIdEUsuario(UUID id, UUID usuarioId);
+
+    long countByUsuario(Usuario usuario);
 }
