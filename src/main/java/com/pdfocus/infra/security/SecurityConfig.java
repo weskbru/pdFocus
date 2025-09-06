@@ -15,6 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+
 /**
  * Classe de configuração central para o Spring Security.
  * <p>
@@ -41,6 +46,32 @@ public class SecurityConfig {
     }
 
     /**
+     * Define a configuração de CORS (Cross-Origin Resource Sharing) para a aplicação.
+     * <p>
+     * Este bean é fundamental para permitir que o frontend (rodando em um domínio diferente,
+     * como http://localhost:4200) possa fazer requisições para este backend.
+     * </p>
+     * @return a fonte de configuração de CORS.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Define explicitamente qual origem (frontend) tem permissão
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        // Define os métodos HTTP permitidos (GET, POST, etc.)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Permite todos os cabeçalhos na requisição
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Permite o envio de credenciais (como cookies ou tokens de autorização)
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplica esta configuração a todos os endpoints da sua API ("/**")
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    /**
      * Define a cadeia de filtros de segurança (Security Filter Chain) que será aplicada
      * a todas as requisições HTTP. É o ponto central de configuração de segurança da web.
      *
@@ -51,6 +82,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Define a política de sessão como stateless
                 .authorizeHttpRequests(auth -> auth
