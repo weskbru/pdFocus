@@ -67,4 +67,6 @@ public interface DisciplinaRepository {
     Optional<Disciplina> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
     long countByUsuario(Usuario usuario);
+
+    Optional<Disciplina> buscarPorId(UUID id);
 }

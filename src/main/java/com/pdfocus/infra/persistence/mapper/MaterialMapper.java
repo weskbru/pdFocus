@@ -12,71 +12,64 @@ import java.util.stream.Collectors;
 /**
  * Classe utilitária responsável por mapear (converter) objetos entre
  * a entidade de domínio {@link Material} e a entidade JPA {@link MaterialEntity}.
- * Utiliza o {@link DisciplinaMapper} para converter a disciplina associada.
+ * Esta classe é um componente central da camada de infraestrutura, garantindo
+ * que o nosso núcleo de domínio permaneça desacoplado dos detalhes de persistência.
  */
-public class MaterialMapper {
+public final class MaterialMapper {
 
     /**
-     * Construtor privado para impedir a instanciação da classe utilitária.
+     * Construtor privado para impedir a instanciação, pois esta é uma classe utilitária
+     * com métodos estáticos.
      */
     private MaterialMapper() {
-        // Impede a instanciação
+        // Impede a instanciação.
     }
 
     /**
      * Converte um objeto de domínio {@link Material} para uma entidade JPA {@link MaterialEntity}.
+     * Este método requer a {@link DisciplinaEntity} associada para garantir a consistência
+     * da relação no banco de dados.
      *
-     * @param material O objeto de domínio Material a ser convertido.
-     * @return A {@link MaterialEntity} correspondente, ou {@code null} se a entrada for {@code null}.
-     */
-    public static MaterialEntity toEntity(Material material) {
-        if (material == null) {
-            return null;
-        }
-
-        throw new UnsupportedOperationException("Use o método toEntity que recebe a DisciplinaEntity.");
-    }
-
-    /**
-     * Converte um objeto de domínio {@link Material} para uma entidade JPA {@link MaterialEntity},
-     * utilizando uma {@link DisciplinaEntity} já buscada.
-     *
-     * @param material O objeto de domínio Material a ser convertido.
-     * @param disciplinaEntity A entidade JPA da disciplina associada.
-     * @return A {@link MaterialEntity} correspondente.
+     * @param material O objeto de domínio a ser convertido.
+     * @param disciplinaEntity A entidade JPA da disciplina à qual o material pertence.
+     * @return A {@link MaterialEntity} correspondente, pronta para ser persistida.
      */
     public static MaterialEntity toEntity(Material material, DisciplinaEntity disciplinaEntity) {
         if (material == null) {
             return null;
         }
 
-        return new MaterialEntity(
-                material.getId(),
-                material.getNomeOriginal(),
-                material.getNomeStorage(),
-                material.getTipoArquivo(),
-                material.getTamanho(),
-                material.getUsuarioId(),
-                disciplinaEntity // Usa a entidade da disciplina já buscada
-        );
+        // 1. Criamos uma instância vazia da entidade (usando o construtor que o Lombok @NoArgsConstructor cria).
+        MaterialEntity entity = new MaterialEntity();
+
+        // 2. Definimos cada campo usando seus setters (que o Lombok @Setter cria).
+        entity.setId(material.getId());
+        entity.setNomeOriginal(material.getNomeOriginal());
+        entity.setNomeStorage(material.getNomeStorage());
+        entity.setTipoArquivo(material.getTipoArquivo());
+        entity.setTamanho(material.getTamanho());
+        entity.setUsuarioId(material.getUsuarioId());
+        entity.setDisciplina(disciplinaEntity); // Associa a entidade da disciplina
+
+        return entity;
     }
 
     /**
-     * Converte uma entidade JPA {@link MaterialEntity} para um objeto de domínio {@link Material}.
+     * Converte uma entidade JPA {@link MaterialEntity} de volta para um objeto de domínio {@link Material}.
+     * Este método é crucial para ler dados do banco e usá-los na lógica de negócio.
      *
-     * @param materialEntity A entidade JPA MaterialEntity a ser convertida.
-     * @return O objeto de domínio {@link Material} correspondente, ou {@code null} se a entrada for {@code null}.
+     * @param materialEntity A entidade JPA a ser convertida.
+     * @return O objeto de domínio {@link Material} correspondente.
      */
     public static Material toDomain(MaterialEntity materialEntity) {
         if (materialEntity == null) {
             return null;
         }
 
-        // A entidade JPA tem o objeto DisciplinaEntity completo, mas o domínio Material precisa apenas do ID.
-        // Se a DisciplinaEntity for LAZY e não estiver carregada, materialEntity.getDisciplina() pode falhar.
-        // É responsabilidade do serviço garantir que a entidade esteja carregada ou usar uma consulta que a traga.
         UUID disciplinaId = (materialEntity.getDisciplina() != null) ? materialEntity.getDisciplina().getId() : null;
 
+        // Agora, lemos o campo 'dataUpload' da entidade e o passamos para o método
+        // de fábrica 'criar()' do nosso modelo de domínio, satisfazendo o novo contrato.
         return Material.criar(
                 materialEntity.getId(),
                 materialEntity.getNomeOriginal(),
@@ -84,15 +77,16 @@ public class MaterialMapper {
                 materialEntity.getTipoArquivo(),
                 materialEntity.getTamanho(),
                 materialEntity.getUsuarioId(),
-                disciplinaId
+                disciplinaId,
+                materialEntity.getDataUpload()
         );
     }
 
     /**
      * Converte uma lista de entidades JPA {@link MaterialEntity} para uma lista de objetos de domínio {@link Material}.
      *
-     * @param entities A lista de {@link MaterialEntity} a ser convertida.
-     * @return Uma lista de {@link Material}, ou uma lista vazia se a entrada for {@code null} ou vazia.
+     * @param entities A lista de entidades a ser convertida.
+     * @return Uma lista de {@link Material}, ou uma lista vazia se a entrada for nula ou vazia.
      */
     public static List<Material> toDomainList(List<MaterialEntity> entities) {
         if (entities == null || entities.isEmpty()) {
@@ -102,5 +96,4 @@ public class MaterialMapper {
                 .map(MaterialMapper::toDomain)
                 .collect(Collectors.toList());
     }
-
 }

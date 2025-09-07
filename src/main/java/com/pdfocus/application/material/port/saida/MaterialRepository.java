@@ -48,4 +48,15 @@ public interface MaterialRepository {
     void deletarPorIdEUsuario(UUID id, UUID usuarioId);
 
     long countByUsuario(Usuario usuario);
+
+    /**
+     * ADICIONE ESTE MÉTODO:
+     * Contrato para buscar uma lista limitada dos materiais mais recentes
+     * de um usuário específico.
+     *
+     * @param usuario O usuário para o qual os materiais serão buscados.
+     * @return uma Lista de {@link Material}, ordenada do mais recente para o mais antigo.
+     */
+    List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario);
+
 }

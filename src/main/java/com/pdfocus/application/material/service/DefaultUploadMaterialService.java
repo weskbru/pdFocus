@@ -50,14 +50,16 @@ public class DefaultUploadMaterialService implements UploadMaterialUseCase {
         disciplinaRepository.findByIdAndUsuarioId(command.disciplinaId(), usuarioId)
                 .orElseThrow(() -> new DisciplinaNaoEncontradaException(command.disciplinaId()));
 
-        // 2. Gera um nome de ficheiro único para o armazenamento.
+        // 2. Gera um nome de arquivo único para o armazenamento.
         String extensao = StringUtils.getFilenameExtension(command.nomeOriginal());
         String nomeFicheiroStorage = UUID.randomUUID() + "." + extensao;
 
-        // 3. Guarda o ficheiro usando a porta de armazenamento.
+        // 3. Guarda o arquivo usando a porta de armazenamento.
         materialStoragePort.guardar(nomeFicheiroStorage, command.inputStream());
 
         // 4. Cria o objeto de domínio Material com todos os metadados.
+        // Fazemos isso porque a responsabilidade de gerar a data foi delegada ao banco de dados
+        // através da anotação @CreationTimestamp na MaterialEntity.
         Material novoMaterial = Material.criar(
                 UUID.randomUUID(),
                 command.nomeOriginal(),
@@ -65,7 +67,8 @@ public class DefaultUploadMaterialService implements UploadMaterialUseCase {
                 command.tipoArquivo(),
                 command.tamanho(),
                 usuarioId,
-                command.disciplinaId()
+                command.disciplinaId(),
+                null
         );
 
         // 5. Salva os metadados do material no banco de dados.

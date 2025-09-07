@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Adaptador que implementa a porta de saída {@link MaterialRepository}
@@ -113,5 +114,18 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
         // A lógica é delegada para o MaterialJpaRepository, que usa a convenção
         // de nomes do Spring Data JPA para gerar a query de contagem de forma otimizada.
         return jpaRepository.countByUsuarioId(usuario.getId());
+    }
+
+    /**
+     * Implementa o contrato para buscar os 5 materiais mais recentes.
+     */
+    @Override
+    public List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario) {
+
+        List<MaterialEntity> entities = jpaRepository.findFirst5ByUsuarioIdOrderByDataUploadDesc(usuario.getId());
+
+        return entities.stream()
+                .map(MaterialMapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

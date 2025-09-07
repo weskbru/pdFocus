@@ -86,9 +86,13 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
 
     @Override
     public long countByUsuario(Usuario usuario) {
-        // A lógica é simples: o "chef" pega o ID do usuário
-        // e usa a "receita mágica" do nosso livro de receitas (o jpaRepository).
         return jpaRepository.countByUsuarioId(usuario.getId());
+    }
+
+
+    @Override
+    public Optional<Disciplina> buscarPorId(UUID id) {
+        return jpaRepository.findById(id).map(DisciplinaMapper::toDomain);
     }
 
 }

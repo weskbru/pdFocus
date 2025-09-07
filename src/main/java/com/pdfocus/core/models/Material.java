@@ -2,6 +2,7 @@ package com.pdfocus.core.models;
 
 import com.pdfocus.core.shared.Validador;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -17,8 +18,9 @@ public class Material {
     private final long tamanho; // Tamanho em bytes
     private final UUID usuarioId;
     private final UUID disciplinaId; // A qual disciplina este material pertence
+    private final OffsetDateTime dataUpload;
 
-    private Material(UUID id, String nomeOriginal, String nomeStorage, String tipoArquivo, long tamanho, UUID usuarioId, UUID disciplinaId) {
+    private Material(UUID id, String nomeOriginal, String nomeStorage, String tipoArquivo, long tamanho, UUID usuarioId, UUID disciplinaId,OffsetDateTime dataUpload) {
         this.id = id;
         this.nomeOriginal = nomeOriginal;
         this.nomeStorage = nomeStorage;
@@ -26,13 +28,14 @@ public class Material {
         this.tamanho = tamanho;
         this.usuarioId = usuarioId;
         this.disciplinaId = disciplinaId;
+        this.dataUpload = dataUpload;
     }
 
     /**
      * Metodo de fábrica para criar uma nova instância de Material.
      * Garante que um material só pode ser criado em um estado válido.
      */
-    public static Material criar(UUID id, String nomeOriginal, String nomeStorage, String tipoArquivo, long tamanho, UUID usuarioId, UUID disciplinaId) {
+    public static Material criar(UUID id, String nomeOriginal, String nomeStorage, String tipoArquivo, long tamanho, UUID usuarioId, UUID disciplinaId,OffsetDateTime dataUpload ) {
         Validador.requireNotNull(id, "ID do material não pode ser nulo");
         Validador.requireNotEmpty(nomeOriginal, "Nome original do arquivo é obrigatório");
         Validador.requireNotEmpty(nomeStorage, "Nome de armazenamento do arquivo é obrigatório");
@@ -43,7 +46,7 @@ public class Material {
             throw new IllegalArgumentException("O tamanho do arquivo deve ser maior que zero.");
         }
 
-        return new Material(id, nomeOriginal, nomeStorage, tipoArquivo, tamanho, usuarioId, disciplinaId);
+        return new Material(id, nomeOriginal, nomeStorage, tipoArquivo, tamanho, usuarioId, disciplinaId, dataUpload);
     }
 
     // Getters
@@ -54,4 +57,9 @@ public class Material {
     public long getTamanho() { return tamanho; }
     public UUID getUsuarioId() { return usuarioId; }
     public UUID getDisciplinaId() { return disciplinaId; }
+    public OffsetDateTime getDataUpload() {
+        return dataUpload;
+    }
+
+
 }
