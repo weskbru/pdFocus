@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -31,15 +32,13 @@ public class MaterialMapperTest {
      */
     @BeforeEach
     void setUp() {
-        UUID disciplinaId = UUID.randomUUID();
+        // A preparação do usuário e da disciplina continua a mesma.
         UUID usuarioId = UUID.randomUUID();
+        UUID disciplinaId = UUID.randomUUID();
+        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Cálculo I", "", usuarioId);
+
         UUID materialId = UUID.randomUUID();
 
-        // --- Setup dos Objetos ---
-        // A entidade JPA da disciplina que simulamos ter sido buscada do banco.
-        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Engenharia de Software", "Conceitos e práticas", usuarioId);
-
-        // O objeto de domínio Material, que contém apenas o ID da disciplina.
         materialDominio = Material.criar(
                 materialId,
                 "diagrama_uml.png",
@@ -47,19 +46,20 @@ public class MaterialMapperTest {
                 "image/png",
                 1024L,
                 usuarioId,
-                disciplinaId
+                disciplinaId,
+                OffsetDateTime.now() // O oitavo argumento que estava faltando.
         );
 
-        // A entidade JPA Material, que contém o objeto DisciplinaEntity completo.
-        materialEntity = new MaterialEntity(
-                materialId,
-                "diagrama_uml.png",
-                "a1b2c3d4-e5f6.png",
-                "image/png",
-                1024L,
-                usuarioId,
-                disciplinaEntity
-        );
+
+        materialEntity = new MaterialEntity();
+        materialEntity.setId(materialId);
+        materialEntity.setNomeOriginal("diagrama_uml.png");
+        materialEntity.setNomeStorage("a1b2c3d4-e5f6.png");
+        materialEntity.setTipoArquivo("image/png");
+        materialEntity.setTamanho(1024L);
+        materialEntity.setUsuarioId(usuarioId);
+        materialEntity.setDisciplina(disciplinaEntity);
+
     }
 
     /**
