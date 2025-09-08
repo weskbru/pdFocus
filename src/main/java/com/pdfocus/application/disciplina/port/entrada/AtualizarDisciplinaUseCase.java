@@ -3,8 +3,8 @@ package com.pdfocus.application.disciplina.port.entrada;
 import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.core.models.Disciplina;
 
-import java.util.Optional;
 import java.util.UUID;
+
 
 /**
  * Caso de uso para atualizar os dados de uma disciplina existente.
@@ -12,12 +12,11 @@ import java.util.UUID;
 public interface AtualizarDisciplinaUseCase {
 
     /**
-     * Executa a atualização de uma disciplina.
+     * Executa a atualização de uma disciplina PARA O USUÁRIO LOGADO.
      *
-     * @param id O ID da disciplina a ser atualizada.
-     * @param command O comando contendo os novos dados para a disciplina.
-     * @return Um {@link Optional} contendo a {@link Disciplina} atualizada se a original for encontrada,
-     * ou um Optional vazio se nenhuma disciplina com o ID fornecido for encontrada.
+     * @param id      O ID da disciplina a ser atualizada.
+     * @param command O DTO com os novos dados da disciplina.
+     * @return A disciplina atualizada.
      */
-    Optional<Disciplina> executar(UUID id, AtualizarDisciplinaCommand command, UUID usuarioId);
+    Disciplina executar(UUID id, AtualizarDisciplinaCommand command);
 }

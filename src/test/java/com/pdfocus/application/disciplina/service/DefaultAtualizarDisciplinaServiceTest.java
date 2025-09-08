@@ -2,15 +2,22 @@ package com.pdfocus.application.disciplina.service;
 
 import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
+import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
+import com.pdfocus.core.models.Usuario;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,124 +28,102 @@ import static org.mockito.Mockito.*;
 
 /**
  * Testes unitários para a classe {@link DefaultAtualizarDisciplinaService}.
+ * Foco: Validar a lógica de segurança que verifica a posse da disciplina
+ * antes de executar a operação de atualização.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes Unitários - DefaultAtualizarDisciplinaService")
 class DefaultAtualizarDisciplinaServiceTest {
 
+    // Mocks das dependências para isolar o serviço.
     @Mock
-    private DisciplinaRepository disciplinaRepositoryMock;
+    private DisciplinaRepository disciplinaRepository;
+    @Mock
+    private UsuarioRepository usuarioRepository;
 
+    // Instância real do serviço sob teste.
     @InjectMocks
     private DefaultAtualizarDisciplinaService service;
 
-    private UUID idDisciplina;
-    private UUID idUsuario;
+    private Usuario usuarioTeste;
     private Disciplina disciplinaExistente;
     private AtualizarDisciplinaCommand comandoAtualizacao;
 
-    /**
-     * Prepara os dados de teste comuns antes de cada teste.
-     */
     @BeforeEach
     void setUp() {
-        idDisciplina = UUID.randomUUID();
-        idUsuario = UUID.randomUUID();
-
-        // Simula a disciplina que já existe no banco de dados
-        disciplinaExistente = new Disciplina(idDisciplina, "Nome Antigo", "Descrição Antiga", idUsuario);
-
-        // Simula os novos dados que o usuário enviou para a atualização
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Update", "update@email.com", "hash");
+        disciplinaExistente = new Disciplina(UUID.randomUUID(), "Nome Antigo", "Descrição Antiga", usuarioTeste.getId());
         comandoAtualizacao = new AtualizarDisciplinaCommand("Nome Novo", "Descrição Nova");
     }
 
-    /**
-     * Agrupa os testes para os cenários principais de atualização.
-     */
-    @Nested
-    @DisplayName("Cenários de Atualização")
-    class CenariosDeAtualizacao {
+    @Test
+    @DisplayName("Deve atualizar a disciplina com sucesso se ela pertence ao usuário logado")
+    void deveAtualizarDisciplinaComSucesso() {
+        // Arrange (Preparação do cenário de sucesso)
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            // Simula o usuário autenticado no sistema.
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            Authentication authenticationMock = mock(Authentication.class);
+            when(userDetailsMock.getUsername()).thenReturn(usuarioTeste.getEmail());
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-        @Test
-        @DisplayName("Deve atualizar e retornar a disciplina quando ela for encontrada")
-        void deveAtualizarERetornarDisciplinaQuandoEncontrada() {
-            // --- Arrange (Preparação) ---
-            // 1. Criamos a versão atualizada da disciplina, como esperamos que ela fique após a operação.
-            Disciplina disciplinaAtualizadaEsperada = new Disciplina(idDisciplina, "Nome Novo", "Descrição Nova", idUsuario);
-
-            // 2. Ensinamos o mock do repositório a se comportar em duas etapas:
-            //    - Primeiro, quando 'findByIdAndUsuarioId' for chamado, ele deve encontrar a disciplina original.
-            when(disciplinaRepositoryMock.findByIdAndUsuarioId(idDisciplina, idUsuario))
+            // Ensina aos mocks como se comportar.
+            when(usuarioRepository.buscarPorEmail(usuarioTeste.getEmail())).thenReturn(Optional.of(usuarioTeste));
+            // Simula que a verificação de posse FOI BEM-SUCEDIDA.
+            when(disciplinaRepository.findByIdAndUsuarioId(disciplinaExistente.getId(), usuarioTeste.getId()))
                     .thenReturn(Optional.of(disciplinaExistente));
-            //    - Segundo, quando 'salvar' for chamado com qualquer objeto Disciplina, ele deve retornar
-            //      a nossa versão atualizada esperada.
-            when(disciplinaRepositoryMock.salvar(any(Disciplina.class)))
-                    .thenReturn(disciplinaAtualizadaEsperada);
+            // Simula a ação de salvar, retornando a própria entidade (comportamento comum de save).
+            when(disciplinaRepository.salvar(any(Disciplina.class))).thenReturn(disciplinaExistente);
 
-            // --- Act (Ação) ---
-            // 3. Executamos o método de atualização do serviço.
-            Optional<Disciplina> resultado = service.executar(idDisciplina, comandoAtualizacao, idUsuario);
 
-            // --- Assert (Verificação) ---
-            // 4. Verificamos se o resultado é o que esperávamos.
-            assertTrue(resultado.isPresent(), "O Optional não deveria estar vazio.");
-            assertEquals("Nome Novo", resultado.get().getNome(), "O nome da disciplina não foi atualizado.");
-            assertEquals("Descrição Nova", resultado.get().getDescricao(), "A descrição não foi atualizada.");
+            // Act (Ação)
+            Disciplina resultado = service.executar(disciplinaExistente.getId(), comandoAtualizacao);
 
-            // 5. Verificamos se o serviço interagiu corretamente com o repositório.
-            verify(disciplinaRepositoryMock).findByIdAndUsuarioId(idDisciplina, idUsuario); // Verificamos a busca
-            verify(disciplinaRepositoryMock).salvar(any(Disciplina.class)); // Verificamos o salvamento
-        }
 
-        @Test
-        @DisplayName("Deve retornar um Optional vazio quando a disciplina não for encontrada")
-        void deveRetornarVazioQuandoNaoEncontrada() {
-            // Arrange: Ensinamos o mock a retornar um Optional vazio para simular "não encontrado".
-            when(disciplinaRepositoryMock.findByIdAndUsuarioId(idDisciplina, idUsuario))
-                    .thenReturn(Optional.empty());
+            // Assert (Verificação)
+            assertNotNull(resultado);
+            // Verifica se os setters foram chamados e os valores foram atualizados.
+            assertEquals("Nome Novo", resultado.getNome());
+            assertEquals("Descrição Nova", resultado.getDescricao());
 
-            // Act
-            Optional<Disciplina> resultado = service.executar(idDisciplina, comandoAtualizacao, idUsuario);
-
-            // Assert
-            assertFalse(resultado.isPresent(), "O Optional deveria estar vazio.");
-            // Garante que, se a disciplina não foi encontrada, o método 'salvar' nunca foi chamado.
-            verify(disciplinaRepositoryMock, never()).salvar(any(Disciplina.class));
+            // Verifica se as interações esperadas com os mocks aconteceram.
+            verify(disciplinaRepository, times(1)).findByIdAndUsuarioId(disciplinaExistente.getId(), usuarioTeste.getId());
+            verify(disciplinaRepository, times(1)).salvar(disciplinaExistente);
         }
     }
 
-    /**
-     * Agrupa os testes para as validações de entrada do serviço.
-     */
-    @Nested
-    @DisplayName("Validação de Entradas")
-    class ValidacaoDeEntradas {
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar disciplina que não pertence ao usuário")
+    void deveLancarExcecaoAoAtualizarDisciplinaDeOutroUsuario() {
+        // Arrange (Preparação do cenário de FALHA de segurança)
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            // Configura o usuário logado...
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            when(userDetailsMock.getUsername()).thenReturn(usuarioTeste.getEmail());
+            Authentication authenticationMock = mock(Authentication.class);
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID da disciplina for nulo")
-        void deveLancarExcecaoQuandoIdDisciplinaForNulo() {
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(null, comandoAtualizacao, idUsuario);
-            });
-            verifyNoInteractions(disciplinaRepositoryMock);
-        }
+            when(usuarioRepository.buscarPorEmail(usuarioTeste.getEmail())).thenReturn(Optional.of(usuarioTeste));
+            // Simula que a verificação de posse FALHOU (repositório não encontrou a disciplina para este usuário)
+            when(disciplinaRepository.findByIdAndUsuarioId(disciplinaExistente.getId(), usuarioTeste.getId()))
+                    .thenReturn(Optional.empty());
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o comando for nulo")
-        void deveLancarExcecaoQuandoComandoForNulo() {
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(idDisciplina, null, idUsuario);
-            });
-            verifyNoInteractions(disciplinaRepositoryMock);
-        }
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID do usuário for nulo")
-        void deveLancarExcecaoQuandoIdUsuarioForNulo() {
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(idDisciplina, comandoAtualizacao, null);
+            // Act & Assert
+            // Verifica se o nosso serviço corretamente lança a exceção de segurança.
+            assertThrows(DisciplinaNaoEncontradaException.class, () -> {
+                service.executar(disciplinaExistente.getId(), comandoAtualizacao);
             });
-            verifyNoInteractions(disciplinaRepositoryMock);
+
+
+            // A VERIFICAÇÃO MAIS IMPORTANTE:
+            // Garante que o método para salvar NUNCA foi chamado se a verificação de posse falhou.
+            verify(disciplinaRepository, never()).salvar(any(Disciplina.class));
         }
     }
 }

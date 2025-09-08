@@ -10,10 +10,12 @@ import java.util.UUID;
 public interface ListarDisciplinasUseCase {
 
     /**
-     * Executa a busca de todas as disciplinas pertencentes a um usuário específico.
+     * Executa a busca de todas as disciplinas do usuário autenticado.
+     * A identidade do usuário é obtida implicitamente a partir do contexto
+     * de segurança, garantindo o isolamento dos dados.
      *
-     * @param usuarioId O identificador único do usuário. Não pode ser nulo.
-     * @return Uma lista de {@link Disciplina} do usuário.
+     * @return Uma lista de {@link Disciplina}. Pode ser vazia se o usuário
+     * não tiver disciplinas.
      */
-    List<Disciplina> executar(UUID usuarioId);
+    List<Disciplina> executar();
 }

@@ -6,17 +6,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Caso de uso para obter uma única disciplina pelo seu identificador,
- * garantindo que ela pertença ao usuário especificado.
+ * Define o contrato (Porta de Entrada) para o caso de uso de obter uma
+ * disciplina específica pelo seu ID, garantindo que ela pertença ao
+ * usuário autenticado.
  */
 public interface ObterDisciplinaPorIdUseCase {
     /**
-     * Busca uma disciplina com base no seu ID e no ID do usuário proprietário.
+     * Executa a busca de uma disciplina específica. A segurança é garantida
+     * pela implementação, que filtra pelo usuário logado.
      *
-     * @param id O identificador único da disciplina a ser buscada.
-     * @param usuarioId O identificador único do usuário que deve ser o proprietário da disciplina.
-     * @return Um {@link Optional} contendo a {@link Disciplina} se encontrada e se pertencer ao usuário,
-     * ou um Optional vazio caso contrário.
+     * @param id O UUID da disciplina a ser buscada.
+     * @return um Optional contendo a {@link Disciplina} se encontrada e pertencente
+     * ao usuário, ou um Optional vazio caso contrário.
      */
-    Optional<Disciplina> executar(UUID id, UUID usuarioId);
+    Optional<Disciplina> executar(UUID id);
 }

@@ -2,52 +2,61 @@ package com.pdfocus.application.disciplina.service;
 
 import com.pdfocus.application.disciplina.port.entrada.ObterDisciplinaPorIdUseCase;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.models.Disciplina;
+import com.pdfocus.core.models.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para obter uma disciplina por seu ID.
- * Este serviço orquestra a validação da entrada e delega a busca ao repositório.
+ * Implementação do caso de uso para obter uma disciplina específica pelo seu ID.
+ * Garante que a disciplina retornada pertença ao usuário autenticado.
  */
 @Service
 public class DefaultObterDisciplinaPorIdService implements ObterDisciplinaPorIdUseCase {
+
     private final DisciplinaRepository disciplinaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     /**
-     * Constrói o serviço com a dependência do repositório de disciplinas.
+     * Constrói o serviço com suas dependências.
+     * O Spring Framework injetará automaticamente as implementações corretas
+     * dos repositórios (Injeção de Dependência).
      *
      * @param disciplinaRepository A porta de saída para a persistência de disciplinas.
+     * @param usuarioRepository A porta de saída para a persistência de usuários.
      */
-    public DefaultObterDisciplinaPorIdService(DisciplinaRepository disciplinaRepository) {
+    public DefaultObterDisciplinaPorIdService(
+            DisciplinaRepository disciplinaRepository,
+            UsuarioRepository usuarioRepository
+    ) {
         this.disciplinaRepository = disciplinaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Este método executa a busca de uma disciplina de forma transacional e read-only,
-     * o que pode otimizar a performance da consulta. Ele primeiro valida se o ID
-     * fornecido não é nulo e depois delega a busca para o repositório.
-     * </p>
-     *
-     * @param id O identificador único da disciplina a ser buscada. Não pode ser nulo.
-     * @return Um {@link Optional} contendo a {@link Disciplina} se encontrada,
-     * ou um Optional vazio caso contrário.
-     * @throws IllegalArgumentException se o {@code id} fornecido for nulo.
+     * Este método foi refatorado para segurança. Ele obtém a identidade do usuário
+     * a partir do contexto de segurança antes de realizar a busca no repositório.
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<Disciplina> executar(UUID id, UUID usuarioId) { // <-- Assinatura atualizada
-        Objects.requireNonNull(id, "ID da disciplina não pode ser nulo.");
-        Objects.requireNonNull(usuarioId, "ID do usuário não pode ser nulo.");
+    public Optional<Disciplina> executar(UUID id) {
+        // Obtém o email do usuário a partir do principal de segurança.
+        String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
-        // NOTA: Precisaremos de um novo método no repositório para isso.
-        // Vamos adicioná-lo em seguida.
-        return disciplinaRepository.findByIdAndUsuarioId(id, usuarioId);
+        // Busca a entidade de domínio do usuário correspondente.
+        Usuario usuario = usuarioRepository.buscarPorEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Usuário autenticado não pôde ser encontrado no banco de dados."));
+
+        // Utiliza o método de busca segura do repositório, que filtra tanto pelo
+        // ID da disciplina quanto pelo ID do usuário proprietário.
+        return disciplinaRepository.findByIdAndUsuarioId(id, usuario.getId());
     }
 }
+

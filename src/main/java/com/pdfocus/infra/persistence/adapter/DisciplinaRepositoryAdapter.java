@@ -59,15 +59,13 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
     }
 
     /**
-     * {@inheritDoc}
+     * Implementa o contrato para apagar uma disciplina pelo seu ID.
      */
     @Override
-    @Transactional
-    public void deletarPorIdEUsuario(UUID id, UUID usuarioId) {
-        DisciplinaEntity disciplinaParaDeletar = jpaRepository.findByIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new DisciplinaNaoEncontradaException(id));
-
-        jpaRepository.delete(disciplinaParaDeletar);
+    public void deletarPorId(UUID id) {
+        // A lógica é delegada diretamente para o método 'deleteById', que é
+        // fornecido por padrão pelo JpaRepository.
+        jpaRepository.deleteById(id);
     }
 
     /**
@@ -94,5 +92,6 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
     public Optional<Disciplina> buscarPorId(UUID id) {
         return jpaRepository.findById(id).map(DisciplinaMapper::toDomain);
     }
+
 
 }
