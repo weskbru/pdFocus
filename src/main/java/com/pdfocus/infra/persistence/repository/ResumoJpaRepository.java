@@ -48,4 +48,6 @@ public interface ResumoJpaRepository extends JpaRepository<ResumoEntity, UUID> {
      */
     long deleteByIdAndUsuarioId(UUID id, UUID usuarioId);
 
+    long countByUsuarioId(UUID usuarioId);
 }
+

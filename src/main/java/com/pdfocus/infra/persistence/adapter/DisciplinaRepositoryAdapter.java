@@ -3,6 +3,7 @@ package com.pdfocus.infra.persistence.adapter;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
+import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import com.pdfocus.infra.persistence.mapper.DisciplinaMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
@@ -58,15 +59,13 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
     }
 
     /**
-     * {@inheritDoc}
+     * Implementa o contrato para apagar uma disciplina pelo seu ID.
      */
     @Override
-    @Transactional
-    public void deletarPorIdEUsuario(UUID id, UUID usuarioId) {
-        DisciplinaEntity disciplinaParaDeletar = jpaRepository.findByIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new DisciplinaNaoEncontradaException(id));
-
-        jpaRepository.delete(disciplinaParaDeletar);
+    public void deletarPorId(UUID id) {
+        // A lógica é delegada diretamente para o método 'deleteById', que é
+        // fornecido por padrão pelo JpaRepository.
+        jpaRepository.deleteById(id);
     }
 
     /**
@@ -82,4 +81,17 @@ public class DisciplinaRepositoryAdapter implements DisciplinaRepository {
         return jpaRepository.findByIdAndUsuarioId(id, usuarioId)
                 .map(DisciplinaMapper::toDomain);
     }
+
+    @Override
+    public long countByUsuario(Usuario usuario) {
+        return jpaRepository.countByUsuarioId(usuario.getId());
+    }
+
+
+    @Override
+    public Optional<Disciplina> buscarPorId(UUID id) {
+        return jpaRepository.findById(id).map(DisciplinaMapper::toDomain);
+    }
+
+
 }

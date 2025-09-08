@@ -2,6 +2,7 @@ package com.pdfocus.application.resumo.port.saida;
 
 import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
+import com.pdfocus.core.models.Usuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,4 +53,7 @@ public interface ResumoRepository {
      * @throws ResumoNaoEncontradoException se o resumo não for encontrado ou não pertencer ao usuário.
      */
     void deletarPorIdEUsuario(UUID id, UUID usuarioId); // Ou void, dependendo da sua preferência de design para feedback de deleção
+
+    long countByUsuario(Usuario usuario);
+
 }

@@ -13,11 +13,12 @@ import java.util.UUID;
 public interface CriarDisciplinaUseCase {
 
     /**
-     * Executa a criação de uma nova {@link Disciplina} com base nos dados fornecidos
-     * no {@link CriarDisciplinaCommand}.
+     * Executa a lógica de negócio para criar e persistir uma nova disciplina.
+     * A identidade do usuário é obtida implicitamente a partir do contexto de
+     * segurança, garantindo que a disciplina seja associada ao proprietário correto.
      *
-     * @param command O DTO contendo os dados necessários para criar a disciplina.
-     * @return A {@link Disciplina} criada e persistida.
+     * @param command O DTO contendo os dados para a nova disciplina.
+     * @return O objeto de domínio {@link Disciplina} recém-criado.
      */
-    Disciplina executar(CriarDisciplinaCommand command, UUID usuarioId);
+    Disciplina executar(CriarDisciplinaCommand command);
 }

@@ -25,4 +25,16 @@ public interface MaterialJpaRepository extends JpaRepository<MaterialEntity, UUI
      * Busca um material pelo seu ID e pelo ID do usuário proprietário.
      */
     Optional<MaterialEntity> findByIdAndUsuarioId(UUID id, UUID usuarioId);
+
+    long countByUsuarioId(UUID usuarioId);
+
+    /**
+     * - "findFirst5": Limita o resultado aos 5 primeiros registros.
+     * - "ByUsuarioId": Filtra os materiais pelo ID do usuário.
+     * - "OrderByDataUploadDesc": Ordena os resultados pela coluna 'dataUpload'
+     * em ordem decrescente (do mais novo para o mais antigo).
+     *
+     * O Spring Data JPA lê este nome e automaticamente cria a query SQL complexa para nós!
+     */
+    List<MaterialEntity> findFirst5ByUsuarioIdOrderByDataUploadDesc(UUID usuarioId);
 }

@@ -31,7 +31,7 @@ public class MaterialController {
     public MaterialController(
             UploadMaterialUseCase uploadMaterialUseCase,
             ListarMateriaisUseCase listarMateriaisUseCase,
-            DeletarMaterialUseCase deletarMaterialUseCase, // 3. Injetar no construtor
+            DeletarMaterialUseCase deletarMaterialUseCase,
             AuthenticationHelper authenticationHelper) {
         this.uploadMaterialUseCase = uploadMaterialUseCase;
         this.listarMateriaisUseCase = listarMateriaisUseCase;

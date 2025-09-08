@@ -2,6 +2,7 @@ package com.pdfocus.application.disciplina.port.saida;
 
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.models.Usuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,13 +47,13 @@ public interface DisciplinaRepository {
     List<Disciplina> listaTodasPorUsuario(UUID usuarioId);
 
     /**
-     * Deleta uma disciplina, garantindo que ela pertença ao usuário especificado.
+     * Contrato para apagar uma disciplina pelo seu identificador único.
+     * A verificação de permissão (se o usuário pode apagar esta disciplina)
+     * é de responsabilidade da camada de serviço (Caso de Uso) que chama este método.
      *
-     * @param id O ID da disciplina a ser deletada.
-     * @param usuarioId O ID do usuário proprietário.
-     * @throws DisciplinaNaoEncontradaException se a disciplina não for encontrada ou não pertencer ao usuário.
+     * @param id O UUID da Disciplina a ser apagada.
      */
-    void deletarPorIdEUsuario(UUID id, UUID usuarioId);
+    void deletarPorId(UUID id);
 
     /**
      * Busca uma disciplina específica pelo seu ID, garantindo que ela pertença
@@ -64,4 +65,8 @@ public interface DisciplinaRepository {
      * pertencer ao usuário, ou vazio caso contrário.
      */
     Optional<Disciplina> findByIdAndUsuarioId(UUID id, UUID usuarioId);
+
+    long countByUsuario(Usuario usuario);
+
+    Optional<Disciplina> buscarPorId(UUID id);
 }

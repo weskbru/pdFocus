@@ -3,9 +3,10 @@ package com.pdfocus.infra.persistence.adapter;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
+import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.ResumoEntity;
 import com.pdfocus.infra.persistence.mapper.ResumoMapper;
-import com.pdfocus.infra.persistence.repository.ResumoJpaRepository; // Sua interface Spring Data JPA
+import com.pdfocus.infra.persistence.repository.ResumoJpaRepository;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,5 +67,10 @@ public class ResumoRepositoryAdapter implements ResumoRepository {
 
         // Se encontrou, o jpaRepository o deleta.
         jpaRepository.delete(resumoParaDeletar);
+    }
+
+    @Override
+    public long countByUsuario(Usuario usuario) {
+        return jpaRepository.countByUsuarioId(usuario.getId());
     }
 }

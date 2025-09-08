@@ -2,7 +2,9 @@ package com.pdfocus.infra.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -63,5 +65,16 @@ public class MaterialEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "disciplina_id", nullable = false)
     private DisciplinaEntity disciplina;
+
+    /**
+     * Registra o momento exato em que a entidade foi criada (upload do material).
+     *
+     * A anotação @CreationTimestamp instrui o Hibernate a preencher este
+     * campo automaticamente no momento da inserção (INSERT) no banco.
+     * `updatable = false` garante que esta data nunca possa ser alterada.
+     */
+    @CreationTimestamp
+    @Column(name = "data_upload", nullable = false, updatable = false)
+    private OffsetDateTime dataUpload;
 
 }
