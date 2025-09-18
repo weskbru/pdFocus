@@ -8,55 +8,54 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Porta de Saída (Interface de Repositório) para operações de persistência
- * relacionadas à entidade de domínio {@link Material}.
+ * Define o contrato (Porta de Saída) para interações de persistência
+ * com a entidade de domínio {@link Material}.
  */
 public interface MaterialRepository {
 
     /**
      * Salva (cria ou atualiza) um material.
-     *
-     * @param material O objeto de domínio {@link Material} a ser salvo.
+     * @param material O objeto de domínio a ser salvo.
      * @return O material salvo.
      */
     Material salvar(Material material);
 
     /**
      * Lista todos os materiais de uma disciplina específica que pertencem a um usuário.
-     *
      * @param disciplinaId O ID da disciplina.
      * @param usuarioId O ID do usuário.
-     * @return Uma lista de {@link Material} da disciplina para o usuário.
+     * @return Uma lista de {@link Material}.
      */
     List<Material> listarPorDisciplinaEUsuario(UUID disciplinaId, UUID usuarioId);
 
     /**
      * Busca um material pelo seu ID, garantindo que ele pertença ao usuário.
-     *
      * @param id O ID do material.
      * @param usuarioId O ID do usuário.
-     * @return um {@link Optional} contendo o {@link Material} se encontrado, ou vazio caso contrário.
+     * @return um {@link Optional} contendo o {@link Material} se encontrado.
      */
     Optional<Material> buscarPorIdEUsuario(UUID id, UUID usuarioId);
 
     /**
      * Deleta um material, garantindo que ele pertença ao usuário.
-     *
      * @param id O ID do material a ser deletado.
      * @param usuarioId O ID do usuário proprietário.
      */
     void deletarPorIdEUsuario(UUID id, UUID usuarioId);
 
+    /**
+     * Conta o total de materiais de um usuário.
+     * @param usuario O usuário para o qual os materiais serão contados.
+     * @return O número total de materiais.
+     */
     long countByUsuario(Usuario usuario);
 
     /**
-     * ADICIONE ESTE MÉTODO:
-     * Contrato para buscar uma lista limitada dos materiais mais recentes
-     * de um usuário específico.
-     *
+     * Busca uma lista limitada dos materiais mais recentes de um usuário.
      * @param usuario O usuário para o qual os materiais serão buscados.
      * @return uma Lista de {@link Material}, ordenada do mais recente para o mais antigo.
      */
     List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario);
 
 }
+

@@ -1,6 +1,7 @@
 package com.pdfocus.application.disciplina.port.entrada;
 
 import com.pdfocus.core.models.Disciplina;
+import com.pdfocus.application.disciplina.dto.DetalheDisciplinaResponse;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,5 +20,5 @@ public interface ObterDisciplinaPorIdUseCase {
      * @return um Optional contendo a {@link Disciplina} se encontrada e pertencente
      * ao usuário, ou um Optional vazio caso contrário.
      */
-    Optional<Disciplina> executar(UUID id);
+    Optional<DetalheDisciplinaResponse> executar(UUID id);
 }
