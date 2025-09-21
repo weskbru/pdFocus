@@ -3,19 +3,19 @@ package com.pdfocus.application.material.port.entrada;
 import com.pdfocus.application.material.dto.UploadMaterialCommand;
 import com.pdfocus.core.models.Material;
 
-import java.util.UUID;
-
 /**
- * Caso de uso para realizar o upload de um novo material de estudo.
+ * Define o contrato (Porta de Entrada) para o caso de uso de fazer o upload
+ * de um novo material para o utilizador autenticado.
  */
 public interface UploadMaterialUseCase {
 
     /**
-     * Executa a operação de upload de um material.
+     * Executa a lógica de negócio para o upload de um novo material.
+     * A identidade do utilizador é obtida implicitamente a partir do contexto de
+     * segurança, garantindo que o material seja associado ao proprietário correto.
      *
-     * @param command O comando contendo os dados e o conteúdo do ficheiro.
-     * @param usuarioId O ID do usuário autenticado que está a fazer o upload.
-     * @return O objeto de domínio {@link Material} representando o ficheiro guardado.
+     * @param command O DTO contendo os dados do ficheiro e a qual disciplina pertence.
+     * @return O objeto de domínio {@link Material} recém-criado.
      */
-    Material executar(UploadMaterialCommand command, UUID usuarioId);
+    Material executar(UploadMaterialCommand command);
 }

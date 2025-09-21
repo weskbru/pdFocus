@@ -2,41 +2,49 @@ package com.pdfocus.application.material.service;
 
 import com.pdfocus.application.material.port.entrada.ListarMateriaisUseCase;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para listar os materiais de um usuário em uma disciplina.
+ * Implementação do caso de uso para listar os materiais de uma disciplina.
  */
 @Service
 public class DefaultListarMateriaisService implements ListarMateriaisUseCase {
 
     private final MaterialRepository materialRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public DefaultListarMateriaisService(MaterialRepository materialRepository) {
-        this.materialRepository = Objects.requireNonNull(materialRepository, "MaterialRepository não pode ser nulo.");
+    public DefaultListarMateriaisService(MaterialRepository materialRepository, UsuarioRepository usuarioRepository) {
+        this.materialRepository = materialRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * A busca é transacional e somente leitura para otimização.
-     * </p>
-     * @throws IllegalArgumentException se {@code disciplinaId} ou {@code usuarioId} forem nulos.
+     * Este método foi refatorado para segurança. A identidade do utilizador é agora
+     * obtida a partir do contexto de segurança, garantindo que a busca seja
+     * restrita ao utilizador autenticado.
      */
     @Override
     @Transactional(readOnly = true)
-    public List<Material> executar(UUID disciplinaId, UUID usuarioId) {
-        // 1. Valida as entradas para garantir que os IDs necessários foram fornecidos.
-        Objects.requireNonNull(disciplinaId, "O ID da disciplina não pode ser nulo.");
-        Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
+    public List<Material> executar(UUID disciplinaId) {
+        // Obtém o email do utilizador a partir do principal de segurança.
+        String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
-        // 2. Delega a chamada para a porta do repositório, que sabe como buscar os dados.
-        return materialRepository.listarPorDisciplinaEUsuario(disciplinaId, usuarioId);
+        // Busca a entidade de domínio do utilizador correspondente.
+        Usuario usuario = usuarioRepository.buscarPorEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado no banco de dados."));
+
+        // Utiliza o metodo de busca segura do repositório, que filtra tanto pela
+        // disciplina quanto pelo utilizador.
+        return materialRepository.listarPorDisciplinaEUsuario(disciplinaId, usuario.getId());
     }
 }
