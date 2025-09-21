@@ -5,10 +5,9 @@ import com.pdfocus.application.material.port.entrada.DeletarMaterialUseCase;
 import com.pdfocus.application.material.port.entrada.ListarMateriaisUseCase;
 import com.pdfocus.application.material.port.entrada.UploadMaterialUseCase;
 import com.pdfocus.core.models.Material;
-import com.pdfocus.infra.security.AuthenticationHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile; // Importante para uploads
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.UUID;
 
 /**
  * Controller REST para gerir as operações relacionadas a Materiais de estudo.
+ * A lógica de segurança e identificação do utilizador é delegada para a camada de serviço.
  */
 @RestController
 @RequestMapping("/materiais")
@@ -26,56 +26,43 @@ public class MaterialController {
     private final UploadMaterialUseCase uploadMaterialUseCase;
     private final ListarMateriaisUseCase listarMateriaisUseCase;
     private final DeletarMaterialUseCase deletarMaterialUseCase;
-    private final AuthenticationHelper authenticationHelper;
 
     public MaterialController(
             UploadMaterialUseCase uploadMaterialUseCase,
             ListarMateriaisUseCase listarMateriaisUseCase,
-            DeletarMaterialUseCase deletarMaterialUseCase,
-            AuthenticationHelper authenticationHelper) {
+            DeletarMaterialUseCase deletarMaterialUseCase) {
         this.uploadMaterialUseCase = uploadMaterialUseCase;
         this.listarMateriaisUseCase = listarMateriaisUseCase;
         this.deletarMaterialUseCase = deletarMaterialUseCase;
-        this.authenticationHelper = authenticationHelper;
     }
 
     /**
      * Endpoint para listar todos os materiais de uma disciplina específica do utilizador autenticado.
-     * Responde a requisições GET em /materiais?disciplinaId={id-da-disciplina}
-     *
-     * @param disciplinaId O ID da disciplina cujos materiais serão listados.
-     * @return Uma lista de materiais pertencentes à disciplina e ao utilizador logado.
+     * @param disciplinaId O ID da disciplina cujos materiais serão listados (parâmetro de query).
+     * @return Uma lista de materiais.
      */
     @GetMapping
     public ResponseEntity<List<Material>> listarPorDisciplina(@RequestParam UUID disciplinaId) {
-        // Obtém o ID do utilizador autenticado
-        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
-
-        // Chama o caso de uso para obter a lista de materiais
-        List<Material> materiais = listarMateriaisUseCase.executar(disciplinaId, usuarioId);
-
-        // Retorna a lista com um status HTTP 200 OK
+        // A lógica de descobrir o utilizador foi movida para o serviço.
+        List<Material> materiais = listarMateriaisUseCase.executar(disciplinaId);
         return ResponseEntity.ok(materiais);
     }
 
     /**
-     * Endpoint para fazer o upload de um novo material e associá-lo a uma disciplina.
-     * Responde a requisições POST em /materiais/{disciplinaId}/upload
+     * Endpoint para fazer o upload de um novo material.
+     * Recebe um ficheiro e o ID da disciplina como 'multipart/form-data'.
      *
-     * @param disciplinaId O ID da disciplina à qual o material será associado.
-     * @param ficheiro O ficheiro enviado na requisição (multipart/form-data).
-     * @return Resposta 201 (Created) com os metadados do novo material.
+     * @param ficheiro O ficheiro enviado pelo cliente.
+     * @param disciplinaId O UUID da disciplina à qual o material será associado.
+     * @return Resposta 201 (Created) com os metadados do material criado.
      * @throws IOException se ocorrer um erro ao ler o conteúdo do ficheiro.
      */
-    @PostMapping("/{disciplinaId}/upload")
+    @PostMapping
     public ResponseEntity<Material> uploadMaterial(
-            @PathVariable UUID disciplinaId,
-            @RequestParam("ficheiro") MultipartFile ficheiro) throws IOException {
+            @RequestParam("arquivo") MultipartFile ficheiro,
+            @RequestParam("disciplinaId") UUID disciplinaId) throws IOException {
 
-        // 1. Obtém o ID do usuário autenticado a partir do token.
-        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
-
-        // 2. Cria o DTO de comando com os dados do ficheiro recebido.
+        // Cria o DTO de comando com os dados da requisição.
         UploadMaterialCommand command = new UploadMaterialCommand(
                 ficheiro.getOriginalFilename(),
                 ficheiro.getContentType(),
@@ -84,39 +71,28 @@ public class MaterialController {
                 ficheiro.getInputStream()
         );
 
-        // 3. Executa o caso de uso.
-        Material novoMaterial = uploadMaterialUseCase.executar(command, usuarioId);
+        // Delega a execução para o caso de uso, que agora lida com a lógica de segurança.
+        Material novoMaterial = uploadMaterialUseCase.executar(command);
 
-        // 4. Constrói a URI para o novo recurso (opcional, mas boa prática).
         URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/materiais/{id}") // Supondo um futuro endpoint para obter um material por ID
+                .fromCurrentContextPath().path("/materiais/{id}")
                 .buildAndExpand(novoMaterial.getId())
                 .toUri();
 
-        // 5. Retorna a resposta 201 Created.
+        // No futuro, podemos criar um DTO de resposta para o Material.
         return ResponseEntity.created(location).body(novoMaterial);
     }
 
     /**
      * Endpoint para apagar um material existente do utilizador autenticado.
-     * Responde a requisições DELETE em /materiais/{id}.
-     *
      * @param id O UUID do material a ser apagado.
      * @return Resposta 204 (No Content) se a deleção for bem-sucedida.
-     * O RestExceptionHandler tratará do caso 404 se o material não for encontrado.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable UUID id) {
-        // Obtém o ID do utilizador autenticado a partir do token
-        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
-
-        // Chama o caso de uso para executar a deleção
-        deletarMaterialUseCase.executar(id, usuarioId);
-
-        // Se o metodo chegar até aqui, a deleção foi um sucesso.
-        // Se o material não for encontrado, uma exceção será lançada e o
-        // RestExceptionHandler cuidará de retornar o 404 Not Found.
+        // A lógica de segurança para verificar a posse do material foi movida para o serviço.
+        deletarMaterialUseCase.executar(id);
         return ResponseEntity.noContent().build();
     }
 }
+

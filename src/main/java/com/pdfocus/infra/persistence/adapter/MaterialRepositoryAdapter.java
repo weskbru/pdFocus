@@ -1,7 +1,7 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.material.port.saida.MaterialRepository;
-import com.pdfocus.core.exceptions.MaterialNaoEncontradoException; // Será criada em breve
+import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
@@ -9,7 +9,7 @@ import com.pdfocus.infra.persistence.entity.MaterialEntity;
 import com.pdfocus.infra.persistence.mapper.MaterialMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
 import com.pdfocus.infra.persistence.repository.MaterialJpaRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -21,45 +21,34 @@ import java.util.stream.Collectors;
  * Adaptador que implementa a porta de saída {@link MaterialRepository}
  * utilizando Spring Data JPA para a persistência de dados de Material.
  */
-@Component
+@Repository
 public class MaterialRepositoryAdapter implements MaterialRepository {
 
-    private final MaterialJpaRepository jpaRepository;
+    private final MaterialJpaRepository materialJpaRepository;
     private final DisciplinaJpaRepository disciplinaJpaRepository;
 
-    /**
-     * Constrói o adaptador com a dependência do repositório Spring Data JPA.
-     * @param jpaRepository O repositório para interagir com a tabela de materiais.
-     */
-    public MaterialRepositoryAdapter(MaterialJpaRepository jpaRepository, DisciplinaJpaRepository disciplinaJpaRepository) {
-        this.jpaRepository = jpaRepository;
+    public MaterialRepositoryAdapter(MaterialJpaRepository materialJpaRepository, DisciplinaJpaRepository disciplinaJpaRepository) {
+        this.materialJpaRepository = materialJpaRepository;
         this.disciplinaJpaRepository = disciplinaJpaRepository;
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * <strong>NOTA:</strong> A conversão completa do objeto de domínio {@link Material} para
-     * {@link MaterialEntity} requer uma instância de {@code DisciplinaEntity}.
-     * A responsabilidade de buscar essa entidade e chamar o mapper correto
-     * pertence à camada de serviço (UseCase), não a este adaptador.
-     * Este método será finalizado quando o serviço de upload for implementado.
-     * </p>
      */
     @Override
     @Transactional
     public Material salvar(Material material) {
-        // 1. Busca a DisciplinaEntity necessária para o mapeamento.
+        // Busca a DisciplinaEntity para garantir a integridade da relação.
         DisciplinaEntity disciplinaEntity = disciplinaJpaRepository.findById(material.getDisciplinaId())
                 .orElseThrow(() -> new IllegalStateException("A disciplina associada ao material não foi encontrada. ID:" + material.getDisciplinaId()));
 
-        // 2. Usa o mapper com a DisciplinaEntity buscada.
+        // Mapeia o modelo de domínio para a entidade JPA.
         MaterialEntity materialEntity = MaterialMapper.toEntity(material, disciplinaEntity);
 
-        // 3. Salva a entidade no banco.
-        MaterialEntity savedEntity = jpaRepository.save(materialEntity);
+        // Persiste a entidade no banco de dados.
+        MaterialEntity savedEntity = materialJpaRepository.save(materialEntity);
 
-        // 4. Converte de volta para o domínio.
+        // Mapeia a entidade salva de volta para o modelo de domínio.
         return MaterialMapper.toDomain(savedEntity);
     }
 
@@ -69,7 +58,7 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Material> listarPorDisciplinaEUsuario(UUID disciplinaId, UUID usuarioId) {
-        List<MaterialEntity> entities = jpaRepository.findAllByDisciplina_IdAndUsuarioId(disciplinaId, usuarioId);
+        List<MaterialEntity> entities = materialJpaRepository.findAllByDisciplina_IdAndUsuarioId(disciplinaId, usuarioId);
         return MaterialMapper.toDomainList(entities);
     }
 
@@ -79,53 +68,37 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Material> buscarPorIdEUsuario(UUID id, UUID usuarioId) {
-        return jpaRepository.findByIdAndUsuarioId(id, usuarioId)
+        return materialJpaRepository.findByIdAndUsuarioId(id, usuarioId)
                 .map(MaterialMapper::toDomain);
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Esta implementação primeiro busca o material pelo seu ID e pelo ID do
-     * usuário proprietário para garantir a autorização. Se não for encontrado,
-     * lança uma {@link MaterialNaoEncontradoException}.
-     * </p>
      */
     @Override
     @Transactional
     public void deletarPorIdEUsuario(UUID id, UUID usuarioId) {
-        // Busca a entidade garantindo que ela pertence ao usuário.
-        MaterialEntity materialParaDeletar = jpaRepository.findByIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new MaterialNaoEncontradoException(id)); // Precisamos criar esta exceção
-
-        // Se encontrou, deleta.
-        jpaRepository.delete(materialParaDeletar);
+        if (materialJpaRepository.findByIdAndUsuarioId(id, usuarioId).isEmpty()) {
+            throw new MaterialNaoEncontradoException(id);
+        }
+        materialJpaRepository.deleteById(id);
     }
 
     /**
-     * Implementa o método de contagem de materiais por usuário, conforme definido
-     * no contrato da interface {@link MaterialRepository}.
-     *
-     * @param usuario O usuário para o qual os materiais serão contados.
-     * @return O número total de materiais associados ao usuário.
+     * {@inheritDoc}
      */
     @Override
     public long countByUsuario(Usuario usuario) {
-        // A lógica é delegada para o MaterialJpaRepository, que usa a convenção
-        // de nomes do Spring Data JPA para gerar a query de contagem de forma otimizada.
-        return jpaRepository.countByUsuarioId(usuario.getId());
+        return materialJpaRepository.countByUsuarioId(usuario.getId());
     }
 
     /**
-     * Implementa o contrato para buscar os 5 materiais mais recentes.
+     * {@inheritDoc}
      */
     @Override
     public List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario) {
-
-        List<MaterialEntity> entities = jpaRepository.findFirst5ByUsuarioIdOrderByDataUploadDesc(usuario.getId());
-
-        return entities.stream()
-                .map(MaterialMapper::toDomain)
-                .collect(Collectors.toList());
+        List<MaterialEntity> entities = materialJpaRepository.findFirst5ByUsuarioIdOrderByDataUploadDesc(usuario.getId());
+        return MaterialMapper.toDomainList(entities);
     }
 }
+

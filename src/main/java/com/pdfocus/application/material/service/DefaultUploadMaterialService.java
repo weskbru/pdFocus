@@ -5,8 +5,12 @@ import com.pdfocus.application.material.dto.UploadMaterialCommand;
 import com.pdfocus.application.material.port.entrada.UploadMaterialUseCase;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -15,64 +19,68 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para o upload de um novo material.
+ * Implementação do caso de uso para o upload de um novo material.
  */
 @Service
 public class DefaultUploadMaterialService implements UploadMaterialUseCase {
 
     private final MaterialRepository materialRepository;
     private final DisciplinaRepository disciplinaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final MaterialStoragePort materialStoragePort;
 
     public DefaultUploadMaterialService(
             MaterialRepository materialRepository,
             DisciplinaRepository disciplinaRepository,
+            UsuarioRepository usuarioRepository,
             MaterialStoragePort materialStoragePort) {
         this.materialRepository = materialRepository;
         this.disciplinaRepository = disciplinaRepository;
+        this.usuarioRepository = usuarioRepository;
         this.materialStoragePort = materialStoragePort;
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * A operação é transacional. Orquestra a validação, o armazenamento físico do ficheiro
-     * e a persistência dos seus metadados no banco de dados.
-     * </p>
+     * Este método foi refatorado para segurança. A identidade do utilizador é agora
+     * obtida a partir do contexto de segurança, e a posse da disciplina é
+     * verificada antes de associar o novo material.
      */
     @Override
     @Transactional
-    public Material executar(UploadMaterialCommand command, UUID usuarioId) {
+    public Material executar(UploadMaterialCommand command) {
         Objects.requireNonNull(command, "O comando de upload não pode ser nulo.");
-        Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
 
-        // 1. Valida se a disciplina associada existe e pertence ao usuário.
-        disciplinaRepository.findByIdAndUsuarioId(command.disciplinaId(), usuarioId)
+        // 1. Obtém o utilizador autenticado de forma segura.
+        String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Usuario usuario = usuarioRepository.buscarPorEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado."));
+
+        // 2. Valida se a disciplina associada existe E pertence ao utilizador.
+        disciplinaRepository.findByIdAndUsuarioId(command.disciplinaId(), usuario.getId())
                 .orElseThrow(() -> new DisciplinaNaoEncontradaException(command.disciplinaId()));
 
-        // 2. Gera um nome de arquivo único para o armazenamento.
+        // 3. Gera um nome de ficheiro único para o armazenamento.
         String extensao = StringUtils.getFilenameExtension(command.nomeOriginal());
         String nomeFicheiroStorage = UUID.randomUUID() + "." + extensao;
 
-        // 3. Guarda o arquivo usando a porta de armazenamento.
+        // 4. Guarda o ficheiro físico usando a porta de armazenamento.
         materialStoragePort.guardar(nomeFicheiroStorage, command.inputStream());
 
-        // 4. Cria o objeto de domínio Material com todos os metadados.
-        // Fazemos isso porque a responsabilidade de gerar a data foi delegada ao banco de dados
-        // através da anotação @CreationTimestamp na MaterialEntity.
+        // 5. Cria o objeto de domínio Material com os metadados.
         Material novoMaterial = Material.criar(
                 UUID.randomUUID(),
                 command.nomeOriginal(),
                 nomeFicheiroStorage,
                 command.tipoArquivo(),
                 command.tamanho(),
-                usuarioId,
+                usuario.getId(),
                 command.disciplinaId(),
-                null
+                null // A data de upload será gerada pelo @CreationTimestamp
         );
 
-        // 5. Salva os metadados do material no banco de dados.
+        // 6. Salva os metadados do material no banco de dados.
         return materialRepository.salvar(novoMaterial);
     }
-
 }
+

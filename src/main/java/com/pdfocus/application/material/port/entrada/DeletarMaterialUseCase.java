@@ -3,16 +3,18 @@ package com.pdfocus.application.material.port.entrada;
 import java.util.UUID;
 
 /**
- * Caso de uso para deletar um material de estudo existente.
+ * Define o contrato (Porta de Entrada) para o caso de uso de apagar
+ * um material existente, garantindo que ele pertença ao
+ * utilizador autenticado.
  */
 public interface DeletarMaterialUseCase {
 
     /**
-     * Executa a deleção de um material, garantindo que ele pertença ao usuário.
-     * A operação deve remover tanto o registro no banco de dados quanto o arquivo físico.
+     * Executa a lógica de negócio para apagar um material específico.
+     * A segurança (garantir que o material pertence ao utilizador logado) é uma
+     * responsabilidade da implementação.
      *
-     * @param id O ID do material a ser deletado.
-     * @param usuarioId O ID do usuário que deve ser o proprietário do material.
+     * @param id O UUID do material a ser apagado.
      */
-    void executar(UUID id, UUID usuarioId);
+    void executar(UUID id);
 }

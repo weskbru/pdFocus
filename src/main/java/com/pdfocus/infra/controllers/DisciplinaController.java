@@ -1,4 +1,5 @@
 package com.pdfocus.infra.controllers;
+import com.pdfocus.application.disciplina.dto.DetalheDisciplinaResponse;
 import com.pdfocus.application.disciplina.dto.DisciplinaResponse;
 import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
@@ -101,14 +102,13 @@ public class DisciplinaController {
      * @return Resposta 200 (OK) com a {@link DisciplinaResponse} se encontrada, ou 404 (Not Found).
      */
     @GetMapping("/{id}")
-    public ResponseEntity<DisciplinaResponse> obterPorId(@PathVariable UUID id) {
-        // Delega a execução para o caso de uso, que agora contém a lógica de segurança.
-        Optional<Disciplina> disciplinaOptional = obterDisciplinaPorIdUseCase.executar(id);
+    public ResponseEntity<DetalheDisciplinaResponse> obterPorId(@PathVariable UUID id) {
+        // Delega a execução para o caso de uso, que agora retorna o DTO completo.
+        Optional<DetalheDisciplinaResponse> responseOptional = obterDisciplinaPorIdUseCase.executar(id);
 
-        // Mapeia o resultado: se a disciplina foi encontrada, converte para DTO e retorna 200 OK.
+        // Mapeia o resultado: se o DTO foi retornado, encapsula em 200 OK.
         // Se não, retorna 404 Not Found.
-        return disciplinaOptional
-                .map(DisciplinaResponse::fromDomain)
+        return responseOptional
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

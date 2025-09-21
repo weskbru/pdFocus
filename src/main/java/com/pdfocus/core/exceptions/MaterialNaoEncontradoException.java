@@ -19,7 +19,7 @@ public class MaterialNaoEncontradoException extends RuntimeException {
      * Construtor que cria uma mensagem de erro padrão com base no ID do material.
      * @param materialId O ID do material que não foi encontrado.
      */
-    public MaterialNaoEncontradoException(UUID materialId) {
-        super("Material não encontrado com o ID: " + materialId);
+    public MaterialNaoEncontradoException(UUID id) {
+        super("O material com o ID '" + id + "' não foi encontrado ou o utilizador não tem permissão para o aceder.");
     }
 }

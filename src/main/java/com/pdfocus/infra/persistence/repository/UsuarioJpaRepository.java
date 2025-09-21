@@ -1,9 +1,11 @@
 package com.pdfocus.infra.persistence.repository;
 
+import com.pdfocus.infra.persistence.entity.ResumoEntity;
 import com.pdfocus.infra.persistence.entity.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,4 +32,5 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, UUID>
      * ou um Optional vazio caso contrário.
      */
     Optional<UsuarioEntity> findByEmail(String email);
+
 }
