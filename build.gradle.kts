@@ -30,6 +30,9 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5") // Para serialização
 
+    // PDFBox para extração de texto
+    implementation("org.apache.pdfbox:pdfbox:3.0.5")
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 

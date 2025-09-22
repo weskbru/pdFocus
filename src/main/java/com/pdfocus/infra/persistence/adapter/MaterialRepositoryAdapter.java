@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 
 /**
  * Adaptador que implementa a porta de saída {@link MaterialRepository}
@@ -99,6 +99,19 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
     public List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario) {
         List<MaterialEntity> entities = materialJpaRepository.findFirst5ByUsuarioIdOrderByDataUploadDesc(usuario.getId());
         return MaterialMapper.toDomainList(entities);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Material> buscarPorId(UUID id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return materialJpaRepository.findById(id)
+                .map(MaterialMapper::toDomain);
     }
 }
 

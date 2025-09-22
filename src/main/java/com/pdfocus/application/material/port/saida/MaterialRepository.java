@@ -57,5 +57,13 @@ public interface MaterialRepository {
      */
     List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario);
 
+    /**
+     * Busca um material apenas pelo seu ID, sem verificação de usuário.
+     * Útil para operações internas do sistema onde a validação de usuário não é necessária.
+     *
+     * @param id O ID do material.
+     * @return um {@link Optional} contendo o {@link Material} se encontrado.
+     */
+    Optional<Material> buscarPorId(UUID id);
 }
 

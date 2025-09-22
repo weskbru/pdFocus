@@ -1,7 +1,8 @@
-package com.pdfocus.infra.web.controller;
+package com.pdfocus.infra.controllers;
 
 import com.pdfocus.application.resumo.dto.AtualizarResumoCommand;
 import com.pdfocus.application.resumo.dto.CriarResumoCommand;
+import com.pdfocus.application.resumo.dto.CriarResumoDeMaterialCommand;
 import com.pdfocus.application.resumo.port.entrada.*;
 import com.pdfocus.core.models.Resumo;
 import com.pdfocus.infra.security.AuthenticationHelper;
@@ -28,6 +29,7 @@ public class ResumoController {
     private final AtualizarResumoUseCase atualizarResumoUseCase;
     private final DeletarResumoUseCase deletarResumoUseCase;
     private final AuthenticationHelper authenticationHelper;
+    private final GerarResumoAutomaticoUseCase gerarResumoAutomaticoUseCase;
 
     public ResumoController(
             ListarResumosUseCase listarResumosUseCase,
@@ -35,12 +37,14 @@ public class ResumoController {
             ObterResumoPorIdUseCase obterResumoPorIdUseCase,
             AtualizarResumoUseCase atualizarResumoUseCase,
             DeletarResumoUseCase deletarResumoUseCase,
+            GerarResumoAutomaticoUseCase gerarResumoAutomaticoUseCase,
             AuthenticationHelper authenticationHelper) {
         this.listarResumosUseCase = listarResumosUseCase;
         this.criarResumoUseCase = criarResumoUseCase;
         this.obterResumoPorIdUseCase = obterResumoPorIdUseCase;
         this.atualizarResumoUseCase = atualizarResumoUseCase;
         this.deletarResumoUseCase = deletarResumoUseCase;
+        this.gerarResumoAutomaticoUseCase = gerarResumoAutomaticoUseCase;
         this.authenticationHelper = authenticationHelper;
     }
 
@@ -129,4 +133,26 @@ public class ResumoController {
         deletarResumoUseCase.executar(id, usuarioId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Endpoint para gerar um resumo automaticamente a partir de um material (PDF) existente.
+     * Responde a requisições POST em /resumos/gerar-automatico.
+     *
+     * @param command O comando com os dados do material e opções de geração.
+     * @return Resposta 201 (Created) com o resumo gerado automaticamente.
+     */
+    @PostMapping("/gerar-automatico")
+    public ResponseEntity<Resumo> gerarResumoAutomatico(@RequestBody CriarResumoDeMaterialCommand command) {
+        UUID usuarioId = authenticationHelper.getUsuarioAutenticado().getId();
+        Resumo resumoGerado = gerarResumoAutomaticoUseCase.executar(command, usuarioId);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/../{id}") // Volta para o endpoint principal de resumos
+                .buildAndExpand(resumoGerado.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(resumoGerado);
+    }
 }
+
