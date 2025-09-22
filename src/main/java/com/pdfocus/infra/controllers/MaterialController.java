@@ -2,9 +2,13 @@ package com.pdfocus.infra.controllers;
 
 import com.pdfocus.application.material.dto.UploadMaterialCommand;
 import com.pdfocus.application.material.port.entrada.DeletarMaterialUseCase;
+import com.pdfocus.application.material.port.entrada.DownloadMaterialUseCase;
 import com.pdfocus.application.material.port.entrada.ListarMateriaisUseCase;
 import com.pdfocus.application.material.port.entrada.UploadMaterialUseCase;
 import com.pdfocus.core.models.Material;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,14 +30,17 @@ public class MaterialController {
     private final UploadMaterialUseCase uploadMaterialUseCase;
     private final ListarMateriaisUseCase listarMateriaisUseCase;
     private final DeletarMaterialUseCase deletarMaterialUseCase;
+    private final DownloadMaterialUseCase downloadMaterialUseCase;
 
     public MaterialController(
             UploadMaterialUseCase uploadMaterialUseCase,
             ListarMateriaisUseCase listarMateriaisUseCase,
-            DeletarMaterialUseCase deletarMaterialUseCase) {
+            DeletarMaterialUseCase deletarMaterialUseCase,
+            DownloadMaterialUseCase downloadMaterialUseCase) {
         this.uploadMaterialUseCase = uploadMaterialUseCase;
         this.listarMateriaisUseCase = listarMateriaisUseCase;
         this.deletarMaterialUseCase = deletarMaterialUseCase;
+        this.downloadMaterialUseCase = downloadMaterialUseCase;
     }
 
     /**
@@ -93,6 +100,35 @@ public class MaterialController {
         // A lógica de segurança para verificar a posse do material foi movida para o serviço.
         deletarMaterialUseCase.executar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * ADICIONE ESTE NOVO MÉTODO:
+     * Endpoint para fazer o download de um arquivo de material.
+     * A segurança (verificação de posse) é garantida pela camada de serviço.
+     *
+     * @param id O UUID do material a ser baixado.
+     * @return ResponseEntity contendo o arquivo como um recurso (Resource).
+     */
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> downloadMaterial(@PathVariable UUID id) {
+        // 1. Chama o caso de uso para obter o arquivo e seus metadados.
+        DownloadMaterialUseCase.DownloadResult result = downloadMaterialUseCase.executar(id);
+        Resource resource = result.resource();
+        Material material = result.material();
+
+        // 2. Define o tipo de conteúdo (MIME type) da resposta.
+        String contentType = material.getTipoArquivo();
+        if (contentType == null) {
+            contentType = "application/octet-stream"; // Tipo genérico
+        }
+
+        // 3. Constrói a resposta HTTP com os cabeçalhos corretos.
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                // Este cabeçalho força o navegador a abrir a caixa de diálogo "Salvar Como...".
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + material.getNomeOriginal() + "\"")
+                .body(resource);
     }
 }
 

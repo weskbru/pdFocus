@@ -1,32 +1,34 @@
 package com.pdfocus.application.material.port.saida;
 
+import org.springframework.core.io.Resource;
 import java.io.InputStream;
 
 /**
- * Porta de Saída (Interface de Storage) para operações de armazenamento físico de ficheiros.
- * <p>
- * Define o contrato que a camada de aplicação usa para interagir com a
- * camada de infraestrutura para guardar, recuperar ou apagar ficheiros fisicamente.
- * </p>
+ * Define o contrato (Porta de Saída) para o sistema de armazenamento físico de ficheiros.
+ * Esta interface abstrai a forma como os ficheiros são guardados (localmente, na nuvem, etc.).
  */
 public interface MaterialStoragePort {
 
     /**
-     * Guarda o conteúdo de um ficheiro num sistema de armazenamento.
+     * Guarda o conteúdo de um InputStream no sistema de armazenamento.
      *
-     * @param nomeFicheiroStorage O nome único gerado para o ficheiro no armazenamento (ex: um UUID com a extensão).
-     * @param inputStream O fluxo de bytes (conteúdo) do ficheiro a ser guardado.
-     * @return Uma string representando a localização ou identificador do ficheiro guardado (ex: o caminho completo ou URL).
+     * @param nomeFicheiro O nome único sob o qual o ficheiro será guardado.
+     * @param inputStream O fluxo de dados do ficheiro a ser guardado.
      */
-    String guardar(String nomeFicheiroStorage, InputStream inputStream);
+    void guardar(String nomeFicheiro, InputStream inputStream);
 
     /**
-     * Apaga um ficheiro físico do sistema de armazenamento.
+     * Apaga um ficheiro do sistema de armazenamento.
      *
-     * @param nomeFicheiroStorage O nome único do ficheiro a ser apagado.
+     * @param nomeFicheiro O nome único do ficheiro a ser apagado.
      */
-    void apagar(String nomeFicheiroStorage);
+    void apagar(String nomeFicheiro);
 
-    // Futuramente, poderíamos adicionar um método para recuperar o ficheiro:
-    // InputStream carregar(String nomeFicheiroStorage);
+    /**
+     * Carrega um ficheiro do sistema de armazenamento como um recurso (Resource).
+     *
+     * @param nomeFicheiro O nome único do ficheiro a ser carregado.
+     * @return um objeto Resource que representa o ficheiro.
+     */
+    Resource carregar(String nomeFicheiro);
 }
