@@ -130,5 +130,29 @@ public class MaterialController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + material.getNomeOriginal() + "\"")
                 .body(resource);
     }
+
+    /**
+     * Endpoint para visualizar um ficheiro de material diretamente no navegador.
+     * A principal diferença é o cabeçalho 'Content-Disposition: inline'.
+     *
+     * @param id O UUID do material a ser visualizado.
+     * @return ResponseEntity contendo o ficheiro como um recurso para ser exibido.
+     */
+    /**
+     * Endpoint para visualizar um ficheiro de material diretamente no navegador.
+     */
+    @GetMapping("/{id}/visualizar")
+    public ResponseEntity<Resource> visualizarMaterial(@PathVariable UUID id) {
+        DownloadMaterialUseCase.DownloadResult result = downloadMaterialUseCase.executar(id);
+        Resource resource = result.resource();
+        Material material = result.material();
+
+        String contentType = material.getTipoArquivo() != null ? material.getTipoArquivo() : "application/octet-stream";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + material.getNomeOriginal() + "\"")
+                .body(resource);
+    }
 }
 
