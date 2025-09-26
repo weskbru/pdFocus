@@ -21,6 +21,7 @@ public record DetalheDisciplinaResponse(
         List<MaterialSimples> materiais
 ) {
 
+
     /**
      * DTO aninhado para representar um resumo de forma simplificada na lista.
      */

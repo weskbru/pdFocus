@@ -2,7 +2,10 @@ package com.pdfocus.application.material.service;
 
 import com.pdfocus.application.material.port.entrada.DeletarMaterialUseCase;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
+import com.pdfocus.application.material.port.saida.MaterialStoragePort;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
+import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
+import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,10 +23,14 @@ public class DefaultDeletarMaterialService implements DeletarMaterialUseCase {
 
     private final MaterialRepository materialRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MaterialStoragePort materialStoragePort;
 
-    public DefaultDeletarMaterialService(MaterialRepository materialRepository, UsuarioRepository usuarioRepository) {
+    public DefaultDeletarMaterialService(MaterialRepository materialRepository,
+                                         UsuarioRepository usuarioRepository,
+                                         MaterialStoragePort materialStoragePort) {
         this.materialRepository = materialRepository;
         this.usuarioRepository = usuarioRepository;
+        this.materialStoragePort = materialStoragePort;
     }
 
     /**
@@ -35,15 +42,16 @@ public class DefaultDeletarMaterialService implements DeletarMaterialUseCase {
     @Override
     @Transactional
     public void executar(UUID id) {
-        // Obtém o email do utilizador a partir do principal de segurança.
         String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-
-        // Busca a entidade de domínio do utilizador correspondente.
         Usuario usuario = usuarioRepository.buscarPorEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado na base de dados."));
+                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado."));
 
-        // Utiliza o método de deleção segura do repositório, que filtra tanto pelo
-        // ID do material quanto pelo ID do utilizador proprietário.
+
+        Material material = materialRepository.buscarPorIdEUsuario(id, usuario.getId())
+                .orElseThrow(() -> new MaterialNaoEncontradoException(id));
+
+        // Ordem correta: Primeiro apaga o arquivo físico, depois o registro do banco
+        materialStoragePort.apagar(material.getNomeStorage());
         materialRepository.deletarPorIdEUsuario(id, usuario.getId());
     }
 }

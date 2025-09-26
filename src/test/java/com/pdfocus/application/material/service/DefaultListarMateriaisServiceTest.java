@@ -1,25 +1,29 @@
 package com.pdfocus.application.material.service;
 
 import com.pdfocus.application.material.port.saida.MaterialRepository;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository; // 1. IMPORT NECESSÁRIO
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Testes unitários para a classe {@link DefaultListarMateriaisService}.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - DefaultListarMateriaisService")
 public class DefaultListarMateriaisServiceTest {
@@ -27,86 +31,81 @@ public class DefaultListarMateriaisServiceTest {
     @Mock
     private MaterialRepository materialRepositoryMock;
 
+    // 2. ADICIONAMOS O MOCK DO USUARIOREPOSITORY, POIS O SERVICE AGORA DEPENDE DELE
+    @Mock
+    private UsuarioRepository usuarioRepositoryMock;
+
     @InjectMocks
     private DefaultListarMateriaisService service;
 
-    private final UUID ID_USUARIO = UUID.randomUUID();
     private final UUID ID_DISCIPLINA = UUID.randomUUID();
+    private final String EMAIL_USUARIO = "teste@email.com";
 
-    /**
-     * Agrupa os testes para os cenários principais de busca.
-     */
-    @Nested
-    @DisplayName("Cenários de Busca")
-    class CenariosDeBusca {
+    @Test
+    @DisplayName("Deve retornar a lista de materiais quando o repositório os encontra")
+    void deveRetornarListaQuandoRepositorioEncontra() {
+        // --- Arrange (Preparação) ---
+        // 3. SIMULAMOS O USUÁRIO LOGADO E SEU COMPORTAMENTO
+        Usuario usuarioLogado = mock(Usuario.class);
+        when(usuarioLogado.getId()).thenReturn(UUID.randomUUID());
+        List<Material> materiaisEsperados = Collections.singletonList(mock(Material.class));
 
-        @Test
-        @DisplayName("Deve retornar a lista de materiais quando o repositório os encontra")
-        void deveRetornarListaQuandoRepositorioEncontra() {
-            // --- Arrange (Preparação) ---
-            // 1. Criamos uma lista de resultado falsa para simular o retorno do repositório.
-            List<Material> materiaisEsperados = Collections.singletonList(mock(Material.class));
+        // 4. SIMULAMOS O SECURITYCONTEXTHOLDER PARA "LOGAR" NOSSO USUÁRIO FALSO
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            Authentication authenticationMock = mock(Authentication.class);
+            when(userDetailsMock.getUsername()).thenReturn(EMAIL_USUARIO);
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-            // 2. Ensinamos o nosso repositório falso (o mock) a se comportar:
-            // "QUANDO o método 'listarPorDisciplinaEUsuario' for chamado, ENTÃO retorne a lista 'materiaisEsperados'."
-            when(materialRepositoryMock.listarPorDisciplinaEUsuario(ID_DISCIPLINA, ID_USUARIO))
+            // Ensinamos o usuarioRepository a encontrar nosso usuário falso
+            when(usuarioRepositoryMock.buscarPorEmail(EMAIL_USUARIO)).thenReturn(Optional.of(usuarioLogado));
+
+            // Ensinamos o materialRepository a usar o ID do nosso usuário falso
+            when(materialRepositoryMock.listarPorDisciplinaEUsuario(ID_DISCIPLINA, usuarioLogado.getId()))
                     .thenReturn(materiaisEsperados);
 
             // --- Act (Ação) ---
-            // 3. Executamos o método que queremos testar.
-            List<Material> resultado = service.executar(ID_DISCIPLINA, ID_USUARIO);
+            // 5. CHAMAMOS O MÉTODO EXECUTAR COM APENAS UM PARÂMETRO
+            List<Material> resultado = service.executar(ID_DISCIPLINA);
 
             // --- Assert (Verificação) ---
-            // 4. Verificamos se o resultado é o que esperávamos.
             assertNotNull(resultado);
             assertEquals(materiaisEsperados, resultado);
-
-            // 5. Verificamos se o serviço realmente chamou o repositório da forma correta.
-            verify(materialRepositoryMock).listarPorDisciplinaEUsuario(ID_DISCIPLINA, ID_USUARIO);
-        }
-
-        @Test
-        @DisplayName("Deve retornar uma lista vazia quando o repositório não encontra materiais")
-        void deveRetornarListaVazia() {
-            // Arrange: Ensinamos o repositório a retornar uma lista vazia.
-            when(materialRepositoryMock.listarPorDisciplinaEUsuario(ID_DISCIPLINA, ID_USUARIO))
-                    .thenReturn(Collections.emptyList());
-
-            // Act: Executamos o serviço.
-            List<Material> resultado = service.executar(ID_DISCIPLINA, ID_USUARIO);
-
-            // Assert: Verificamos se o resultado é de fato uma lista vazia.
-            assertNotNull(resultado);
-            assertTrue(resultado.isEmpty());
-            verify(materialRepositoryMock).listarPorDisciplinaEUsuario(ID_DISCIPLINA, ID_USUARIO);
+            verify(materialRepositoryMock).listarPorDisciplinaEUsuario(ID_DISCIPLINA, usuarioLogado.getId());
         }
     }
 
-    /**
-     * Agrupa os testes para as validações de entrada do serviço.
-     */
-    @Nested
-    @DisplayName("Validação de Entradas")
-    class ValidacaoDeEntradas {
+    @Test
+    @DisplayName("Deve retornar uma lista vazia quando o repositório não encontra materiais")
+    void deveRetornarListaVazia() {
+        // Arrange
+        Usuario usuarioLogado = mock(Usuario.class);
+        when(usuarioLogado.getId()).thenReturn(UUID.randomUUID());
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID da disciplina for nulo")
-        void deveLancarExcecaoQuandoDisciplinaIdForNulo() {
-            // Act & Assert
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(null, ID_USUARIO);
-            });
-            verifyNoInteractions(materialRepositoryMock);
-        }
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            Authentication authenticationMock = mock(Authentication.class);
+            when(userDetailsMock.getUsername()).thenReturn(EMAIL_USUARIO);
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID do usuário for nulo")
-        void deveLancarExcecaoQuandoUsuarioIdForNulo() {
-            // Act & Assert
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(ID_DISCIPLINA, null);
-            });
-            verifyNoInteractions(materialRepositoryMock);
+            when(usuarioRepositoryMock.buscarPorEmail(EMAIL_USUARIO)).thenReturn(Optional.of(usuarioLogado));
+
+            when(materialRepositoryMock.listarPorDisciplinaEUsuario(ID_DISCIPLINA, usuarioLogado.getId()))
+                    .thenReturn(Collections.emptyList());
+
+            // Act
+            List<Material> resultado = service.executar(ID_DISCIPLINA);
+
+            // Assert
+            assertNotNull(resultado);
+            assertTrue(resultado.isEmpty());
+            verify(materialRepositoryMock).listarPorDisciplinaEUsuario(ID_DISCIPLINA, usuarioLogado.getId());
         }
     }
 

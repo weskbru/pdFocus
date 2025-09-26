@@ -34,33 +34,30 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
 
     @Override
     public Resumo executar(CriarResumoDeMaterialCommand comando, UUID usuarioId) {
-        // 1. Validar se o material existe e pertence ao usuário
         var material = materialRepository.buscarPorIdEUsuario(comando.materialId(), usuarioId)
                 .orElseThrow(() -> new MaterialNaoEncontradoException(comando.materialId()));
 
-        // 2. Validar se a disciplina existe
         Disciplina disciplina = disciplinaRepository.buscarPorId(comando.disciplinaId())
                 .orElseThrow(() -> new DisciplinaNaoEncontradaException(comando.disciplinaId()));
 
-        // 3. Extrair texto do PDF usando o nomeStorage
-        String textoExtraido;
-        try {
-            textoExtraido = textExtractorPort.extrairTexto(material.getNomeStorage());
-        } catch (Exception e) {
-            throw new TextoNaoPodeSerExtraidoException(material.getId().toString(), e);
+        // ✅ LÓGICA CORRIGIDA: Extração de texto condicional
+        String conteudo;
+        if (comando.conteudo() != null && !comando.conteudo().isBlank()) {
+            // Usa o conteúdo fornecido
+            conteudo = comando.conteudo();
+        } else {
+            // Apenas extrai o texto se for necessário
+            try {
+                conteudo = textExtractorPort.extrairTexto(material.getNomeStorage());
+            } catch (Exception e) {
+                throw new TextoNaoPodeSerExtraidoException(material.getId().toString(), e);
+            }
         }
 
-        // 4. Gerar título padrão se não fornecido
         String titulo = comando.titulo() != null && !comando.titulo().isBlank()
                 ? comando.titulo()
                 : "Resumo - " + material.getNomeOriginal();
 
-        // 5. Usar texto extraído como conteúdo base se não fornecido
-        String conteudo = comando.conteudo() != null && !comando.conteudo().isBlank()
-                ? comando.conteudo()
-                : textoExtraido;
-
-        // 6. Criar e retornar o resumo
         return Resumo.criarDeMaterial(
                 UUID.randomUUID(),
                 usuarioId,
