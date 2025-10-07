@@ -10,6 +10,8 @@ import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Resumo;
 import com.pdfocus.core.models.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -58,28 +60,29 @@ public class DefaultObterDisciplinaPorIdService implements ObterDisciplinaPorIdU
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<DetalheDisciplinaResponse> executar(UUID id) {
-        // Obtém o usuário autenticado a partir do contexto de segurança.
+    public Optional<DetalheDisciplinaResponse> executar(UUID id, Pageable pageable) {
+
         String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Usuario usuario = usuarioRepository.buscarPorEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Usuário autenticado não pôde ser encontrado."));
+                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado."));
 
-        // Busca a disciplina principal, garantindo que ela pertence ao usuário.
         Optional<Disciplina> disciplinaOptional = disciplinaRepository.findByIdAndUsuarioId(id, usuario.getId());
 
-        // Se a disciplina principal não for encontrada para o usuário, retorna vazio.
         if (disciplinaOptional.isEmpty()) {
             return Optional.empty();
         }
 
         Disciplina disciplina = disciplinaOptional.get();
 
-        // Busca as coleções de resumos e materiais associados.
-        List<Resumo> resumos = resumoRepository.buscarPorDisciplinaEUsuario(disciplina.getId(), usuario.getId());
-        List<Material> materiais = materialRepository.listarPorDisciplinaEUsuario(disciplina.getId(), usuario.getId());
 
-        // Monta o DTO de resposta completo com todos os dados agregados.
-        DetalheDisciplinaResponse response = DetalheDisciplinaResponse.fromDomain(disciplina, resumos, materiais);
+        List<Resumo> todosOsResumos = resumoRepository.buscarPorDisciplinaEUsuario(disciplina.getId(), usuario.getId());
+
+
+        // Em vez de buscar uma lista, agora chamamos o novo método paginado.
+        Page<Material> paginaDeMateriais = materialRepository.buscarPorDisciplinaDeFormaPaginada(disciplina.getId(), pageable);
+
+        // A construção da resposta agora usa a página de materiais
+        DetalheDisciplinaResponse response = DetalheDisciplinaResponse.fromDomain(disciplina, todosOsResumos, paginaDeMateriais);
 
         return Optional.of(response);
     }

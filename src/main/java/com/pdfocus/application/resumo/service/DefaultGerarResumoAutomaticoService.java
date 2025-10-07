@@ -4,6 +4,7 @@ import com.pdfocus.application.resumo.dto.CriarResumoDeMaterialCommand;
 import com.pdfocus.application.resumo.port.entrada.GerarResumoAutomaticoUseCase;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
+import com.pdfocus.application.resumo.port.saida.ResumoRepository; // ✅ ADICIONE ESTA IMPORT
 import com.pdfocus.application.resumo.port.saida.TextExtractorPort;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
@@ -22,14 +23,17 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
     private final MaterialRepository materialRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final TextExtractorPort textExtractorPort;
+    private final ResumoRepository resumoRepository; // ✅ ADICIONE ESTA DEPENDÊNCIA
 
     public DefaultGerarResumoAutomaticoService(
             MaterialRepository materialRepository,
             DisciplinaRepository disciplinaRepository,
-            TextExtractorPort textExtractorPort) {
+            TextExtractorPort textExtractorPort,
+            ResumoRepository resumoRepository) { // ✅ ADICIONE ESTE PARÂMETRO
         this.materialRepository = materialRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.textExtractorPort = textExtractorPort;
+        this.resumoRepository = resumoRepository; // ✅ INICIALIZE
     }
 
     @Override
@@ -58,7 +62,8 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
                 ? comando.titulo()
                 : "Resumo - " + material.getNomeOriginal();
 
-        return Resumo.criarDeMaterial(
+        // ✅ CRIAR O RESUMO
+        Resumo resumo = Resumo.criarDeMaterial(
                 UUID.randomUUID(),
                 usuarioId,
                 titulo,
@@ -66,5 +71,8 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
                 disciplina,
                 comando.materialId()
         );
+
+        // ✅ SALVAR NO BANCO (LINHA QUE ESTAVA FALTANDO!)
+        return resumoRepository.salvar(resumo);
     }
 }

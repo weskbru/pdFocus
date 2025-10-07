@@ -1,6 +1,8 @@
 package com.pdfocus.infra.persistence.repository;
 
 import com.pdfocus.infra.persistence.entity.MaterialEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -37,4 +39,14 @@ public interface MaterialJpaRepository extends JpaRepository<MaterialEntity, UUI
      * O Spring Data JPA lê este nome e automaticamente cria a query SQL complexa para nós!
      */
     List<MaterialEntity> findFirst5ByUsuarioIdOrderByDataUploadDesc(UUID usuarioId);
+
+    /**
+     * O Spring Data JPA lê o nome deste método e automaticamente cria a consulta:
+     * "SELECT * FROM materiais WHERE disciplina_id = ? LIMIT ? OFFSET ?"
+     *
+     * @param disciplinaId O ID da disciplina para filtrar.
+     * @param pageable As informações de paginação.
+     * @return Uma página de entidades de material.
+     */
+    Page<MaterialEntity> findByDisciplinaId(UUID disciplinaId, Pageable pageable);
 }

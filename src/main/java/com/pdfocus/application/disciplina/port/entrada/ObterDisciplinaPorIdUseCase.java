@@ -1,24 +1,17 @@
 package com.pdfocus.application.disciplina.port.entrada;
 
-import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.application.disciplina.dto.DetalheDisciplinaResponse;
-
+import org.springframework.data.domain.Pageable; // ✅ 1. ADICIONE ESTE IMPORT
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Define o contrato (Porta de Entrada) para o caso de uso de obter uma
- * disciplina específica pelo seu ID, garantindo que ela pertença ao
- * usuário autenticado.
- */
 public interface ObterDisciplinaPorIdUseCase {
+
     /**
-     * Executa a busca de uma disciplina específica. A segurança é garantida
-     * pela implementação, que filtra pelo usuário logado.
-     *
-     * @param id O UUID da disciplina a ser buscada.
-     * @return um Optional contendo a {@link Disciplina} se encontrada e pertencente
-     * ao usuário, ou um Optional vazio caso contrário.
+     * Busca os detalhes de uma disciplina, incluindo uma lista paginada de seus materiais.
+     * @param id O UUID da disciplina.
+     * @param pageable As informações de paginação. //
+     * @return Um Optional com os detalhes da disciplina, se encontrada e pertencente ao usuário.
      */
-    Optional<DetalheDisciplinaResponse> executar(UUID id);
+    Optional<DetalheDisciplinaResponse> executar(UUID id, Pageable pageable);
 }

@@ -2,6 +2,8 @@ package com.pdfocus.application.material.port.saida;
 
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,5 +67,13 @@ public interface MaterialRepository {
      * @return um {@link Optional} contendo o {@link Material} se encontrado.
      */
     Optional<Material> buscarPorId(UUID id);
+
+    /**
+     * Busca uma página de materiais pertencentes a uma disciplina específica.
+     * @param disciplinaId O ID da disciplina.
+     * @param pageable Objeto que contém as informações de paginação.
+     * @return Uma página (Page) de materiais.
+     */
+    Page<Material> buscarPorDisciplinaDeFormaPaginada(UUID disciplinaId, Pageable pageable);
 }
 

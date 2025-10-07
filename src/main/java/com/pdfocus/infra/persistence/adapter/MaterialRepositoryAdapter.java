@@ -9,6 +9,8 @@ import com.pdfocus.infra.persistence.entity.MaterialEntity;
 import com.pdfocus.infra.persistence.mapper.MaterialMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
 import com.pdfocus.infra.persistence.repository.MaterialJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,6 +114,15 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
         }
         return materialJpaRepository.findById(id)
                 .map(MaterialMapper::toDomain);
+    }
+
+    @Override
+    public Page<Material> buscarPorDisciplinaDeFormaPaginada(UUID disciplinaId, Pageable pageable) {
+        // 1. Chama o método "mágico" do Spring Data JPA
+        Page<MaterialEntity> paginaDeEntidades = materialJpaRepository.findByDisciplinaId(disciplinaId, pageable);
+
+        // 2. Usa o seu Mapper para converter a página de Entidades (JPA) para uma página de Modelos de Domínio (Core)
+        return paginaDeEntidades.map(MaterialMapper::toDomain);
     }
 }
 
