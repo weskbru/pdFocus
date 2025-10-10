@@ -2,6 +2,8 @@ package com.pdfocus.application.disciplina.service;
 
 import com.pdfocus.application.disciplina.port.entrada.DeletarDisciplinaUseCase;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
+import com.pdfocus.application.material.port.saida.MaterialRepository;
+import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Usuario;
@@ -21,10 +23,19 @@ public class DefaultDeletarDisciplinaService implements DeletarDisciplinaUseCase
 
     private final DisciplinaRepository disciplinaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ResumoRepository resumoRepository;
+    private final MaterialRepository materialRepository;
 
-    public DefaultDeletarDisciplinaService(DisciplinaRepository disciplinaRepository, UsuarioRepository usuarioRepository) {
+    // ✅ ATUALIZAR CONSTRUTOR
+    public DefaultDeletarDisciplinaService(
+            DisciplinaRepository disciplinaRepository,
+            UsuarioRepository usuarioRepository,
+            ResumoRepository resumoRepository,
+            MaterialRepository materialRepository) {
         this.disciplinaRepository = disciplinaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.resumoRepository = resumoRepository;
+        this.materialRepository = materialRepository;
     }
 
     /**
@@ -35,21 +46,25 @@ public class DefaultDeletarDisciplinaService implements DeletarDisciplinaUseCase
     @Override
     @Transactional
     public void executar(UUID id) {
-        // Obtém o email do utilizador a partir do principal de segurança.
+        // 1. Verificar usuário (já existe)
         String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-
-        // Busca a entidade de domínio do utilizador correspondente.
         Usuario usuario = usuarioRepository.buscarPorEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Utilizador autenticado não pôde ser encontrado na base de dados."));
+                .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado."));
 
-        // Antes de apagar, primeiro verificamos se a disciplina existe E pertence ao utilizador.
-        // Se a busca não retornar nada, significa que ou a disciplina não existe, ou o
-        // utilizador não tem permissão para a apagar. Em ambos os casos, lançamos uma exceção.
+        // 2. Verificar se disciplina existe e pertence ao usuário
         if (disciplinaRepository.findByIdAndUsuarioId(id, usuario.getId()).isEmpty()) {
             throw new DisciplinaNaoEncontradaException(id);
         }
 
-        // Apenas se a verificação de posse for bem-sucedida, a operação de apagar é executada.
+        // 3. DELETAR RESUMOS PRIMEIRO
+        resumoRepository.deletarTodosPorDisciplinaId(id);
+
+        // 4. DELETAR MATERIAIS DEPOIS
+        materialRepository.deletarTodosPorDisciplinaId(id);
+
+        // 5. AGORA DELETAR A DISCIPLINA (sem foreign key errors)
         disciplinaRepository.deletarPorId(id);
+
+        System.out.println("Disciplina deletada com sucesso: " + id);
     }
 }

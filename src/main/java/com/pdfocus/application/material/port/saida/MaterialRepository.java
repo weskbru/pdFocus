@@ -75,5 +75,11 @@ public interface MaterialRepository {
      * @return Uma página (Page) de materiais.
      */
     Page<Material> buscarPorDisciplinaDeFormaPaginada(UUID disciplinaId, Pageable pageable);
+
+    /**
+     * Deleta todos os materiais de uma disciplina específica
+     * @param disciplinaId ID da disciplina
+     */
+    void deletarTodosPorDisciplinaId(UUID disciplinaId);
 }
 

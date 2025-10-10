@@ -49,5 +49,14 @@ public interface ResumoJpaRepository extends JpaRepository<ResumoEntity, UUID> {
     long deleteByIdAndUsuarioId(UUID id, UUID usuarioId);
 
     long countByUsuarioId(UUID usuarioId);
+
+    /**
+     * Encontra todos os resumos de uma disciplina específica (sem verificação de usuário).
+     * Usado para operações de deleção em cascata onde já validamos a permissão do usuário.
+     *
+     * @param disciplinaId O ID da disciplina
+     * @return Lista de resumos da disciplina
+     */
+    List<ResumoEntity> findByDisciplinaId(UUID disciplinaId);
 }
 

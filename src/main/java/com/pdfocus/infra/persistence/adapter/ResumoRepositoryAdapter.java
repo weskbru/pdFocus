@@ -73,4 +73,17 @@ public class ResumoRepositoryAdapter implements ResumoRepository {
     public long countByUsuario(Usuario usuario) {
         return jpaRepository.countByUsuarioId(usuario.getId());
     }
+
+    @Override
+    @Transactional
+    public void deletarTodosPorDisciplinaId(UUID disciplinaId) {
+        // Busca todos os resumos da disciplina
+        List<ResumoEntity> resumos = jpaRepository.findByDisciplinaId(disciplinaId);
+
+        // Deleta em lote (mais eficiente)
+        jpaRepository.deleteAllInBatch(resumos);
+
+        // Log para debug (opcional)
+        System.out.println("✅ Deletados " + resumos.size() + " resumos da disciplina: " + disciplinaId);
+    }
 }

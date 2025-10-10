@@ -124,5 +124,19 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
         // 2. Usa o seu Mapper para converter a página de Entidades (JPA) para uma página de Modelos de Domínio (Core)
         return paginaDeEntidades.map(MaterialMapper::toDomain);
     }
+
+    @Override
+    @Transactional
+    public void deletarTodosPorDisciplinaId(UUID disciplinaId) {
+        // Busca todos os materiais da disciplina
+        List<MaterialEntity> materiais = materialJpaRepository.findByDisciplinaId(disciplinaId);
+
+        // Deleta em lote (mais eficiente)
+        materialJpaRepository.deleteAllInBatch(materiais);
+
+        // Log para debug (opcional)
+        System.out.println("✅ Deletados " + materiais.size() + " materiais da disciplina: " + disciplinaId);
+    }
+
 }
 

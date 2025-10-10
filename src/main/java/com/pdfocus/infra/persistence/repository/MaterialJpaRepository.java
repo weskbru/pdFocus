@@ -49,4 +49,13 @@ public interface MaterialJpaRepository extends JpaRepository<MaterialEntity, UUI
      * @return Uma página de entidades de material.
      */
     Page<MaterialEntity> findByDisciplinaId(UUID disciplinaId, Pageable pageable);
+
+    /**
+     * Encontra todos os materiais de uma disciplina específica (sem verificação de usuário).
+     * Usado para operações de deleção em cascata onde já validamos a permissão do usuário.
+     *
+     * @param disciplinaId O ID da disciplina
+     * @return Lista de materiais da disciplina
+     */
+    List<MaterialEntity> findByDisciplinaId(UUID disciplinaId);
 }
