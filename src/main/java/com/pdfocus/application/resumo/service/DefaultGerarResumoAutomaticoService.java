@@ -4,8 +4,9 @@ import com.pdfocus.application.resumo.dto.CriarResumoDeMaterialCommand;
 import com.pdfocus.application.resumo.port.entrada.GerarResumoAutomaticoUseCase;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
-import com.pdfocus.application.resumo.port.saida.ResumoRepository; // ✅ ADICIONE ESTA IMPORT
+import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.application.resumo.port.saida.TextExtractorPort;
+import com.pdfocus.application.resumo.port.saida.ResumidorIAPort;
 import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
 import com.pdfocus.core.exceptions.TextoNaoPodeSerExtraidoException;
@@ -23,37 +24,52 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
     private final MaterialRepository materialRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final TextExtractorPort textExtractorPort;
-    private final ResumoRepository resumoRepository; // ✅ ADICIONE ESTA DEPENDÊNCIA
+    private final ResumoRepository resumoRepository;
+    private final ResumidorIAPort resumidorIAPort;
 
     public DefaultGerarResumoAutomaticoService(
             MaterialRepository materialRepository,
             DisciplinaRepository disciplinaRepository,
             TextExtractorPort textExtractorPort,
-            ResumoRepository resumoRepository) { // ✅ ADICIONE ESTE PARÂMETRO
+            ResumoRepository resumoRepository,
+            ResumidorIAPort resumidorIAPort) {
         this.materialRepository = materialRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.textExtractorPort = textExtractorPort;
-        this.resumoRepository = resumoRepository; // ✅ INICIALIZE
+        this.resumoRepository = resumoRepository;
+        this.resumidorIAPort = resumidorIAPort;
     }
 
     @Override
     public Resumo executar(CriarResumoDeMaterialCommand comando, UUID usuarioId) {
+        System.out.println("🚀 INICIANDO GERAÇÃO DE RESUMO AUTOMÁTICO");
+
         var material = materialRepository.buscarPorIdEUsuario(comando.materialId(), usuarioId)
                 .orElseThrow(() -> new MaterialNaoEncontradoException(comando.materialId()));
 
         Disciplina disciplina = disciplinaRepository.buscarPorId(comando.disciplinaId())
                 .orElseThrow(() -> new DisciplinaNaoEncontradaException(comando.disciplinaId()));
 
-        // ✅ LÓGICA CORRIGIDA: Extração de texto condicional
         String conteudo;
         if (comando.conteudo() != null && !comando.conteudo().isBlank()) {
-            // Usa o conteúdo fornecido
+            // Usa o conteúdo fornecido manualmente
             conteudo = comando.conteudo();
+            System.out.println("📝 Usando conteúdo manual fornecido");
         } else {
-            // Apenas extrai o texto se for necessário
+            // FLUXO PRINCIPAL: RESUMO AUTOMÁTICO
             try {
-                conteudo = textExtractorPort.extrairTexto(material.getNomeStorage());
+                // 1. Extrair texto do PDF
+                System.out.println("🔤 Extraindo texto do PDF...");
+                String textoCompleto = textExtractorPort.extrairTexto(material.getNomeStorage());
+                System.out.println("✅ Texto extraído: " + textoCompleto.length() + " caracteres");
+
+                // 2. ✅ AGORA GERAR O RESUMO REAL (NOVO!)
+                System.out.println("Gerando resumo automático...");
+                conteudo = resumidorIAPort.resumir(textoCompleto, 300); // 300 palavras máximo
+                System.out.println("Resumo gerado: " + conteudo.length() + " caracteres");
+
             } catch (Exception e) {
+                System.out.println("Erro ao gerar resumo: " + e.getMessage());
                 throw new TextoNaoPodeSerExtraidoException(material.getId().toString(), e);
             }
         }
@@ -62,17 +78,19 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
                 ? comando.titulo()
                 : "Resumo - " + material.getNomeOriginal();
 
-        // ✅ CRIAR O RESUMO
+        // Criar e salvar o resumo
         Resumo resumo = Resumo.criarDeMaterial(
                 UUID.randomUUID(),
                 usuarioId,
                 titulo,
-                conteudo,
+                conteudo, // AGORA É O TEXTO RESUMIDO, NÃO O COMPLETO
                 disciplina,
                 comando.materialId()
         );
 
-        // ✅ SALVAR NO BANCO (LINHA QUE ESTAVA FALTANDO!)
-        return resumoRepository.salvar(resumo);
+        Resumo resumoSalvo = resumoRepository.salvar(resumo);
+        System.out.println("Resumo salvo com ID: " + resumoSalvo.getId());
+
+        return resumoSalvo;
     }
 }
