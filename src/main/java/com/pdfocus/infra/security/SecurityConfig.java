@@ -83,14 +83,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Define a política de sessão como stateless
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Permite acesso público aos endpoints de autenticação
-                        .anyRequest().authenticated() // Exige autenticação para todas as outras requisições
+                        // Endpoints públicos (sem autenticação)
+                        .requestMatchers(
+                                "/auth/**",           // Autenticação
+                                "/feedback",          // Feedback dos usuários
+                                "/feedback/**"        // Futuros endpoints de feedback
+                        ).permitAll()
+
+                        // Todos os outros endpoints requerem autenticação
+                        .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider()) // Registra o provedor de autenticação customizado
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Adiciona o filtro JWT antes do filtro padrão
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

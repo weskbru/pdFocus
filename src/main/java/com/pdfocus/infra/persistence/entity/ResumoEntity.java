@@ -6,7 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -22,6 +25,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@EntityListeners(AuditingEntityListener.class)
 public class ResumoEntity {
 
     @Id
@@ -48,4 +52,6 @@ public class ResumoEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "disciplina_id", nullable = false)
     private DisciplinaEntity disciplina;
+
+
 }

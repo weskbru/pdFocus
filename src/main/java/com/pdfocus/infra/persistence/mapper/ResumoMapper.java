@@ -6,6 +6,7 @@ import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 import com.pdfocus.infra.persistence.entity.ResumoEntity;
 
 import java.util.List;
+import java.util.stream.Collectors; // Adicionei este import que faltava no original
 
 public class ResumoMapper {
 
@@ -23,20 +24,21 @@ public class ResumoMapper {
 
         DisciplinaEntity disciplinaEntity = DisciplinaMapper.toEntity(resumo.getDisciplina());
 
-        // CORREÇÃO: Adicionar materialId no construtor
+        // CORREÇÃO: Adicionar materialId no construtor (Esta correção já estava no original que você mandou)
         ResumoEntity entity = new ResumoEntity();
         entity.setId(resumo.getId());
         entity.setUsuarioId(resumo.getUsuarioId());
         entity.setTitulo(resumo.getTitulo());
         entity.setConteudo(resumo.getConteudo());
         entity.setDisciplina(disciplinaEntity);
-        entity.setMaterialId(resumo.getMaterialId()); // NOVO CAMPO
+        entity.setMaterialId(resumo.getMaterialId()); // NOVO CAMPO (Este campo já estava no original que você mandou)
 
         return entity;
     }
 
     /**
      * Converte uma entidade JPA {@link ResumoEntity} para um objeto de domínio {@link Resumo}.
+     * (Versão ORIGINAL antes de adicionar dataCriacao)
      */
     public static Resumo toDomain(ResumoEntity resumoEntity) {
         if (resumoEntity == null) {
@@ -45,12 +47,20 @@ public class ResumoMapper {
 
         Disciplina disciplina = null;
         if (resumoEntity.getDisciplina() != null) {
+            // Assume que DisciplinaMapper.toDomain existe e funciona
             disciplina = DisciplinaMapper.toDomain(resumoEntity.getDisciplina());
+        } else {
+            // Tratamento de erro se necessário, mas mantendo a lógica original
+            System.err.println("Aviso: ResumoEntity encontrada sem DisciplinaEntity associada (ID Resumo: " + resumoEntity.getId() + ")");
+            // Ou lançar exceção dependendo da sua regra
         }
 
-        // CORREÇÃO: Verificar se é um resumo baseado em material ou manual
+
+        // Lógica ORIGINAL que você tinha:
+        // Verificar se é um resumo baseado em material ou manual
         if (resumoEntity.getMaterialId() != null) {
-            // Usar o novo factory method para resumos baseados em material
+            // Usar o factory method para resumos baseados em material
+            // (Este método Resumo.criarDeMaterial define a data como .now())
             return Resumo.criarDeMaterial(
                     resumoEntity.getId(),
                     resumoEntity.getUsuarioId(),
@@ -61,6 +71,7 @@ public class ResumoMapper {
             );
         } else {
             // Usar o factory method original para resumos manuais
+            // (Este método Resumo.criar também define a data como .now())
             return Resumo.criar(
                     resumoEntity.getId(),
                     resumoEntity.getUsuarioId(),
@@ -79,8 +90,8 @@ public class ResumoMapper {
             return java.util.Collections.emptyList();
         }
         return entities.stream()
-                .map(ResumoMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
+                .map(ResumoMapper::toDomain) // Usa o método toDomain original
+                .collect(Collectors.toList());
     }
 
     /**
@@ -91,7 +102,7 @@ public class ResumoMapper {
             return java.util.Collections.emptyList();
         }
         return domainObjects.stream()
-                .map(ResumoMapper::toEntity)
-                .collect(java.util.stream.Collectors.toList());
+                .map(ResumoMapper::toEntity) // Usa o método toEntity original
+                .collect(Collectors.toList());
     }
 }

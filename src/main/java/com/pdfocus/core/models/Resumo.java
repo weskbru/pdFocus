@@ -47,6 +47,22 @@ public class Resumo {
         return new Resumo(id, usuarioId, titulo, conteudo, disciplina, materialId, OffsetDateTime.now());
     }
 
+    /**
+     * Método de fábrica para reconstruir um objeto Resumo a partir dos dados persistidos
+     * (vindos da ResumoEntity), incluindo a data de criação original.
+     */
+    public static Resumo reconstruir(UUID id, UUID usuarioId, String titulo, String conteudo, Disciplina disciplina, UUID materialId, OffsetDateTime dataCriacao) {
+        // Validações básicas (podem ser mais relaxadas aqui, assumindo dados válidos do DB)
+        Validador.requireNotNull(id, "Id da entidade não pode ser nulo");
+        Validador.requireNotNull(usuarioId, "UsuarioId da entidade não pode ser nulo");
+        Validador.requireNotNull(titulo, "Título da entidade não pode ser nulo");
+        Validador.requireNotNull(disciplina, "Disciplina da entidade não pode ser nula");
+        Validador.requireNotNull(dataCriacao, "Data de criação da entidade não pode ser nula"); // Garante que a data do DB está presente
+
+        // Chama o construtor privado passando TODOS os dados, inclusive a data do DB
+        return new Resumo(id, usuarioId, titulo, conteudo, disciplina, materialId, dataCriacao);
+    }
+
     // --- MÉTODOS DE ACESSO PÚBLICOS ---
 
     public UUID getId() {
