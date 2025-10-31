@@ -2,6 +2,7 @@ package com.pdfocus.application.feedback.service;
 
 import com.pdfocus.application.feedback.dto.FeedbackRequest;
 import com.pdfocus.application.feedback.port.entrada.EnviarFeedbackUseCase;
+import com.pdfocus.application.feedback.port.saida.FeedbackEmailPort;
 import com.pdfocus.application.feedback.port.saida.FeedbackRepository;
 import com.pdfocus.core.models.Feedback;
 import com.pdfocus.core.exceptions.FeedbackInvalidoException;
@@ -20,17 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
 
     private final FeedbackRepository feedbackRepository;
-    private final FeedbackEmailService feedbackEmailService;
+    private final FeedbackEmailPort feedbackEmailPort;
 
-    /**
-     * Construtor com injeção de dependências seguindo o padrão do projeto.
-     * Separado para facilitar testes e evolução futura.
-     */
     public DefaultEnviarFeedbackService(
             FeedbackRepository feedbackRepository,
-            FeedbackEmailService feedbackEmailService) {
+            FeedbackEmailPort feedbackEmailPort) {
         this.feedbackRepository = feedbackRepository;
-        this.feedbackEmailService = feedbackEmailService;
+        this.feedbackEmailPort = feedbackEmailPort;
     }
 
     /**
@@ -44,21 +41,21 @@ public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
      */
     @Override
     public Long executar(FeedbackRequest request) {
-        // 1. Validar dados de entrada (seguindo padrão dos outros services)
         request.validar();
 
-        // 2. Criar entidade de domínio (conversão DTO → Domain)
         Feedback feedback = criarFeedbackFromRequest(request);
 
-        // 3. Persistir no repositório
         Feedback feedbackSalvo = feedbackRepository.salvar(feedback);
 
-        // 4. Enviar notificação por email (usando service separado)
-        feedbackEmailService.enviarEmailFeedback(feedbackSalvo);
+        try {
+            feedbackEmailPort.enviarEmailFeedback(feedbackSalvo);
+        } catch (Exception e) {
+            throw new EmailFeedbackException("Erro ao enviar e-mail de feedback", e);
+        }
 
-        // 5. Retornar ID do feedback persistido
         return feedbackSalvo.getId();
     }
+
 
     /**
      * Converte o DTO de request para entidade de domínio.

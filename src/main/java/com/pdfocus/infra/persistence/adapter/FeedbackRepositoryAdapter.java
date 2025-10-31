@@ -5,8 +5,10 @@ import com.pdfocus.core.models.Feedback;
 import com.pdfocus.infra.persistence.entity.FeedbackEntity;
 import com.pdfocus.infra.persistence.mapper.FeedbackMapper;
 import com.pdfocus.infra.persistence.repository.FeedbackJpaRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -69,5 +71,10 @@ public class FeedbackRepositoryAdapter implements FeedbackRepository {
     @Override
     public boolean existeComMensagem(String mensagem) {
         return feedbackJpaRepository.existsByMensagemIgnoreCase(mensagem);
+    }
+
+    @Override
+    public List<Feedback> findAll(Sort dataCriacao) {
+        return List.of();
     }
 }

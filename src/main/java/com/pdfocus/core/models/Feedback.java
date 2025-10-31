@@ -1,6 +1,5 @@
 package com.pdfocus.core.models;
 
-import com.pdfocus.core.exceptions.CampoVazioException;
 import com.pdfocus.core.exceptions.ValorInvalidoException;
 import com.pdfocus.core.shared.Validador;
 

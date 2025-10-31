@@ -1,7 +1,9 @@
 package com.pdfocus.application.feedback.port.saida;
 
 import com.pdfocus.core.models.Feedback;
+import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -38,4 +40,6 @@ public interface FeedbackRepository {
      * @return true se já existe feedback com mesma mensagem
      */
     boolean existeComMensagem(String mensagem);
+
+    List<Feedback> findAll(Sort dataCriacao);
 }
