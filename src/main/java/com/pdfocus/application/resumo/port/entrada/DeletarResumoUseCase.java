@@ -1,6 +1,6 @@
 package com.pdfocus.application.resumo.port.entrada;
 
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 
 import java.util.UUID;
 

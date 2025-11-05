@@ -1,4 +1,4 @@
-package com.pdfocus.infra.security;
+package com.pdfocus.infra.config.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

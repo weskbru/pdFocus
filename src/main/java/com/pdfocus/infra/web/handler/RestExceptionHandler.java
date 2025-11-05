@@ -1,8 +1,8 @@
-package com.pdfocus.infra.web.exception;
+package com.pdfocus.infra.web.handler;
 
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
-import com.pdfocus.core.exceptions.EmailJaCadastradoException;
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

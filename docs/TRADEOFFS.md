@@ -1,72 +1,81 @@
-# Trade-offs Técnicos – PDFocus
+# ⚖️ Trade-offs Técnicos – Pdfocus
 
-## 💡 O que é um Trade-off?
+## 🧭 Propósito
 
-Toda decisão de arquitetura ou tecnologia implica em **ganhos** e **custos**. Este documento registra essas escolhas para que qualquer pessoa (inclusive eu no futuro) entenda **por que fizemos do jeito que fizemos**.
+Este documento registra as **decisões técnicas críticas** tomadas durante o desenvolvimento do **Pdfocus**, explicando os **motivos, benefícios e riscos** de cada escolha.
 
----
-
-## ⚖️ Trade-offs Relevantes do Projeto
-
-### 1. ❌ Não usar Spring Boot no MVP
-
-- **Benefício:** Inicialização mais rápida, sem dependência de container, controle total sobre as dependências.
-- **Custo:** Mais código “manual” (injeção de dependência, configuração de rotas), menos comunidade ajudando com problemas triviais.
-- **Mitigação:** A arquitetura permite plugar Spring futuramente sem reescrever a camada de domínio.
+O objetivo é manter **transparência arquitetural** e permitir que futuras evoluções do sistema sejam feitas com consciência das consequências técnicas já conhecidas.
 
 ---
 
-### 2. ✅ Separar `domain` e `application`
+## 🧱 Contexto Geral
 
-- **Benefício:** Código mais coeso e testável. Casos de uso separados de lógica de infraestrutura.
-- **Custo:** Mais estrutura inicial, exige conhecimento de arquitetura.
-- **Mitigação:** Comentários, diagrama no README e documentação clara ajudam no onboarding.
-
----
-
-### 3. ❌ Ignorar persistência no primeiro ciclo
-
-- **Benefício:** Permite focar totalmente na lógica de extração e resumo. Menor tempo para entrega do MVP.
-- **Custo:** Algumas funcionalidades ficam incompletas (ex: salvar histórico, login persistente).
-- **Mitigação:** Interfaces de repositório já existem — é só implementar depois com H2 ou SQLite.
+O **Pdfocus** evoluiu de um MVP leve para um **micro SaaS completo**, estruturado com **Spring Boot 3**, **arquitetura hexagonal** e princípios de **DDD**.  
+Cada decisão aqui registrada reflete o equilíbrio entre **simplicidade, desempenho, clareza e evolução sustentável**.
 
 ---
 
-### 4. ✅ Escolher Gradle Kotlin DSL
+## ⚙️ Principais Decisões e Compensações
 
-- **Benefício:** Sintaxe moderna, tipada, melhor suporte em IDEs.
-- **Custo:** Curva de aprendizado maior pra quem só conhece Groovy.
-- **Mitigação:** Projeto documentado, exemplos simples no `build.gradle.kts`.
-
----
-
-### 5. ❌ Não usar Docker no início
-
-- **Benefício:** Ambiente local roda mais rápido, menos dependências externas.
-- **Custo:** Mais difícil compartilhar a aplicação com outras pessoas.
-- **Mitigação:** Planejado para fase 2, junto com CI/CD.
-
----
-
-### 6. ❌ Sem autenticação real no início
-
-- **Benefício:** MVP mais rápido. Sem dependência de JWT, OAuth, etc.
-- **Custo:** Sem controle de acesso real.
-- **Mitigação:** Interface de autenticação já isolada. Pode ser plugada depois.
+| Tema | Decisão                                      | Benefício | Custo / Trade-off |
+|------|----------------------------------------------|------------|-------------------|
+| **Framework** | Adoção do **Spring Boot 3.x**                | Produtividade, injeção nativa, integração com JPA e Security | Aumenta tempo de build e dependência do ecossistema Spring |
+| **Arquitetura** | Aplicar **Hexagonal + Clean Architecture + DDD** | Clareza estrutural, testabilidade e independência de frameworks | Estrutura mais complexa, curva de aprendizado maior |
+| **Banco de Dados** | Escolha do **PostgreSQL via JPA (Hibernate)** | Modelo relacional sólido, bom suporte a JSON e tipagem forte | Menos flexível que NoSQL para mudanças rápidas de schema |
+| **Segurança** | Implementar **JWT + Spring Security**        | Autenticação stateless, escalável para SaaS | Configuração inicial mais trabalhosa |
+| **Build Tool** | Uso de **Gradle Kotlin DSL**                 | Sintaxe moderna, segura e declarativa | Menor base de exemplos que Groovy |
+| **Containerização** | Adotar **Docker** para execução e deploy     | Ambientes consistentes e reprodutíveis | Requer setup adicional em ambiente local |
+| **Documentação** | Uso de **Swagger/OpenAPI**                   | Documentação automática e padronizada da API | Pequeno overhead de manutenção |
+| **Frontend separado** | Isolar interface web em repositório Angular  | Independência entre camadas e deploy modular | Exige sincronização entre versões de API e front |
+| **Monólito modular** | Manter um único serviço backend modular      | Simplicidade de deploy, CI/CD e debug | Escalabilidade horizontal limitada |
+| **Testes** | Priorizar **JUnit + Mockito + JaCoCo**       | Cobertura de regras de negócio e integração | Falta de testes de carga e performance neste estágio |
+| **IA local / futura integração externa** | Manter processamento de resumo local por enquanto | Controle sobre o pipeline e custo zero com APIs | Escalabilidade limitada e ausência de aprendizado contínuo |
 
 ---
 
-## 🤖 Filosofia de Decisão
+## 🧠 Decisões Rejeitadas (por enquanto)
 
-- Primeiro, **faça funcionar**.
-- Depois, **torne limpo e escalável**.
-- Só então, **otimize com ferramentas e frameworks.**
+| Alternativa | Motivo da rejeição |
+|--------------|--------------------|
+| **Arquitetura de Microsserviços** | Complexidade desnecessária no estágio atual. Monólito modular atende bem. |
+| **MongoDB / DynamoDB** | O modelo relacional cobre o domínio atual com melhor integridade de dados. |
+| **Mensageria (Kafka, RabbitMQ)** | Nenhuma demanda assíncrona relevante neste ponto do projeto. |
+| **CI/CD completo (deploy automático)** | Priorizado para próxima etapa, após estabilização do core. |
+| **Kubernetes / Cloud Deploy** | Docker local é suficiente; migração futura para cloud planejada. |
 
 ---
 
-## 🧭 Pronto para evoluir
+## 🔍 Lições Aprendidas
 
-As decisões acima **não são finais**. Elas foram feitas com base no estado atual do projeto e podem mudar conforme o produto evolui. Isso é intencional.
+1. **Frameworks são aliados, mas não arquitetos** – Spring Boot ajuda, mas o domínio precisa permanecer puro.
+2. **O código que não depende de nada dura mais** – as camadas de domínio e aplicação continuam independentes.
+3. **Simplicidade é força** – evitar microserviços prematuros tornou o desenvolvimento mais rápido e previsível.
+4. **Documentar cedo evita dívida técnica** – manter `ARCHITECTURE.md` e `TECH-DECISIONS.md` desde o início acelerou a evolução.
+5. **Automação vem depois da clareza** – antes de CI/CD, é preciso garantir estabilidade do core.
 
-A arquitetura foi feita para **absorver mudanças com baixo impacto**, exatamente para que essas trocas (ex: adicionar Spring, persistência real, autenticação segura) sejam naturais.
+---
 
+## 🚀 Planos Futuros
+
+| Tema | Próxima decisão prevista |
+|-------|---------------------------|
+| **Observabilidade** | Adicionar Spring Actuator + Logs estruturados (ELK Stack) |
+| **Performance** | Introduzir cache (Caffeine/Redis) |
+| **Automação** | Configurar pipeline CI/CD com GitHub Actions |
+| **Escalabilidade** | Avaliar transição gradual para microsserviços ou modularização via Jigsaw |
+| **IA e Resumos Inteligentes** | Integrar API externa de IA para resumos contextuais e dinâmicos |
+
+---
+
+## 📚 Fontes de Referência
+
+- *Clean Architecture* – Robert C. Martin
+- *Domain-Driven Design* – Eric Evans
+- *Patterns of Enterprise Application Architecture* – Martin Fowler
+- *12 Factor App* – Heroku
+- *Effective Java* – Joshua Bloch
+
+---
+
+> “Cada decisão técnica é um investimento: o retorno vem quando você ainda consegue mudar o sistema sem medo.”  
+> — *Martin Fowler*

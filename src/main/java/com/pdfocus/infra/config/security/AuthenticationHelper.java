@@ -1,4 +1,4 @@
-package com.pdfocus.infra.security;
+package com.pdfocus.infra.config.security;
 
 import com.pdfocus.infra.persistence.entity.UsuarioEntity;
 import org.springframework.security.core.Authentication;

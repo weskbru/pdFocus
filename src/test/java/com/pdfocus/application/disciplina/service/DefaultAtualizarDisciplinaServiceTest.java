@@ -3,7 +3,7 @@ package com.pdfocus.application.disciplina.service;
 import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Usuario;
 import org.junit.jupiter.api.BeforeEach;

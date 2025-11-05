@@ -5,7 +5,7 @@ import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.resumo.dto.CriarResumoDeMaterialCommand;
 import com.pdfocus.application.resumo.port.entrada.*;
 import com.pdfocus.core.models.Resumo;
-import com.pdfocus.infra.security.AuthenticationHelper;
+import com.pdfocus.infra.config.security.AuthenticationHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;

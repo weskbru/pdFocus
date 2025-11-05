@@ -4,7 +4,7 @@ import com.pdfocus.application.material.port.entrada.DeletarMaterialUseCase;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
+import com.pdfocus.core.exceptions.material.MaterialNaoEncontradoException;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.security.core.context.SecurityContextHolder;
