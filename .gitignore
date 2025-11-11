@@ -47,6 +47,14 @@ logs/
 estrutura.txt
 
 # --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
+# --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
+
+# Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
+/uploads/
+
+# Arquivo temporário da estrutura
+estrutura.txt
+
 
 # Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
 /uploads/
