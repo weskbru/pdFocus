@@ -5,7 +5,7 @@ import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,7 +1,7 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.material.port.saida.MaterialRepository;
-import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
+import com.pdfocus.core.exceptions.material.MaterialNaoEncontradoException;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;

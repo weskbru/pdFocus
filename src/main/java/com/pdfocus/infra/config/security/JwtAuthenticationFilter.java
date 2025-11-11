@@ -1,4 +1,4 @@
-package com.pdfocus.infra.security;
+package com.pdfocus.infra.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

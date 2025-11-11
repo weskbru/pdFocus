@@ -1,7 +1,6 @@
 package com.pdfocus.application.disciplina.port.saida;
 
 import com.pdfocus.core.models.Disciplina;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Usuario;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.ResumoEntity;

@@ -2,7 +2,7 @@ package com.pdfocus.application.resumo.service;
 
 import com.pdfocus.application.resumo.port.entrada.DeletarResumoUseCase;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

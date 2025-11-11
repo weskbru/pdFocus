@@ -1,80 +1,157 @@
-# Arquitetura do Projeto – PDFocus
+# 🧱 Arquitetura do Projeto – Pdfocus
 
 ## 🧠 Visão Geral
 
-Este projeto adota os princípios da **Clean Architecture**, com separação clara entre:
+O **Pdfocus** adota os princípios da **Clean Architecture**, combinados com a **Arquitetura Hexagonal (Ports & Adapters)** e conceitos de **Domain-Driven Design (DDD)**.  
+Essa abordagem garante um sistema **modular, testável e independente de frameworks**, ideal para evolução de um produto SaaS.
 
-- **Interface com o usuário (entrada)** → Camada de controllers ou interface CLI/API
-- **Casos de uso (application)** → Regras de orquestração
-- **Domínio (domain)** → Entidades, regras de negócio puras
-- **Infraestrutura (infrastructure)** → Persistência, PDF, segurança, etc.
-
-Essa abordagem permite independência de frameworks, modularidade e facilidade de testes.
+O foco da arquitetura é permitir que o domínio permaneça **puro** — livre de dependências externas — enquanto as camadas de infraestrutura e interface se conectam através de **ports (interfaces)** e **adapters (implementações concretas)**.
 
 ---
 
-## 🏗️ Camadas
+## 🏗️ Camadas Arquiteturais
 
-### 1. **Domain**
-- Contém entidades puras (POJOs), validações e regras de negócio.
-- Não depende de nenhuma tecnologia externa.
-- Pode ser testada sem infraestrutura.
+### 1. **Core (Domínio)**
+- Contém **entidades puras (POJOs)**, **objetos de valor** e **regras de negócio**.
+- Não depende de nenhuma tecnologia externa ou framework.
+- Inclui exceções específicas do domínio (ex: `ResumoNaoEncontradoException`, `EmailInvalidoException`).
+- Pode ser **testado isoladamente** sem necessidade de banco ou rede.
 
-### 2. **Application**
-- Implementa os **casos de uso** (ex: autenticar usuário, extrair texto, gerar resumo).
-- Orquestra entidades e repositórios.
-- Conhece o domínio, mas não conhece a infraestrutura.
+📁 Exemplo de pacote:
+```text
+core/
+├── models/
+├── exceptions/
+└── shared/
+````
 
-### 3. **Infrastructure**
-- Conecta com banco de dados, leitura de PDFs, segurança, rede, etc.
-- Implementa interfaces definidas no domínio (ex: repositórios).
-- Pode usar qualquer framework sem afetar o core.
 
-### 4. **Interface/Controller**
-- Camada de entrada do sistema (REST, CLI, etc).
-- Traduz requisições em comandos para o application.
-- Pode ser trocada por outra interface sem alterar regras.
+### 2. **Application (Casos de Uso)**
+- Contém a **lógica de orquestração** entre o domínio e o mundo externo.
+- Define **ports (interfaces)** que descrevem o que o domínio precisa (como salvar dados, enviar e-mails, autenticar usuários, etc.).
+- Implementa **services e commands** que representam os fluxos de uso principais.
+- Não depende da infraestrutura — apenas da definição de contratos.
 
----
+📁 Exemplo de pacote:
+```text
+application/
+├── resumo/
+├── disciplina/
+├── material/
+├── usuario/
+└── feedback/
+````
 
-## 🧪 Testabilidade
+### 3. **Infra (Infraestrutura / Adapters)**
+- Implementa os detalhes técnicos definidos nas ports da aplicação.
+- Inclui:
+    - **Controllers REST** (Spring Web)
+    - **Repositórios JPA** (persistência)
+    - **Segurança (Spring Security + JWT)**
+    - **Envio de e-mails**
+    - **Storage de arquivos**
+- É a camada mais flexível — pode ser alterada ou substituída sem afetar o domínio.
 
-- O domínio e a aplicação são **totalmente testáveis** sem necessidade de mocks complexos ou banco.
-- A infraestrutura é pluggable e pode ser testada por integração.
+📁 Exemplo de pacote:
+```text
+infra/
+├── web/
+├── persistence/
+├── config/
+├── security/
+├── email/
+└── storage/
+````
+### 4. **Boot / Configuração**
+- Ponto de entrada do sistema e inicialização do **Spring Boot**.
+- Define beans, injeção de dependências e configurações gerais.
+- Permite que todo o resto da aplicação seja carregado de forma limpa e modular.
 
----
+📁 Exemplo:
+```text
+boot/
+└── PdfocusApplication.java
+````
 
-## 🧱 Decisões Arquiteturais
+## 🧠 Diagrama de Arquitetura (Visão Hexagonal)
 
-- Evitei uso de Spring ou qualquer framework no core, para manter o acoplamento mínimo.
-- Divisão por contexto: cada módulo tem seu domínio, aplicação e infra separados.
-- `Main.java` inicializa o sistema manualmente (injeção simples, por composição).
+```mermaid
+flowchart TB
 
----
+    subgraph User["👤 Usuário / Frontend (pdfocus-frontend)"]
+        UI["Interface Web (Angular + TypeScript)"]
+     end
 
-## ♻️ Trade-offs
+    subgraph Infra["🌐 Infra (Adapters)"]
+        Controller["Controllers REST"]
+        Persistence["Repositórios JPA"]
+        Security["JWT / Autenticação"]
+        Email["Envio de E-mails"]
+        Storage["Armazenamento de Arquivos"]
+    end
 
-| Decisão                                 | Justificativa                                                                 |
-|----------------------------------------|------------------------------------------------------------------------------|
-| ❌ Não usei Spring Boot no início       | MVP leve, menor tempo de build e sem acoplamento prematuro                   |
-| ✅ Usei Gradle com Kotlin DSL           | Mais seguro e conciso que o Groovy                                           |
-| ❌ Não implementei banco relacional     | O MVP foca em lógica, não persistência — deixei preparado para plugar depois |
-| ✅ Testes escritos com JUnit 5          | Testes rápidos, focados em domínio e casos de uso                            |
+    subgraph Application["⚙️ Application (Casos de Uso)"]
+        Service["Services / Use Cases"]
+        PortsIn["Ports de Entrada"]
+        PortsOut["Ports de Saída"]
+    end
 
----
+    subgraph Core["💡 Core (Domínio)"]
+        Entities["Entidades de Domínio"]
+        Rules["Regras de Negócio"]
+        Exceptions["Exceções"]
+    end
 
-## 🚀 Futuras Extensões
+    User -->|Requisição HTTP| Controller
+    Controller -->|Chama Caso de Uso| Service
+    Service -->|Aplica Regras| Core
+    Service -->|Acessa Adaptadores| Persistence
+    Service -->|Autentica| Security
+    Service -->|Faz Upload| Storage
+    Service -->|Envia Email| Email
+    Persistence -->|Salva Dados| DB[(PostgreSQL)]
+````
 
-- Migrar para Spring Boot caso a complexidade aumente
-- Adicionar camada assíncrona para tarefas pesadas (RabbitMQ, Kafka, etc)
-- API pública REST ou integração com mensageria
-- Deploy em contêiner (Docker) com CI/CD no GitHub Actions
+### 🧪 Testabilidade
 
----
+* O Core e o Application podem ser testados sem frameworks — apenas com JUnit e Mockito.
+* A Infra é testada via integração, garantindo que os adapters concretos funcionem corretamente.
+* A arquitetura favorece TDD e injeção de dependências controlada.
 
-## 📌 Referências
+### 🧱 Decisões Arquiteturais
 
-- Clean Architecture – Robert C. Martin
-- Hexagonal Architecture (Ports & Adapters)
-- Effective Java – Joshua Bloch
-- 12 Factor App Principles
+| Tema | Decisão | Justificativa |
+| :--- | :--- | :--- |
+| Arquitetura | Hexagonal + DDD + Clean Architecture | Mantém separação de responsabilidades e facilidade de testes |
+| Framework | Spring Boot 3.x | Produtividade, robustez e ecossistema maduro |
+| Banco de Dados | PostgreSQL via JPA | Consistente, relacional e fácil de integrar com Spring Data |
+| Segurança | Spring Security + JWT | Simples, escalável e ideal para SaaS |
+| Build Tool | Gradle Kotlin DSL | Sintaxe moderna e manutenção simplificada |
+| Empacotamento | Docker | Portabilidade e fácil deploy |
+| Documentação | Swagger / OpenAPI | Clareza para desenvolvedores e futuros consumidores de API |
+
+### ♻️ Trade-offs
+
+| Decisão | Justificativa |
+| :--- | :--- |
+| ❌ A arquitetura inicial sem Spring Boot foi substituída | A maturidade do projeto exigiu gerenciamento robusto e injeção nativa |
+| ✅ Mantido domínio puro e desacoplado | Permite testes isolados e evolução modular |
+| ❌ A estrutura em módulos foi consolidada em um único projeto monolítico modular | Simplifica deploy e CI/CD no estágio atual |
+| ✅ Gradle + Kotlin DSL adotado | Configuração enxuta e segura |
+| ✅ Separação entre back e front | Mantém escalabilidade e versionamento independente |
+
+### 🚀 Futuras Extensões
+
+* Implementar geração de resumos via API externa de IA.
+* Adicionar pipeline CI/CD (GitHub Actions) para build, teste e deploy automático.
+* Incorporar Spring Actuator para métricas e monitoramento.
+* Evoluir para arquitetura event-driven (RabbitMQ / Kafka).
+* Criar módulo de analytics para acompanhamento de uso.
+
+### 📌 Referências
+
+* Clean Architecture – Robert C. Martin
+* Hexagonal Architecture (Ports & Adapters) – Alistair Cockburn
+* Domain-Driven Design – Eric Evans
+* Effective Java – Joshua Bloch
+* 12-Factor App Principles – Heroku

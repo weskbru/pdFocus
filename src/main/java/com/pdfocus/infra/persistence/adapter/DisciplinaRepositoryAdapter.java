@@ -1,7 +1,6 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;

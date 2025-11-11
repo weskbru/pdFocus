@@ -5,7 +5,7 @@ import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.exceptions.CampoNuloException;
 import com.pdfocus.core.exceptions.CampoVazioException;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Resumo;
 import org.junit.jupiter.api.BeforeEach;

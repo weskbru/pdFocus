@@ -6,7 +6,7 @@ import com.pdfocus.application.material.port.entrada.UploadMaterialUseCase;
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.security.core.context.SecurityContextHolder;

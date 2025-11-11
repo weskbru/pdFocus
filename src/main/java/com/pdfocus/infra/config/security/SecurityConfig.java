@@ -1,4 +1,4 @@
-package com.pdfocus.infra.security;
+package com.pdfocus.infra.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -5,7 +5,6 @@ import com.pdfocus.application.disciplina.dto.AtualizarDisciplinaCommand;
 import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.application.disciplina.port.entrada.*;
 import com.pdfocus.core.models.Disciplina;
-import com.pdfocus.infra.security.AuthenticationHelper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

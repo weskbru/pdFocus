@@ -3,7 +3,7 @@ package com.pdfocus.application.resumo.service;
 
 import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.resumo.port.entrada.CriarResumoUseCase;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.models.Disciplina;

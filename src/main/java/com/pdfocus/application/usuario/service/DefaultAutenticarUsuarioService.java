@@ -5,7 +5,7 @@ import com.pdfocus.application.usuario.dto.AuthenticationResponse;
 import com.pdfocus.application.usuario.port.entrada.AutenticarUsuarioUseCase;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.models.Usuario;
-import com.pdfocus.infra.security.JwtService;
+import com.pdfocus.infra.config.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;

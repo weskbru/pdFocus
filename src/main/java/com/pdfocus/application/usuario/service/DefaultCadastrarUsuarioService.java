@@ -3,14 +3,13 @@ package com.pdfocus.application.usuario.service;
 import com.pdfocus.application.usuario.dto.CadastrarUsuarioCommand;
 import com.pdfocus.application.usuario.port.entrada.CadastrarUsuarioUseCase;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.EmailJaCadastradoException;
+import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Implementação padrão do caso de uso para registrar um novo usuario.
