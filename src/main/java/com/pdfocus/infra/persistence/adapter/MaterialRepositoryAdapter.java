@@ -10,6 +10,7 @@ import com.pdfocus.infra.persistence.mapper.MaterialMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
 import com.pdfocus.infra.persistence.repository.MaterialJpaRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,8 +136,31 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
         materialJpaRepository.deleteAllInBatch(materiais);
 
         // Log para debug (opcional)
-        System.out.println("✅ Deletados " + materiais.size() + " materiais da disciplina: " + disciplinaId);
+        // System.out.println("✅ Deletados " + materiais.size() + " materiais da disciplina: " + disciplinaId);
     }
 
-}
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Esta é a implementação performática (N+1 Fix) que chama a query
+     * customizada com JOIN FETCH no repositório JPA.
+     * </p>
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Material> buscar5MaisRecentesPorUsuarioComDisciplina(Usuario usuario) {
+        // 1. Criamos um objeto Pageable para pedir a "página 0" com "5 elementos".
+        // Isso é o que efetivamente faz o "LIMIT 5" da nossa query.
+        Pageable pageable = PageRequest.of(0, 5);
 
+        // 2. Chamamos o novo método do JPA Repository (Passo 2)
+        // --- CORREÇÃO APLICADA AQUI ---
+        List<MaterialEntity> entities = materialJpaRepository // <-- O nome correto da variável
+                .findRecentWithDisciplina(usuario.getId(), pageable);
+        // --- FIM DA CORREÇÃO ---
+
+        // 3. Mapeamos a lista de Entidades (JPA) para uma lista de Modelos (Domínio)
+        // (Assumindo que você tem um MaterialMapper.toDomainList)
+        return MaterialMapper.toDomainList(entities);
+    }
+}

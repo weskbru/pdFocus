@@ -33,11 +33,19 @@ class ResumoMapperTest {
         UUID materialId = UUID.randomUUID();
 
         // --- Setup dos Objetos ---
-        disciplinaDominio = new Disciplina(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF", usuarioId);
-        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF", usuarioId);
 
-        // A criação do Resumo de domínio pode ou não ter o materialId, dependendo da sua regra.
-        // Vamos assumir que ela não precisa dele por enquanto.
+        // (1) Criar o Objeto de Domínio (Modelo) - OK
+        disciplinaDominio = new Disciplina(disciplinaId, "Direito Constitucional", "Artigos 1 ao 5 da CF", usuarioId);
+
+        // (2) CORREÇÃO: Criar a Entidade JPA (DisciplinaEntity) - Usar Setters
+        disciplinaEntity = new DisciplinaEntity();
+        disciplinaEntity.setId(disciplinaId);
+        disciplinaEntity.setNome("Direito Constitucional");
+        disciplinaEntity.setDescricao("Artigos 1 ao 5 da CF");
+        disciplinaEntity.setUsuarioId(usuarioId);
+        // --- FIM DA CORREÇÃO ---
+
+        // (3) Criar o Objeto de Domínio (Resumo) - OK
         resumoDominio = Resumo.criar(
                 resumoId,
                 usuarioId,
@@ -46,15 +54,15 @@ class ResumoMapperTest {
                 disciplinaDominio
         );
 
-
-        resumoEntity = new ResumoEntity(
-                resumoId,
-                usuarioId,
-                "Remédios Constitucionais",
-                "Habeas Corpus, Mandado de Segurança, etc.",
-                materialId, // <-- Argumento que estava faltando
-                disciplinaEntity
-        );
+        // (4) CORREÇÃO: Criar a Entidade JPA (ResumoEntity) - Usar Setters
+        resumoEntity = new ResumoEntity();
+        resumoEntity.setId(resumoId);
+        resumoEntity.setUsuarioId(usuarioId);
+        resumoEntity.setTitulo("Remédios Constitucionais");
+        resumoEntity.setConteudo("Habeas Corpus, Mandado de Segurança, etc.");
+        resumoEntity.setMaterialId(materialId);
+        resumoEntity.setDisciplina(disciplinaEntity);
+        // --- FIM DA CORREÇÃO ---
     }
 
 

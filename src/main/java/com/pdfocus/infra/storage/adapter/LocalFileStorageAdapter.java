@@ -16,7 +16,13 @@ import java.nio.file.StandardCopyOption;
 
 /**
  * Adaptador que implementa a porta de armazenamento {@link MaterialStoragePort}
- * utilizando o sistema de ficheiros local como destino.
+ * utilizando o sistema de arquivos local como destino.
+ *
+ * <p>Todos os ficheiros são armazenados no diretório configurado via
+ * {@code application.properties} (propriedade: {@code storage.local.directory}).</p>
+ *
+ * <p>Este adaptador fornece operações básicas de CRUD para ficheiros:
+ * guardar, carregar e apagar.</p>
  */
 @Component
 public class LocalFileStorageAdapter implements MaterialStoragePort {
@@ -24,10 +30,12 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
     private final Path rootLocation;
 
     /**
-     * Constrói o adaptador. O caminho do diretório de uploads é injetado
-     * a partir do ficheiro application.properties via anotação @Value.
+     * Constrói o adaptador e inicializa o diretório de armazenamento.
+     *
+     * <p>Se o diretório não existir, ele será criado automaticamente.</p>
      *
      * @param storageDirectory O caminho para o diretório de uploads (ex: "uploads").
+     * @throws RuntimeException Se o diretório não puder ser criado.
      */
     public LocalFileStorageAdapter(@Value("${storage.local.directory}") String storageDirectory) {
         this.rootLocation = Paths.get(storageDirectory);
@@ -39,7 +47,13 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
     }
 
     /**
-     * {@inheritDoc}
+     * Guarda um ficheiro no sistema de arquivos local.
+     *
+     * <p>Se já existir um ficheiro com o mesmo nome, ele será substituído.</p>
+     *
+     * @param nomeFicheiroStorage Nome do ficheiro a ser armazenado.
+     * @param inputStream Fluxo de dados do ficheiro.
+     * @throws RuntimeException Se ocorrer falha ao guardar o ficheiro.
      */
     @Override
     public void guardar(String nomeFicheiroStorage, InputStream inputStream) {
@@ -52,7 +66,12 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
     }
 
     /**
-     * {@inheritDoc}
+     * Apaga um ficheiro do sistema de arquivos local.
+     *
+     * <p>Se o ficheiro não existir, a operação será ignorada.</p>
+     *
+     * @param nomeFicheiroStorage Nome do ficheiro a ser apagado.
+     * @throws RuntimeException Se ocorrer falha ao apagar o ficheiro.
      */
     @Override
     public void apagar(String nomeFicheiroStorage) {
@@ -65,7 +84,11 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
     }
 
     /**
-     * {@inheritDoc}
+     * Carrega um ficheiro do sistema de arquivos local como um {@link Resource}.
+     *
+     * @param nomeFicheiro Nome do ficheiro a ser carregado.
+     * @return {@link Resource} representando o ficheiro carregado.
+     * @throws RuntimeException Se o ficheiro não puder ser lido ou a URL for inválida.
      */
     @Override
     public Resource carregar(String nomeFicheiro) {
@@ -83,4 +106,3 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
         }
     }
 }
-

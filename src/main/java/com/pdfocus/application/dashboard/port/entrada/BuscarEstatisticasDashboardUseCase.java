@@ -3,16 +3,20 @@ package com.pdfocus.application.dashboard.port.entrada;
 import com.pdfocus.application.dashboard.dto.DashboardEstatisticasResponse;
 
 /**
- * Define o contrato (a "Porta de Entrada") para o caso de uso de buscar
- * as estatísticas principais para o dashboard do usuário logado.
+ * Porta de entrada (Use Case) responsável por fornecer as estatísticas principais
+ * para o dashboard do usuário autenticado.
+ *
+ * <p>Implementações desta interface devem coletar, agregar e retornar os dados
+ * de forma que o dashboard possa exibir informações resumidas e atualizadas,
+ * como total de disciplinas, resumos criados e materiais enviados.</p>
  */
 public interface BuscarEstatisticasDashboardUseCase {
 
     /**
-     * Executa a lógica de negócio para coletar e agregar as estatísticas
-     * relevantes para o usuário autenticado.
+     * Executa o caso de uso de busca das estatísticas do dashboard.
      *
-     * @return um DTO {@link DashboardEstatisticasResponse} contendo os dados consolidados.
+     * @return um {@link DashboardEstatisticasResponse} contendo os dados consolidados
+     *         de disciplinas, resumos e materiais do usuário.
      */
     DashboardEstatisticasResponse executar();
 }

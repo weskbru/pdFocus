@@ -30,9 +30,24 @@ public interface DisciplinaJpaRepository  extends JpaRepository<DisciplinaEntity
      */
     List<DisciplinaEntity> findAllByUsuarioId(UUID usuarioId);
 
+    /**
+     * Busca uma disciplina específica pelo seu ID E pelo ID do usuário proprietário.
+     * <p>
+     * Garante que a consulta só retorne um resultado se ambos os IDs corresponderem,
+     * implementando a segurança de dados (multi-tenancy) no nível do banco.
+     *
+     * @param id O ID da disciplina (PK).
+     * @param usuarioId O ID do usuário (FK).
+     * @return Um {@link Optional} contendo a {@link DisciplinaEntity} se encontrada, ou vazio.
+     */
     Optional<DisciplinaEntity> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
-
+    /**
+     * Conta o número total de disciplinas pertencentes a um usuário específico.
+     *
+     * @param usuarioId O ID do usuário.
+     * @return O número total (long) de disciplinas do usuário.
+     */
     long countByUsuarioId(UUID usuarioId);
 
 }

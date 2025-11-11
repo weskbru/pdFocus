@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller REST para gerenciar operações relacionadas a usuários.
- * Este é a interface com o mundo web.
+ * Controlador REST responsável pelas operações relacionadas ao usuário autenticado.
+ * <p>
+ * Expõe endpoints para que o cliente (frontend) possa obter as informações do usuário
+ * logado. Toda a lógica de autenticação e resolução do usuário é tratada na camada
+ * de aplicação através do {@link BuscarUsuarioLogadoUseCase}.
+ * </p>
  */
 @RestController
 @RequestMapping("/usuarios")
@@ -23,16 +27,21 @@ public class UsuarioController {
     }
 
     /**
-     * Endpoint para buscar os detalhes do usuário atualmente autenticado.
-     * Responde a requisições GET em /usuarios/me.
+     * Retorna os detalhes do usuário atualmente autenticado.
+     * <p>
+     * Este endpoint é essencial para o carregamento do perfil do usuário no frontend
+     * (ex: nome, e-mail e data de cadastro). A autenticação é feita via token JWT,
+     * e a camada de aplicação resolve o usuário a partir do contexto de segurança.
+     * </p>
      *
-     * @return Resposta 200 (OK) com os detalhes do usuário em formato JSON.
+     * @return 200 (OK) com os detalhes do usuário em {@link UsuarioDetalhesResponse}.
      */
     @GetMapping("/me")
     public ResponseEntity<UsuarioDetalhesResponse> buscarUsuarioLogado() {
         Usuario usuarioLogado = buscarUsuarioLogadoUseCase.executar();
-        // para algo útil (o DTO de resposta que será convertido em JSON).
+
         UsuarioDetalhesResponse response = UsuarioDetalhesResponse.fromDomain(usuarioLogado);
+
         return ResponseEntity.ok(response);
     }
 }

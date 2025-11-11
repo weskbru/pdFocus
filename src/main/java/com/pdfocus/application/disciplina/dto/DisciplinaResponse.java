@@ -4,11 +4,11 @@ import com.pdfocus.core.models.Disciplina;
 import java.util.UUID;
 
 /**
- * DTO (Data Transfer Object) para representar os dados de uma Disciplina
- * que são enviados como resposta pela API.
+ * DTO (Data Transfer Object) que representa os dados públicos de uma {@link Disciplina}
+ * expostos pela camada de aplicação.
  * <p>
- * Este é o "prato final" que o cliente (frontend) recebe, contendo
- * apenas os dados públicos e necessários para a visualização.
+ * Usado em respostas de API para listar ou exibir informações básicas de uma disciplina,
+ * garantindo o isolamento entre o domínio e o mundo externo (frontend ou consumidores externos).
  */
 public record DisciplinaResponse(
         UUID id,
@@ -17,14 +17,13 @@ public record DisciplinaResponse(
 ) {
 
     /**
-     * Método de fábrica (factory method) para converter um objeto de domínio
-     * {@link Disciplina} para este DTO de resposta.
+     * Converte uma entidade de domínio {@link Disciplina} em um {@link DisciplinaResponse}.
      * <p>
-     * Esta é a forma padrão e segura de construir a resposta da API,
-     * garantindo que apenas os campos desejados sejam expostos.
+     * Este método atua como um <b>factory method</b> (método de fábrica), encapsulando a lógica
+     * de mapeamento e assegurando que apenas dados necessários sejam expostos pela API.
      *
-     * @param disciplina O objeto de domínio a ser convertido.
-     * @return uma nova instância de DisciplinaResponse.
+     * @param disciplina Entidade de domínio que representa a disciplina.
+     * @return Uma instância de {@link DisciplinaResponse} com os dados convertidos.
      */
     public static DisciplinaResponse fromDomain(Disciplina disciplina) {
         return new DisciplinaResponse(

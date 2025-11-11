@@ -1,4 +1,4 @@
-package com.pdfocus.application.disciplina.port.saida;
+package com.pdfocus.application.disciplina.port.saida; // <-- ESTA É A LINHA MAIS IMPORTANTE
 
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Usuario;
@@ -8,64 +8,64 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Porta de Saída (Interface de Repositório) para operações de persistência
- * relacionadas à entidade de domínio {@link Disciplina}.
+ * Porta de Saída (Interface) para operações de persistência de Disciplina.
  * <p>
- * Define o contrato que a camada de aplicação usa para interagir com a
- * camada de infraestrutura para persistir e recuperar dados de disciplinas.
+ * Define o "contrato" que a camada de Aplicação espera que a camada de
+ * Infraestrutura (Adapters) implemente.
+ * </p>
+ * <p>
+ * Esta interface foi refatorada (Pilar 3) para remover métodos duplicados
+ * e incluir validações de segurança (como 'findByIdAndUsuarioId').
  * </p>
  */
 public interface DisciplinaRepository {
 
     /**
-     * Salva (cria ou atualiza) uma disciplina.
+     * Salva ou atualiza uma disciplina no banco de dados.
      *
-     * @param disciplina O objeto de domínio {@link Disciplina} a ser salvo.
-     * @return A disciplina salva, possivelmente com dados atualizados pela persistência.
+     * @param disciplina O modelo de domínio a ser salvo.
+     * @return A disciplina salva.
      */
     Disciplina salvar(Disciplina disciplina);
 
     /**
-     * Busca uma disciplina pelo seu ID.
-     * <p>
-     * NOTA: Este método não valida a propriedade do usuário e deve ser usado com
-     * cautela, principalmente para lógicas internas que não dependem do contexto do usuário.
-     * </p>
+     * Busca uma disciplina pelo seu ID (sem checagem de usuário).
      *
-     * @param id O ID da disciplina a ser buscada.
-     * @return um {@link Optional} contendo a {@link Disciplina} se encontrada, ou vazio caso contrário.
+     * @param id O ID da disciplina.
+     * @return Um Optional contendo a disciplina.
      */
     Optional<Disciplina> findById(UUID id);
 
     /**
-     * Lista todas as disciplinas pertencentes a um usuário específico.
+     * Deleta uma disciplina pelo seu ID.
      *
-     * @param usuarioId O ID do usuário proprietário das disciplinas.
-     * @return Uma lista de {@link Disciplina} do usuário. Retorna uma lista vazia se nenhuma for encontrada.
-     */
-    List<Disciplina> listaTodasPorUsuario(UUID usuarioId);
-
-    /**
-     * Contrato para apagar uma disciplina pelo seu identificador único.
-     * A verificação de permissão (se o usuário pode apagar esta disciplina)
-     * é de responsabilidade da camada de serviço (Caso de Uso) que chama este método.
-     *
-     * @param id O UUID da Disciplina a ser apagada.
+     * @param id O ID da disciplina a ser deletada.
      */
     void deletarPorId(UUID id);
 
     /**
-     * Busca uma disciplina específica pelo seu ID, garantindo que ela pertença
-     * ao usuário especificado.
+     * Busca uma disciplina pelo seu ID e pelo ID do usuário proprietário.
+     * (Implementação de segurança multi-tenancy).
      *
-     * @param id O ID da disciplina a ser buscada.
-     * @param usuarioId O ID do usuário proprietário.
-     * @return um {@link Optional} contendo a {@link Disciplina} se encontrada e se
-     * pertencer ao usuário, ou vazio caso contrário.
+     * @param id O ID da disciplina.
+     * @param usuarioId O ID do usuário.
+     * @return Um Optional contendo a disciplina, se encontrada e pertencente ao usuário.
      */
     Optional<Disciplina> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
+    /**
+     * Conta o número total de disciplinas de um usuário.
+     *
+     * @param usuario O usuário.
+     * @return O total de disciplinas.
+     */
     long countByUsuario(Usuario usuario);
 
-    Optional<Disciplina> buscarPorId(UUID id);
+    /**
+     * Lista todas as disciplinas pertencentes a um usuário específico.
+     *
+     * @param usuarioId O ID do usuário.
+     * @return Uma lista de {@link Disciplina} do usuário (pode ser vazia).
+     */
+    List<Disciplina> listaTodasPorUsuario(UUID usuarioId);
 }

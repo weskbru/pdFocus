@@ -6,31 +6,47 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
- * Classe utilitária para fornecer acesso fácil às informações do usuário autenticado.
+ * Utilitário de acesso ao contexto de autenticação do Spring Security.
+ * <p>
+ * Esta classe encapsula a lógica de recuperação do usuário autenticado a partir
+ * do {@link SecurityContextHolder}, garantindo um ponto único de acesso à identidade
+ * do usuário dentro da aplicação.
+ * </p>
+ * <p>
+ * Ela é amplamente utilizada pelos controladores e casos de uso que precisam
+ * associar operações (como criação, leitura ou exclusão de recursos) ao
+ * usuário logado, sem expor detalhes da infraestrutura de segurança.
+ * </p>
  */
 @Component
 public class AuthenticationHelper {
 
     /**
-     * Obtém a entidade do usuario que está autenticado na requisição atual.
+     * Recupera o {@link UsuarioEntity} correspondente ao usuário atualmente autenticado.
+     * <p>
+     * Este método assume que o processo de autenticação via filtro JWT já ocorreu
+     * e que o principal armazenado no contexto é uma instância válida de {@link UsuarioEntity}.
+     * </p>
      *
-     * @return A {@link UsuarioEntity} correspondente ao usuario logado.
-     * @throws IllegalStateException se não houver um usuario autenticado ou se
-     * o principal de autenticação não for do tipo esperado (UsuarioEntity).
+     * @return A entidade {@link UsuarioEntity} do usuário autenticado.
+     * @throws IllegalStateException se:
+     * <ul>
+     *   <li>Não houver autenticação ativa no contexto;</li>
+     *   <li>O principal não for uma instância de {@link UsuarioEntity};</li>
+     *   <li>A autenticação não for considerada válida.</li>
+     * </ul>
      */
     public UsuarioEntity getUsuarioAutenticado() {
-        // Busca a autenticação no contexto de segurança do Spring
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Valida se a autenticação existe e é válida
-        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof UsuarioEntity)) {
-            // Lança uma exceção se não houver um usuario logado.
-            // Em um endpoint protegido, isso não deveria acontecer se o filtro JWT funcionar corretamente,
-            // mas é uma boa verificação de segurança.
-            throw new IllegalStateException("Nenhum usuário autenticado encontrado ou o tipo do principal é inesperado.");
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                !(authentication.getPrincipal() instanceof UsuarioEntity)) {
+            throw new IllegalStateException(
+                    "Nenhum usuário autenticado encontrado ou o tipo do principal é inesperado."
+            );
         }
 
-        // Faz o "cast" do principal para nossa entidade de usuário e a retorna
         return (UsuarioEntity) authentication.getPrincipal();
     }
 }

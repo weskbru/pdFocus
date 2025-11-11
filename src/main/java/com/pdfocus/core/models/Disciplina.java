@@ -2,28 +2,41 @@ package com.pdfocus.core.models;
 
 import com.pdfocus.core.exceptions.CampoNuloException;
 import com.pdfocus.core.exceptions.CampoVazioException;
-
 import java.util.UUID;
 
 /**
- * Representa uma disciplina de estudo. Este é um objeto de domínio rico,
- * responsável por garantir sua própria consistência (invariantes) através
- * de validações rigorosas no construtor e nos setters, utilizando
- * exceções personalizadas para diagnósticos precisos.
+ * Representa uma <strong>disciplina de estudo</strong> pertencente a um usuário.
+ * <p>
+ * Garante sua própria consistência interna, validando invariantes de domínio
+ * através de exceções personalizadas. Cada disciplina pertence exatamente a um
+ * usuário e possui nome obrigatório e descrição opcional.
+ * </p>
+ *
+ * @see com.pdfocus.infra.persistence.entity.DisciplinaEntity
  */
 public class Disciplina {
 
-    // Atributos imutáveis: definidos no "nascimento" e nunca mais alterados.
+    /** Identificador único da disciplina. */
     private final UUID id;
+
+    /** Identificador do usuário dono da disciplina. */
     private final UUID usuarioId;
 
-    // Atributos mutáveis: podem ser alterados durante o ciclo de vida do objeto.
+    /** Nome da disciplina (obrigatório). */
     private String nome;
+
+    /** Descrição textual opcional. */
     private String descricao;
 
     /**
-     * Construtor para criar uma nova instância de {@code Disciplina}.
-     * Garante o estado inicial válido do objeto.
+     * Cria uma nova {@code Disciplina} garantindo um estado inicial válido.
+     *
+     * @param id         Identificador único.
+     * @param nome       Nome da disciplina.
+     * @param descricao  Descrição (opcional).
+     * @param usuarioId  Identificador do usuário dono.
+     * @throws CampoNuloException se {@code id}, {@code usuarioId} ou {@code nome} forem nulos.
+     * @throws CampoVazioException se {@code nome} estiver em branco.
      */
     public Disciplina(UUID id, String nome, String descricao, UUID usuarioId) {
         if (id == null) throw new CampoNuloException("ID da disciplina não pode ser nulo");
@@ -32,25 +45,26 @@ public class Disciplina {
         this.id = id;
         this.usuarioId = usuarioId;
 
-        // Delega a validação dos campos mutáveis para os setters,
-        // garantindo que a lógica de validação exista em um único lugar (DRY).
+        // Usa os setters para aplicar as mesmas regras de validação.
         this.setNome(nome);
         this.setDescricao(descricao);
     }
 
-    // --- GETTERS ---
+    // --- Getters ---
+
     public UUID getId() { return id; }
+    public UUID getUsuarioId() { return usuarioId; }
     public String getNome() { return nome; }
     public String getDescricao() { return descricao; }
-    public UUID getUsuarioId() { return usuarioId; }
 
-    // --- SETTERS COM VALIDAÇÃO PERSONALIZADA ---
+    // --- Setters com validação de domínio ---
 
     /**
-     * Atualiza o nome da disciplina, garantindo que o novo nome é válido.
-     * @param nome O novo nome para a disciplina.
-     * @throws CampoNuloException se o nome for nulo.
-     * @throws CampoVazioException se o nome estiver em branco.
+     * Atualiza o nome da disciplina.
+     *
+     * @param nome Novo nome.
+     * @throws CampoNuloException se for {@code null}.
+     * @throws CampoVazioException se estiver em branco.
      */
     public void setNome(String nome) {
         if (nome == null) throw new CampoNuloException("Nome não pode ser nulo");
@@ -60,10 +74,10 @@ public class Disciplina {
 
     /**
      * Atualiza a descrição da disciplina.
-     * @param descricao A nova descrição. Pode ser nula ou vazia.
+     *
+     * @param descricao Novo texto descritivo (opcional).
      */
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
 }
-

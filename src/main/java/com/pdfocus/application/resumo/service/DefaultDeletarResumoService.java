@@ -10,13 +10,23 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para deletar um resumo.
+ * Implementação padrão do caso de uso {@link DeletarResumoUseCase}.
+ * <p>
+ * Este serviço é responsável por orquestrar a exclusão de um {@link com.pdfocus.core.models.Resumo}
+ * garantindo que ele pertença ao usuário autenticado. A operação é executada de forma segura
+ * e transacional — ou seja, caso ocorra qualquer falha durante o processo, a deleção é revertida.
+ * </p>
  */
 @Service
 public class DefaultDeletarResumoService implements DeletarResumoUseCase {
 
     private final ResumoRepository resumoRepository;
 
+    /**
+     * Constrói o serviço com o repositório responsável pela persistência de {@link com.pdfocus.core.models.Resumo}.
+     *
+     * @param resumoRepository Repositório de acesso e manipulação de resumos.
+     */
     public DefaultDeletarResumoService(ResumoRepository resumoRepository) {
         this.resumoRepository = Objects.requireNonNull(resumoRepository, "ResumoRepository não pode ser nulo.");
     }
@@ -24,20 +34,21 @@ public class DefaultDeletarResumoService implements DeletarResumoUseCase {
     /**
      * {@inheritDoc}
      * <p>
-     * A operação é transacional. Valida as entradas e delega a operação de
-     * deleção segura (por ID do resumo e do usuário) para o repositório.
+     * A operação valida os parâmetros de entrada e delega a exclusão ao repositório,
+     * que se encarrega de verificar a propriedade do resumo e lançar exceção apropriada.
      * </p>
-     * @throws ResumoNaoEncontradoException se qualquer um dos IDs for nulo.
+     *
+     * @param id         ID do resumo a ser deletado.
+     * @param usuarioId  ID do usuário proprietário do resumo.
+     * @throws ResumoNaoEncontradoException se o resumo não existir ou não pertencer ao usuário.
+     * @throws IllegalArgumentException se qualquer parâmetro for nulo.
      */
     @Override
     @Transactional
     public void executar(UUID id, UUID usuarioId) {
-        // Validação de entradas (Guard Clauses)
         Objects.requireNonNull(id, "O ID do resumo não pode ser nulo.");
         Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
 
-        // Apenas delega a chamada. Se o repositório lançar uma ResumoNaoEncontradoException,
-        // o serviço simplesmente a deixará "borbulhar" para a camada superior (Controller).
         resumoRepository.deletarPorIdEUsuario(id, usuarioId);
     }
 }

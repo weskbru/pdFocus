@@ -6,18 +6,22 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Caso de uso para obter um único resumo pelo seu ID,
- * garantindo que ele pertença ao usuário especificado.
+ * Porta de entrada (Use Case) responsável por recuperar um {@link Resumo}
+ * específico com base em seu identificador único.
+ * <p>
+ * Este caso de uso garante que o resumo retornado pertença ao usuário autenticado,
+ * evitando acesso indevido a dados de outros usuários.
+ * </p>
  */
 public interface ObterResumoPorIdUseCase {
 
     /**
-     * Busca um resumo com base no seu ID e no ID do usuário proprietário.
+     * Executa a busca de um resumo específico pelo seu ID e pelo ID do usuário proprietário.
      *
-     * @param id O identificador único do resumo a ser buscado.
-     * @param usuarioId O identificador único do usuário que deve ser o proprietário do resumo.
-     * @return Um {@link Optional} contendo o {@link Resumo} se encontrado e se pertencer ao usuário,
-     * ou um Optional vazio caso contrário.
+     * @param id         O identificador único do resumo a ser buscado.
+     * @param usuarioId  O identificador único do usuário que deve ser o proprietário do resumo.
+     * @return Um {@link Optional} contendo o {@link Resumo} se encontrado e pertencente ao usuário,
+     *         ou um Optional vazio caso contrário.
      */
     Optional<Resumo> executar(UUID id, UUID usuarioId);
 }

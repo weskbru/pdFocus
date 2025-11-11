@@ -16,6 +16,19 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+/**
+ * Controlador REST responsável pelas operações de autenticação e registro de usuários.
+ * <p>
+ * Atua como ponto de entrada da API para o módulo de segurança/autenticação,
+ * delegando toda a lógica de negócio para os casos de uso da camada de aplicação.
+ * </p>
+ *
+ * <h2>Endpoints</h2>
+ * <ul>
+ *   <li><b>POST /auth/register</b> — Cria um novo usuário.</li>
+ *   <li><b>POST /auth/login</b> — Autentica um usuário e retorna um token JWT.</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -23,25 +36,39 @@ public class AuthController {
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final AutenticarUsuarioUseCase autenticarUsuarioUseCase;
 
-
+    /**
+     * Construtor que injeta as dependências dos casos de uso necessários.
+     *
+     * @param cadastrarUsuarioUseCase Caso de uso responsável por registrar novos usuários.
+     * @param autenticarUsuarioUseCase Caso de uso responsável por autenticar usuários e gerar tokens JWT.
+     */
     public AuthController(
             CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
-            AutenticarUsuarioUseCase autenticarUsuarioUseCase) {
+            AutenticarUsuarioUseCase autenticarUsuarioUseCase
+    ) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.autenticarUsuarioUseCase = autenticarUsuarioUseCase;
     }
 
+    /**
+     * Endpoint para registrar um novo usuário no sistema.
+     * <p>
+     * Recebe um comando contendo as informações de cadastro,
+     * delega o processamento ao caso de uso e retorna uma resposta
+     * contendo os dados públicos do novo usuário criado.
+     * </p>
+     *
+     * @param command Objeto contendo os dados de cadastro do usuário.
+     * @return 201 (Created) com os dados do usuário criado e o header Location apontando para o recurso recém-criado.
+     */
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> registrar(@RequestBody CadastrarUsuarioCommand command) {
-        // Chama o caso de uso para criar o usuário
         Usuario novoUsuario = cadastrarUsuarioUseCase.executar(command);
-
-        // Converte o objeto de domínio para o DTO de resposta segura
         UsuarioResponse response = UsuarioResponse.fromDomain(novoUsuario);
 
-        // Constrói a URI para o novo recurso
         URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/usuarios/{id}") // Supondo um futuro endpoint /usuarios/{id}
+                .fromCurrentContextPath()
+                .path("/usuarios/{id}")
                 .buildAndExpand(novoUsuario.getId())
                 .toUri();
 
@@ -50,14 +77,16 @@ public class AuthController {
 
     /**
      * Endpoint para autenticar um usuário e retornar um token JWT.
-     * Responde a requisições POST em /auth/login.
+     * <p>
+     * O caso de uso {@link AutenticarUsuarioUseCase} é responsável por validar
+     * as credenciais e gerar o token. Nenhuma lógica de autenticação é feita no controller.
+     * </p>
      *
-     * @param command O comando com as credenciais (e-mail e senha).
-     * @return Resposta 200 (OK) com o token JWT se a autenticação for bem-sucedida.
+     * @param command Objeto contendo e-mail e senha do usuário.
+     * @return 200 (OK) com o token JWT e dados básicos do usuário autenticado.
      */
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> autenticar(@RequestBody AutenticarUsuarioCommand command) {
-        // Chama o caso de uso, que retorna a resposta com o token
         AuthenticationResponse response = autenticarUsuarioUseCase.executar(command);
         return ResponseEntity.ok(response);
     }

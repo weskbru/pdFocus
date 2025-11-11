@@ -3,13 +3,24 @@ package com.pdfocus.application.resumo.dto;
 import java.util.UUID;
 
 /**
- * Comando para criar um resumo baseado em um material (PDF) existente.
- * O ID do usuário será obtido do contexto de autenticação.
+ * Comando (DTO) usado para criar um resumo a partir de um material PDF existente.
+ * <p>
+ * Este comando transporta os dados necessários do frontend (ou de outro serviço)
+ * até o caso de uso {@code GerarResumoAutomaticoUseCase}.
+ * O {@code usuarioId} é obtido automaticamente do contexto de autenticação.
+ * </p>
  *
- * @param materialId O ID do material (PDF) que será usado como base para o resumo
- * @param disciplinaId O ID da disciplina à qual o resumo está associado
- * @param titulo O título do resumo (pode ser gerado automaticamente ou fornecido pelo usuário)
- * @param conteudo O conteúdo textual do resumo (pode ser pré-preenchido com texto extraído do PDF)
+ * <p>Os campos são usados para orquestrar o processo de:</p>
+ * <ul>
+ *   <li>Identificar o material que servirá de base para a extração de texto;</li>
+ *   <li>Associar o resumo à disciplina correta;</li>
+ *   <li>Definir título e conteúdo, seja gerado automaticamente, seja editado pelo usuário.</li>
+ * </ul>
+ *
+ * @param materialId  ID do material (PDF) usado como base para o resumo.
+ * @param disciplinaId ID da disciplina associada.
+ * @param titulo       Título do resumo — pode ser definido pelo usuário ou gerado automaticamente.
+ * @param conteudo     Texto do resumo — pode ser parcialmente extraído do PDF ou ajustado manualmente.
  */
 public record CriarResumoDeMaterialCommand(
         UUID materialId,

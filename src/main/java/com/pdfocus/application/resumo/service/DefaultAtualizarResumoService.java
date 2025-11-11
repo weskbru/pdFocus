@@ -12,13 +12,32 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para atualizar um resumo existente.
+ * Implementação padrão do caso de uso {@link AtualizarResumoUseCase}.
+ * <p>
+ * Este serviço aplica as regras de negócio necessárias para atualizar um
+ * {@link Resumo} existente, garantindo que ele pertença ao usuário autenticado.
+ * </p>
+ *
+ * <p>
+ * O processo consiste em:
+ * <ol>
+ *   <li>Validar os parâmetros recebidos;</li>
+ *   <li>Buscar o resumo pelo ID e ID do usuário;</li>
+ *   <li>Recriar o objeto de domínio com os novos dados, revalidando as invariantes;</li>
+ *   <li>Persistir o resumo atualizado.</li>
+ * </ol>
+ * </p>
  */
 @Service
 public class DefaultAtualizarResumoService implements AtualizarResumoUseCase {
 
     private final ResumoRepository resumoRepository;
 
+    /**
+     * Constrói o serviço com o repositório necessário para persistir as alterações.
+     *
+     * @param resumoRepository O repositório de {@link Resumo}.
+     */
     public DefaultAtualizarResumoService(ResumoRepository resumoRepository) {
         this.resumoRepository = Objects.requireNonNull(resumoRepository, "ResumoRepository não pode ser nulo.");
     }
@@ -26,45 +45,38 @@ public class DefaultAtualizarResumoService implements AtualizarResumoUseCase {
     /**
      * {@inheritDoc}
      * <p>
-     * A operação é transacional. Ela busca o resumo pelo seu ID e pelo ID do usuário
-     * para garantir a propriedade. Se encontrado, um novo objeto de domínio {@link Resumo}
-     * é criado com os dados atualizados, o que revalida as regras de negócio,
-     * e então é persistido.
+     * A operação é executada de forma transacional: caso qualquer etapa falhe,
+     * todas as alterações são revertidas automaticamente.
      * </p>
-     * @throws IllegalArgumentException se qualquer um dos parâmetros for nulo.
+     *
+     * @param id         ID do resumo a ser atualizado.
+     * @param usuarioId  ID do usuário proprietário.
+     * @param command    Objeto contendo os novos dados do resumo.
+     * @return Um {@link Optional} contendo o resumo atualizado, ou vazio caso o resumo
+     *         não exista ou não pertença ao usuário.
+     * @throws IllegalArgumentException se qualquer parâmetro for nulo.
      */
     @Override
     @Transactional
     public Optional<Resumo> executar(UUID id, UUID usuarioId, AtualizarResumoCommand command) {
-        // 1. Validação de entradas (Guard Clauses)
         Objects.requireNonNull(id, "O ID do resumo não pode ser nulo.");
         Objects.requireNonNull(usuarioId, "O ID do usuário não pode ser nulo.");
         Objects.requireNonNull(command, "O comando de atualização não pode ser nulo.");
 
-        // 2. Busca o resumo, já validando se ele pertence ao usuário
         Optional<Resumo> resumoOptional = resumoRepository.buscarPorIdEUsuario(id, usuarioId);
+        if (resumoOptional.isEmpty()) return Optional.empty();
 
-        // Se não encontrou (ou não pertence ao usuário), retorna um Optional vazio
-        if (resumoOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
-        // Pega o resumo existente
         Resumo resumoExistente = resumoOptional.get();
 
-        // Cria uma nova instância de Resumo com os dados atualizados
+        // Recria a entidade com os novos dados (mantendo integridade e imutabilidade)
         Resumo resumoAtualizado = Resumo.criar(
-                resumoExistente.getId(),        // Mantem o mesmo ID
-                resumoExistente.getUsuarioId(), // Mantem o mesmo usuario
-                command.titulo(),               // Usa o novo título
-                command.conteudo(),             // Usa o novo conteúdo
-                resumoExistente.getDisciplina() // Mantem a mesma disciplina
+                resumoExistente.getId(),
+                resumoExistente.getUsuarioId(),
+                command.titulo(),
+                command.conteudo(),
+                resumoExistente.getDisciplina()
         );
 
-        // Salva o resumo atualizado
-        Resumo resumoSalvo = resumoRepository.salvar(resumoAtualizado);
-
-        // Retorna o resumo salvo
-        return Optional.of(resumoSalvo);
+        return Optional.of(resumoRepository.salvar(resumoAtualizado));
     }
 }
