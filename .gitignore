@@ -1,11 +1,10 @@
 # Cache e build do Gradle
-.gradle/                 # Cache do Gradle (não versionar)
-build/                   # Pasta de build (não versionar)
+.gradle/
+build/
 
-# Gradle Wrapper: garantir que o jar e os scripts fiquem no repo
+# Gradle Wrapper
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
-gradle/wrapper/gradle-wrapper.jar
 
 # IDEs
 .idea/
@@ -17,7 +16,7 @@ out/
 
 # Java
 *.class
-*.jar          # se você publicar seus jars via repo, ignore. Se não, ignore com cuidado
+*.jar
 *.war
 *.ear
 
@@ -27,7 +26,7 @@ out/
 *.swp
 *.bak
 
-# MacOS e Windows
+# OS
 .DS_Store
 Thumbs.db
 
@@ -38,26 +37,6 @@ Thumbs.db
 # Logs
 logs/
 
-# --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
-
-# Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
+# Projeto
 /uploads/
-
-# Arquivo temporário da estrutura
-estrutura.txt
-
-# --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
-# --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
-
-# Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
-/uploads/
-
-# Arquivo temporário da estrutura
-estrutura.txt
-
-
-# Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
-/uploads/
-
-# Arquivo temporário da estrutura
 estrutura.txt
