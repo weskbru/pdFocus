@@ -25,21 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-/**
- * Testes unitários para a classe {@link DefaultDeletarDisciplinaService}.
- * Foco: Validar a lógica de segurança que verifica a posse da disciplina
- * antes de executar a operação de deleção.
- */
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Testes Unitários - DefaultDeletarDisciplinaService")
 class DefaultDeletarDisciplinaServiceTest {
 
-    // Mocks das dependências para isolar o serviço.
     @Mock
     private DisciplinaRepository disciplinaRepository;
     @Mock
     private UsuarioRepository usuarioRepository;
 
-    // Instância real do serviço sob teste.
     @InjectMocks
     private DefaultDeletarDisciplinaService service;
 
@@ -55,9 +49,7 @@ class DefaultDeletarDisciplinaServiceTest {
     @Test
     @DisplayName("Deve apagar a disciplina com sucesso se ela pertence ao usuário logado")
     void deveApagarDisciplinaComSucesso() {
-        // Arrange (Preparação do cenário de sucesso)
         try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
-            // Simula o usuário autenticado
             UserDetails userDetailsMock = mock(UserDetails.class);
             SecurityContext securityContextMock = mock(SecurityContext.class);
             Authentication authenticationMock = mock(Authentication.class);
@@ -66,18 +58,13 @@ class DefaultDeletarDisciplinaServiceTest {
             when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
             mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-            // Ensina aos mocks como se comportar
             when(usuarioRepository.buscarPorEmail(usuarioTeste.getEmail())).thenReturn(Optional.of(usuarioTeste));
-            // Simula que a verificação de posse FOI BEM-SUCEDIDA
             when(disciplinaRepository.findByIdAndUsuarioId(disciplinaTeste.getId(), usuarioTeste.getId()))
                     .thenReturn(Optional.of(disciplinaTeste));
             doNothing().when(disciplinaRepository).deletarPorId(disciplinaTeste.getId());
 
-            // Act (Ação) & Assert (Verificação)
-            // Executamos o método e verificamos que nenhuma exceção foi lançada.
             assertDoesNotThrow(() -> service.executar(disciplinaTeste.getId()));
 
-            // Verificamos se a chamada para apagar foi realmente feita.
             verify(disciplinaRepository, times(1)).deletarPorId(disciplinaTeste.getId());
         }
     }
@@ -85,27 +72,24 @@ class DefaultDeletarDisciplinaServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar apagar disciplina que não pertence ao usuário")
     void deveLancarExcecaoAoApagarDisciplinaDeOutroUsuario() {
-        // Arrange (Preparação do cenário de FALHA de segurança)
         try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
-            // Simula o usuário autenticado
+            // ✅ CORREÇÃO FINAL: Completamos a configuração do mock de segurança aqui
             UserDetails userDetailsMock = mock(UserDetails.class);
-            // ... (setup de segurança igual ao anterior) ...
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            Authentication authenticationMock = mock(Authentication.class);
             when(userDetailsMock.getUsername()).thenReturn(usuarioTeste.getEmail());
-            // ...
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
             when(usuarioRepository.buscarPorEmail(usuarioTeste.getEmail())).thenReturn(Optional.of(usuarioTeste));
-            // Simula que a verificação de posse FALHOU (repositório não encontrou a disciplina para este usuário)
             when(disciplinaRepository.findByIdAndUsuarioId(disciplinaTeste.getId(), usuarioTeste.getId()))
                     .thenReturn(Optional.empty());
 
-            // Act & Assert
-            // Verificamos se o nosso serviço corretamente lança a exceção de segurança.
             assertThrows(DisciplinaNaoEncontradaException.class, () -> {
                 service.executar(disciplinaTeste.getId());
             });
 
-            // A VERIFICAÇÃO MAIS IMPORTANTE:
-            // Garantimos que o método para apagar NUNCA foi chamado se a verificação de posse falhou.
             verify(disciplinaRepository, never()).deletarPorId(any(UUID.class));
         }
     }

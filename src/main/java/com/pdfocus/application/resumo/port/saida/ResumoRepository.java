@@ -56,4 +56,10 @@ public interface ResumoRepository {
 
     long countByUsuario(Usuario usuario);
 
+    /**
+     * Deleta todos os resumos de uma disciplina específica
+     * @param disciplinaId ID da disciplina
+     */
+    void deletarTodosPorDisciplinaId(UUID disciplinaId);
+
 }

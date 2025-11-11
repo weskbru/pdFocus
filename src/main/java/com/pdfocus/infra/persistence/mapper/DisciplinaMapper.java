@@ -3,6 +3,7 @@ package com.pdfocus.infra.persistence.mapper;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.infra.persistence.entity.DisciplinaEntity;
 
+import java.util.ArrayList; // ← IMPORT ADICIONADO
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +26,8 @@ public class DisciplinaMapper {
                 disciplina.getId(),
                 disciplina.getNome(),
                 disciplina.getDescricao(),
-                disciplina.getUsuarioId() // <-- MUDANÇA AQUI
+                disciplina.getUsuarioId(),
+                new ArrayList<>() // ← LISTA VAZIA DE RESUMOS ADICIONADA
         );
     }
 
@@ -41,7 +43,8 @@ public class DisciplinaMapper {
                 disciplinaEntity.getId(),
                 disciplinaEntity.getNome(),
                 disciplinaEntity.getDescricao(),
-                disciplinaEntity.getUsuarioId() // <-- MUDANÇA AQUI
+                disciplinaEntity.getUsuarioId()
+                // ← NÃO PRECISA DA LISTA DE RESUMOS AQUI (o domínio não tem essa propriedade)
         );
     }
 

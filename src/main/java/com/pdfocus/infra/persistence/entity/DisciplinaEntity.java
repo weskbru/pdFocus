@@ -1,14 +1,13 @@
 package com.pdfocus.infra.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -49,4 +48,14 @@ public class DisciplinaEntity {
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
 
+    // 🔥 RELACIONAMENTO ADICIONADO AQUI 🔥
+    /**
+     * Lista de resumos associados a esta disciplina.
+     * - mappedBy = "disciplina": indica que o ResumoEntity é o dono do relacionamento
+     * - cascade = CascadeType.ALL: operações em cascata para persist, merge, remove, etc.
+     * - orphanRemoval = true: deleta automaticamente resumos quando a disciplina é deletada
+     * - FetchType.LAZY: carrega os resumos apenas quando acessados (melhor performance)
+     */
+    @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ResumoEntity> resumos = new ArrayList<>();
 }

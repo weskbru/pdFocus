@@ -1,11 +1,10 @@
 # Cache e build do Gradle
-.gradle/                 # Cache do Gradle (não versionar)
-build/                   # Pasta de build (não versionar)
+.gradle/
+build/
 
 # Gradle Wrapper: garantir que o jar e os scripts fiquem no repo
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
-gradle/wrapper/gradle-wrapper.jar
 
 # IDEs
 .idea/
@@ -17,7 +16,7 @@ out/
 
 # Java
 *.class
-*.jar          # se você publicar seus jars via repo, ignore. Se não, ignore com cuidado
+*.jar
 *.war
 *.ear
 
@@ -38,7 +37,5 @@ Thumbs.db
 # Logs
 logs/
 
-# Build/Output
-/build/
-/.gradle/
-/out/
+# Pasta de uploads locais
+/uploads/

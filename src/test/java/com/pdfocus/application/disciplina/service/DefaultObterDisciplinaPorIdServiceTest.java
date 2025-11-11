@@ -1,5 +1,6 @@
 package com.pdfocus.application.disciplina.service;
 
+import com.pdfocus.application.disciplina.dto.DetalheDisciplinaResponse;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.models.Disciplina;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList; // Import para listas vazias
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,8 +33,17 @@ class DefaultObterDisciplinaPorIdServiceTest {
 
     @Mock
     private DisciplinaRepository disciplinaRepository;
+
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    // Adicionando os mocks que faltavam para a lógica do service
+    @Mock
+    private com.pdfocus.application.resumo.port.saida.ResumoRepository resumoRepository;
+
+    @Mock
+    private com.pdfocus.application.material.port.saida.MaterialRepository materialRepository;
+
 
     @InjectMocks
     private DefaultObterDisciplinaPorIdService service;
@@ -43,7 +54,13 @@ class DefaultObterDisciplinaPorIdServiceTest {
     @BeforeEach
     void setUp() {
         usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Get", "get@email.com", "hash");
-        disciplinaTeste = new Disciplina(UUID.randomUUID(), "Disciplina Teste", "", usuarioTeste.getId());
+
+        disciplinaTeste = new Disciplina(
+                UUID.randomUUID(),
+                "Disciplina Teste",
+                "Descrição da disciplina para teste",
+                usuarioTeste.getId()
+        );
     }
 
     @Test
@@ -64,12 +81,17 @@ class DefaultObterDisciplinaPorIdServiceTest {
             when(disciplinaRepository.findByIdAndUsuarioId(disciplinaTeste.getId(), usuarioTeste.getId()))
                     .thenReturn(Optional.of(disciplinaTeste));
 
+            // Simula que não há resumos ou materiais para simplificar o teste
+            when(resumoRepository.buscarPorDisciplinaEUsuario(any(), any())).thenReturn(new ArrayList<>());
+            when(materialRepository.listarPorDisciplinaEUsuario(any(), any())).thenReturn(new ArrayList<>());
+
             // Act
-            Optional<Disciplina> resultado = service.executar(disciplinaTeste.getId());
+            Optional<DetalheDisciplinaResponse> resultado = service.executar(disciplinaTeste.getId());
 
             // Assert
             assertTrue(resultado.isPresent());
-            assertEquals(disciplinaTeste.getId(), resultado.get().getId());
+            // ✅ CORREÇÃO AQUI: trocado .getId() por .id() pois é um record
+            assertEquals(disciplinaTeste.getId(), resultado.get().id());
             verify(disciplinaRepository).findByIdAndUsuarioId(disciplinaTeste.getId(), usuarioTeste.getId());
         }
     }
@@ -78,8 +100,6 @@ class DefaultObterDisciplinaPorIdServiceTest {
     @DisplayName("Deve retornar Optional vazio ao buscar disciplina que não pertence ao utilizador")
     void deveRetornarVazioParaDisciplinaDeOutroUsuario() {
         // Arrange
-        // AQUI ESTÁ A CORREÇÃO:
-        // Precisamos de simular o contexto de segurança também neste cenário de teste.
         try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
             // Prepara a simulação do utilizador logado.
             UserDetails userDetailsMock = mock(UserDetails.class);
@@ -96,11 +116,10 @@ class DefaultObterDisciplinaPorIdServiceTest {
                     .thenReturn(Optional.empty());
 
             // Act
-            Optional<Disciplina> resultado = service.executar(disciplinaTeste.getId());
+            Optional<DetalheDisciplinaResponse> resultado = service.executar(disciplinaTeste.getId());
 
             // Assert
             assertFalse(resultado.isPresent(), "O Optional deveria estar vazio.");
         }
     }
 }
-

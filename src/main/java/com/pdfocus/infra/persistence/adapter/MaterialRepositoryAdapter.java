@@ -9,13 +9,15 @@ import com.pdfocus.infra.persistence.entity.MaterialEntity;
 import com.pdfocus.infra.persistence.mapper.MaterialMapper;
 import com.pdfocus.infra.persistence.repository.DisciplinaJpaRepository;
 import com.pdfocus.infra.persistence.repository.MaterialJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 
 /**
  * Adaptador que implementa a porta de saída {@link MaterialRepository}
@@ -100,5 +102,41 @@ public class MaterialRepositoryAdapter implements MaterialRepository {
         List<MaterialEntity> entities = materialJpaRepository.findFirst5ByUsuarioIdOrderByDataUploadDesc(usuario.getId());
         return MaterialMapper.toDomainList(entities);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Material> buscarPorId(UUID id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return materialJpaRepository.findById(id)
+                .map(MaterialMapper::toDomain);
+    }
+
+    @Override
+    public Page<Material> buscarPorDisciplinaDeFormaPaginada(UUID disciplinaId, Pageable pageable) {
+        // 1. Chama o método "mágico" do Spring Data JPA
+        Page<MaterialEntity> paginaDeEntidades = materialJpaRepository.findByDisciplinaId(disciplinaId, pageable);
+
+        // 2. Usa o seu Mapper para converter a página de Entidades (JPA) para uma página de Modelos de Domínio (Core)
+        return paginaDeEntidades.map(MaterialMapper::toDomain);
+    }
+
+    @Override
+    @Transactional
+    public void deletarTodosPorDisciplinaId(UUID disciplinaId) {
+        // Busca todos os materiais da disciplina
+        List<MaterialEntity> materiais = materialJpaRepository.findByDisciplinaId(disciplinaId);
+
+        // Deleta em lote (mais eficiente)
+        materialJpaRepository.deleteAllInBatch(materiais);
+
+        // Log para debug (opcional)
+        System.out.println("✅ Deletados " + materiais.size() + " materiais da disciplina: " + disciplinaId);
+    }
+
 }
 

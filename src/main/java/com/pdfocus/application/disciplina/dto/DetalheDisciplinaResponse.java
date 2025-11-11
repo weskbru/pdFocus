@@ -3,72 +3,66 @@ package com.pdfocus.application.disciplina.dto;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Resumo;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * DTO (Data Transfer Object) que representa a visão detalhada de uma disciplina,
- * incluindo suas listas de resumos e materiais associados.
- * Este é o "dossier completo" retornado pela API para a página de detalhes.
+ * DTO que representa a visão detalhada de uma disciplina.
+ * Agora, a lista de materiais é paginada.
  */
 public record DetalheDisciplinaResponse(
         UUID id,
         String nome,
         String descricao,
         List<ResumoSimples> resumos,
-        List<MaterialSimples> materiais
+        Page<MaterialSimples> materiais
 ) {
 
     /**
-     * DTO aninhado para representar um resumo de forma simplificada na lista.
+     * DTO aninhado para representar um resumo de forma simplificada.
      */
-    public record ResumoSimples(UUID id, String titulo) {
-        /**
-         * Converte um objeto de domínio Resumo para o DTO ResumoSimples.
-         */
+    public record ResumoSimples(UUID id, String titulo, UUID materialId, String dataCriacao) {
         public static ResumoSimples fromDomain(Resumo resumo) {
-            return new ResumoSimples(resumo.getId(), resumo.getTitulo());
+            // Agora estas chamadas são válidas
+            return new ResumoSimples(resumo.getId(), resumo.getTitulo(), resumo.getMaterialId(), resumo.getDataCriacao().toString());
         }
     }
 
     /**
-     * DTO aninhado para representar um material de forma simplificada na lista.
+     * DTO aninhado para representar um material de forma simplificada.
      */
     public record MaterialSimples(UUID id, String nomeArquivo) {
-        /**
-         * Converte um objeto de domínio Material para o DTO MaterialSimples.
-         */
         public static MaterialSimples fromDomain(Material material) {
             return new MaterialSimples(material.getId(), material.getNomeOriginal());
         }
     }
 
     /**
-     * Método de fábrica para converter os objetos de domínio (Disciplina, Resumos, Materiais)
-     * para este DTO de resposta completo.
+     * Constrói o DTO a partir dos modelos de domínio, agora aceitando uma página de materiais.
      *
      * @param disciplina A entidade de domínio principal.
      * @param resumos A lista de resumos associados.
-     * @param materiais A lista de materiais associados.
+     * @param paginaDeMateriais A PÁGINA de materiais associados.
      * @return uma nova instância de DetalheDisciplinaResponse.
      */
     public static DetalheDisciplinaResponse fromDomain(
             Disciplina disciplina,
             List<Resumo> resumos,
-            List<Material> materiais
+            Page<Material> paginaDeMateriais // O parâmetro agora é um Page<Material>
     ) {
-        // Converte a lista de domínios para a lista de DTOs simples
+        // A conversão da lista de resumos continua igual
         List<ResumoSimples> resumosSimples = resumos.stream()
                 .map(ResumoSimples::fromDomain)
                 .collect(Collectors.toList());
 
-        List<MaterialSimples> materiaisSimples = materiais.stream()
-                .map(MaterialSimples::fromDomain)
-                .collect(Collectors.toList());
 
-        // Monta o DTO de resposta final
+        // O método .map() da interface Page é usado para converter o conteúdo da página
+        // de Material para MaterialSimples, preservando todos os metadados de paginação.
+        Page<MaterialSimples> materiaisSimples = paginaDeMateriais.map(MaterialSimples::fromDomain);
+
         return new DetalheDisciplinaResponse(
                 disciplina.getId(),
                 disciplina.getNome(),
@@ -78,4 +72,3 @@ public record DetalheDisciplinaResponse(
         );
     }
 }
-

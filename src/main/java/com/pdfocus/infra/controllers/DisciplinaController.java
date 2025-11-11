@@ -6,6 +6,7 @@ import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.application.disciplina.port.entrada.*;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.infra.security.AuthenticationHelper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -102,15 +103,15 @@ public class DisciplinaController {
      * @return Resposta 200 (OK) com a {@link DisciplinaResponse} se encontrada, ou 404 (Not Found).
      */
     @GetMapping("/{id}")
-    public ResponseEntity<DetalheDisciplinaResponse> obterPorId(@PathVariable UUID id) {
-        // Delega a execução para o caso de uso, que agora retorna o DTO completo.
-        Optional<DetalheDisciplinaResponse> responseOptional = obterDisciplinaPorIdUseCase.executar(id);
-
-        // Mapeia o resultado: se o DTO foi retornado, encapsula em 200 OK.
-        // Se não, retorna 404 Not Found.
-        return responseOptional
+    public ResponseEntity<DetalheDisciplinaResponse> obterPorId(
+            @PathVariable UUID id,
+            Pageable pageable // ✅ 2. ADICIONE ESTE PARÂMETRO
+    ) {
+        // O código abaixo vai apresentar um erro, pois o 'executar' ainda não
+        // espera o 'pageable'. Isso é o que nos guiará para o próximo arquivo.
+        return obterDisciplinaPorIdUseCase.executar(id, pageable)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**

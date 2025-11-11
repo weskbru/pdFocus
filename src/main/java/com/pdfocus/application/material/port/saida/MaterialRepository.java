@@ -2,6 +2,8 @@ package com.pdfocus.application.material.port.saida;
 
 import com.pdfocus.core.models.Material;
 import com.pdfocus.core.models.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,5 +59,27 @@ public interface MaterialRepository {
      */
     List<Material> buscar5MaisRecentesPorUsuario(Usuario usuario);
 
+    /**
+     * Busca um material apenas pelo seu ID, sem verificação de usuário.
+     * Útil para operações internas do sistema onde a validação de usuário não é necessária.
+     *
+     * @param id O ID do material.
+     * @return um {@link Optional} contendo o {@link Material} se encontrado.
+     */
+    Optional<Material> buscarPorId(UUID id);
+
+    /**
+     * Busca uma página de materiais pertencentes a uma disciplina específica.
+     * @param disciplinaId O ID da disciplina.
+     * @param pageable Objeto que contém as informações de paginação.
+     * @return Uma página (Page) de materiais.
+     */
+    Page<Material> buscarPorDisciplinaDeFormaPaginada(UUID disciplinaId, Pageable pageable);
+
+    /**
+     * Deleta todos os materiais de uma disciplina específica
+     * @param disciplinaId ID da disciplina
+     */
+    void deletarTodosPorDisciplinaId(UUID disciplinaId);
 }
 

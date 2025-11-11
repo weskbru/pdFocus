@@ -2,121 +2,109 @@ package com.pdfocus.application.material.service;
 
 import com.pdfocus.application.material.port.saida.MaterialRepository;
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.exceptions.MaterialNaoEncontradoException;
 import com.pdfocus.core.models.Material;
+import com.pdfocus.core.models.Usuario;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-/**
- * Testes unitários para a classe {@link DefaultDeletarMaterialService}.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - DefaultDeletarMaterialService")
 public class DefaultDeletarMaterialServiceTest {
 
     @Mock
     private MaterialRepository materialRepositoryMock;
-
     @Mock
     private MaterialStoragePort materialStoragePortMock;
+    @Mock
+    private UsuarioRepository usuarioRepositoryMock;
 
     @InjectMocks
     private DefaultDeletarMaterialService service;
 
     private final UUID ID_MATERIAL = UUID.randomUUID();
-    private final UUID ID_USUARIO = UUID.randomUUID();
+    private final String EMAIL_USUARIO = "teste@email.com";
     private final String NOME_STORAGE = "abc-123.pdf";
 
-    /**
-     * Agrupa os testes para os cenários principais de deleção.
-     */
-    @Nested
-    @DisplayName("Cenários de Deleção")
-    class CenariosDeDelecao {
+    @Test
+    @DisplayName("Deve apagar o arquivo físico e o registro do DB quando o material pertence ao usuário logado")
+    void deveApagarArquivoERegistroComSucesso() {
+        // --- Arrange (Preparação) ---
+        Usuario usuarioLogado = mock(Usuario.class);
+        when(usuarioLogado.getId()).thenReturn(UUID.randomUUID());
 
-        @Test
-        @DisplayName("Deve apagar o ficheiro físico e depois o registo no banco quando o material existe")
-        void deveApagarFicheiroERegistoQuandoMaterialExiste() {
-            // --- Arrange (Preparação) ---
-            // 1. Criamos um "dublê" de Material que será retornado pela busca.
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            Authentication authenticationMock = mock(Authentication.class);
+            when(userDetailsMock.getUsername()).thenReturn(EMAIL_USUARIO);
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
+
+            when(usuarioRepositoryMock.buscarPorEmail(EMAIL_USUARIO)).thenReturn(Optional.of(usuarioLogado));
+
             Material materialEncontrado = mock(Material.class);
-
-            // 2. Ensinamos o dublê a se comportar: quando o método getNomeStorage() for chamado,
-            // ele deve retornar o nosso nome de ficheiro de exemplo.
             when(materialEncontrado.getNomeStorage()).thenReturn(NOME_STORAGE);
 
-            // 3. Ensinamos o repositório a encontrar este material.
-            when(materialRepositoryMock.buscarPorIdEUsuario(ID_MATERIAL, ID_USUARIO))
+
+            when(materialRepositoryMock.buscarPorIdEUsuario(ID_MATERIAL, usuarioLogado.getId()))
                     .thenReturn(Optional.of(materialEncontrado));
 
             // --- Act (Ação) ---
-            // 4. Executamos o método que queremos testar.
-            assertDoesNotThrow(() -> {
-                service.executar(ID_MATERIAL, ID_USUARIO);
-            });
+            service.executar(ID_MATERIAL);
 
             // --- Assert (Verificação) ---
-            // 5. Verificamos se a ordem das operações está correta.
-            // InOrder garante que o 'apagar' do storage foi chamado ANTES do 'deletarPorIdEUsuario' do repositório.
             InOrder inOrder = inOrder(materialStoragePortMock, materialRepositoryMock);
             inOrder.verify(materialStoragePortMock).apagar(NOME_STORAGE);
-            inOrder.verify(materialRepositoryMock).deletarPorIdEUsuario(ID_MATERIAL, ID_USUARIO);
-        }
-
-        @Test
-        @DisplayName("Deve lançar exceção quando o material não for encontrado")
-        void deveLancarExcecaoQuandoNaoEncontrado() {
-            // Arrange: Ensinamos o repositório a não encontrar o material.
-            when(materialRepositoryMock.buscarPorIdEUsuario(ID_MATERIAL, ID_USUARIO))
-                    .thenReturn(Optional.empty());
-
-            // Act & Assert: Verificamos se a exceção correta é lançada.
-            assertThrows(MaterialNaoEncontradoException.class, () -> {
-                service.executar(ID_MATERIAL, ID_USUARIO);
-            });
-
-            // Verificamos que, se o material não foi encontrado, nenhuma operação de deleção foi tentada.
-            verify(materialStoragePortMock, never()).apagar(anyString());
-            verify(materialRepositoryMock, never()).deletarPorIdEUsuario(any(), any());
+            inOrder.verify(materialRepositoryMock).deletarPorIdEUsuario(ID_MATERIAL, usuarioLogado.getId());
         }
     }
 
-    /**
-     * Agrupa os testes para as validações de entrada do serviço.
-     */
-    @Nested
-    @DisplayName("Validação de Entradas")
-    class ValidacaoDeEntradas {
+    @Test
+    @DisplayName("Deve lançar exceção se o material não for encontrado para o usuário logado")
+    void deveLancarExcecaoQuandoMaterialNaoEncontrado() {
+        // --- Arrange ---
+        Usuario usuarioLogado = mock(Usuario.class);
+        when(usuarioLogado.getId()).thenReturn(UUID.randomUUID());
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID do material for nulo")
-        void deveLancarExcecaoQuandoIdMaterialForNulo() {
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(null, ID_USUARIO);
-            });
-            verifyNoInteractions(materialRepositoryMock, materialStoragePortMock);
-        }
+        try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
+            UserDetails userDetailsMock = mock(UserDetails.class);
+            when(userDetailsMock.getUsername()).thenReturn(EMAIL_USUARIO);
+            Authentication authenticationMock = mock(Authentication.class);
+            when(authenticationMock.getPrincipal()).thenReturn(userDetailsMock);
+            SecurityContext securityContextMock = mock(SecurityContext.class);
+            when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+            mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
-        @Test
-        @DisplayName("Deve lançar exceção quando o ID do usuário for nulo")
-        void deveLancarExcecaoQuandoIdUsuarioForNulo() {
-            assertThrows(NullPointerException.class, () -> {
-                service.executar(ID_MATERIAL, null);
+            when(usuarioRepositoryMock.buscarPorEmail(EMAIL_USUARIO)).thenReturn(Optional.of(usuarioLogado));
+
+
+            when(materialRepositoryMock.buscarPorIdEUsuario(ID_MATERIAL, usuarioLogado.getId()))
+                    .thenReturn(Optional.empty());
+
+            // --- Act & Assert ---
+            assertThrows(MaterialNaoEncontradoException.class, () -> {
+                service.executar(ID_MATERIAL);
             });
-            verifyNoInteractions(materialRepositoryMock, materialStoragePortMock);
+
+            // Garante que nenhuma operação de deleção foi tentada
+            verify(materialStoragePortMock, never()).apagar(anyString());
+            verify(materialRepositoryMock, never()).deletarPorIdEUsuario(any(), any());
         }
     }
 }
