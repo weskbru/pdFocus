@@ -5,7 +5,7 @@ build/                   # Pasta de build (não versionar)
 # Gradle Wrapper: garantir que o jar e os scripts fiquem no repo
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
-gradle/wrapper/gradle-wrapper.jar
+# A linha contraditória 'gradle/wrapper/gradle-wrapper.jar' foi removida.
 
 # IDEs
 .idea/
@@ -17,7 +17,7 @@ out/
 
 # Java
 *.class
-*.jar          # se você publicar seus jars via repo, ignore. Se não, ignore com cuidado
+*.jar
 *.war
 *.ear
 
@@ -38,7 +38,11 @@ Thumbs.db
 # Logs
 logs/
 
-# Build/Output
-/build/
-/.gradle/
-/out/
+# --- CORREÇÕES ESPECÍFICAS DO PROJETO ---
+
+# Pasta de uploads locais (NÃO ENVIAR PARA O GIT)
+/uploads/
+
+# Arquivo temporário da estrutura
+estrutura.txt
+
