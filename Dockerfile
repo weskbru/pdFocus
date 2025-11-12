@@ -31,9 +31,10 @@ FROM eclipse-temurin:17-jre-jammy
 # Define o diretório de trabalho.
 WORKDIR /app
 
-# Copia apenas o arquivo .jar que foi gerado no estágio 'builder' para a nossa imagem final.
-# O caminho do .jar pode variar. Verifique na sua pasta 'build/libs' qual é o nome exato.
-COPY --from=builder /app/build/libs/*.jar app.jar
+# [--- ESTA É A CORREÇÃO ---]
+# Copia o arquivo .jar específico que descobrimos no build local (pdFocus-1.0-SNAPSHOT.jar).
+# Isso remove a ambiguidade do '*.jar'.
+COPY --from=builder /app/build/libs/pdFocus-1.0-SNAPSHOT.jar app.jar
 
 # Expõe a porta 8080, informando ao Docker que nossa aplicação escuta nesta porta.
 EXPOSE 8080
