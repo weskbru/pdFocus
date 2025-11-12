@@ -56,3 +56,7 @@ tasks.withType<JavaCompile> {
 tasks.test {
     useJUnitPlatform()
 }
+
+springBoot {
+    mainClass.set("com.pdfocus.boot.PdfocusApplication")
+}
