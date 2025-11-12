@@ -7,8 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST para operações relacionadas a feedback.
- * Segue o mesmo padrão dos outros controllers (AuthController, DisciplinaController, etc).
+ * Controlador REST responsável por receber e registrar feedbacks de usuários.
+ * <p>
+ * Atua como ponto de entrada HTTP para o caso de uso {@link EnviarFeedbackUseCase},
+ * garantindo isolamento da lógica de negócio e padronização de resposta.
+ * </p>
  */
 @RestController
 @RequestMapping("/feedback")
@@ -17,26 +20,31 @@ public class FeedbackController {
     private final EnviarFeedbackUseCase enviarFeedbackUseCase;
 
     /**
-     * Construtor com injeção de dependência seguindo o padrão do projeto.
+     * Construtor com injeção de dependência, seguindo o padrão de inicialização
+     * adotado em toda a camada de controladores.
+     *
+     * @param enviarFeedbackUseCase Caso de uso responsável pelo processamento e persistência do feedback.
      */
     public FeedbackController(EnviarFeedbackUseCase enviarFeedbackUseCase) {
         this.enviarFeedbackUseCase = enviarFeedbackUseCase;
     }
 
     /**
-     * Endpoint para receber feedback dos usuários.
-     * Segue o padrão POST com retorno 200 e DTO de resposta.
+     * Recebe um feedback do usuário autenticado e o encaminha para processamento.
+     * <p>
+     * Este endpoint é usado tanto para sugestões quanto para relatórios de erro.
+     * Retorna uma resposta padronizada confirmando o recebimento.
+     * </p>
      *
-     * @param request DTO com os dados do feedback
-     * @return Resposta 200 (OK) com confirmação do recebimento
+     * @param request DTO contendo os dados do feedback (tipo, mensagem, etc.).
+     * @return 200 (OK) com {@link FeedbackResponse} indicando sucesso na operação.
      */
     @PostMapping
     public ResponseEntity<FeedbackResponse> receberFeedback(@RequestBody FeedbackRequest request) {
-        // O @Valid foi removido pois estamos usando validação manual no Request
-        // Executa o use case e obtém o ID do feedback persistido
+        // Executa o caso de uso de envio de feedback
         Long feedbackId = enviarFeedbackUseCase.executar(request);
 
-        // Cria resposta de sucesso seguindo o padrão dos outros endpoints
+        // Retorna resposta padronizada com o ID e o tipo de feedback
         FeedbackResponse response = FeedbackResponse.sucesso(feedbackId, request.getTipo());
 
         return ResponseEntity.ok(response);

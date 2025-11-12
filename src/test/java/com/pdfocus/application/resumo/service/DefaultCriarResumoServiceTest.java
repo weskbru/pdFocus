@@ -1,11 +1,11 @@
 package com.pdfocus.application.resumo.service;
 
-import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.disciplina.port.saida.DisciplinaRepository;
+import com.pdfocus.application.resumo.dto.CriarResumoCommand;
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.core.exceptions.CampoNuloException;
 import com.pdfocus.core.exceptions.CampoVazioException;
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.models.Disciplina;
 import com.pdfocus.core.models.Resumo;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +27,12 @@ import static org.mockito.Mockito.*;
 /**
  * Testes unitários para a classe {@link DefaultCriarResumoService}.
  * Valida a lógica de negócio para a criação de novos resumos.
+ *
+ * <p><b>[REFATORAÇÃO - PILAR 3]</b>
+ * Os testes foram atualizados para refletir a refatoração de segurança
+ * (multi-tenancy). O mock do {@link DisciplinaRepository} agora valida
+ * a chamada ao método {@code findByIdAndUsuarioId} em vez do antigo {@code findById}.
+ * </p>
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - DefaultCriarResumoService")
@@ -50,9 +56,11 @@ public class DefaultCriarResumoServiceTest {
 
     /**
      * Configura objetos comuns usados em múltiplos testes para evitar repetição.
+     * (Nota: O construtor de Disciplina pode precisar ser adaptado se o modelo mudou)
      */
     @BeforeEach
     void setUp() {
+        // Assumindo que o construtor de Disciplina ainda é válido para o mock
         disciplinaValida = new Disciplina(ID_DISCIPLINA, "Direito Constitucional", "Estudo da CF.", ID_USUARIO);
     }
 
@@ -63,13 +71,17 @@ public class DefaultCriarResumoServiceTest {
     @DisplayName("Deve criar um resumo com sucesso quando todos os dados são válidos")
     void deveCriarResumoComSucesso() {
         // Arrange (Preparação)
-        // 1. O comando agora não contém mais o ID do usuário.
         CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, TITULO, CONTEUDO);
-        when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
+
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Agora zombamos (mock) o método de segurança correto: findByIdAndUsuarioId
+        when(disciplinaRepository.findByIdAndUsuarioId(ID_DISCIPLINA, ID_USUARIO))
+                .thenReturn(Optional.of(disciplinaValida));
+        // --- FIM DA CORREÇÃO ---
+
         when(resumoRepository.salvar(any(Resumo.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act (Ação)
-        // 2. A chamada ao serviço agora passa o ID do usuário como um segundo argumento.
         Resumo resultado = service.executar(command, ID_USUARIO);
 
         // Assert (Verificação)
@@ -77,9 +89,14 @@ public class DefaultCriarResumoServiceTest {
         assertNotNull(resultado.getId());
         assertEquals(TITULO, resultado.getTitulo());
         assertEquals(CONTEUDO, resultado.getConteudo());
-        assertEquals(ID_USUARIO, resultado.getUsuarioId()); // Verifica se o ID do usuário foi atribuído corretamente.
+        assertEquals(ID_USUARIO, resultado.getUsuarioId());
         assertEquals(disciplinaValida, resultado.getDisciplina());
-        verify(disciplinaRepository).findById(ID_DISCIPLINA);
+
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Verificamos se o método de segurança correto foi chamado
+        verify(disciplinaRepository).findByIdAndUsuarioId(ID_DISCIPLINA, ID_USUARIO);
+        // --- FIM DA CORREÇÃO ---
+
         verify(resumoRepository).salvar(any(Resumo.class));
     }
 
@@ -91,13 +108,19 @@ public class DefaultCriarResumoServiceTest {
     class ValidacaoErro {
 
         @Test
-        @DisplayName("Deve lançar exceção quando a disciplina associada não existir")
+        @DisplayName("Deve lançar exceção quando a disciplina associada não existir (ou não pertencer ao usuário)")
         void deveLancarExcecaoQuandoDisciplinaNaoExistir() {
             // Arrange
-            when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.empty());
             CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, TITULO, CONTEUDO);
 
+            // --- CORREÇÃO APLICADA AQUI ---
+            // Zombamos (mock) o método de segurança, que é o que o serviço realmente chama.
+            when(disciplinaRepository.findByIdAndUsuarioId(ID_DISCIPLINA, ID_USUARIO))
+                    .thenReturn(Optional.empty());
+            // --- FIM DA CORREÇÃO ---
+
             // Act & Assert
+            // O serviço (corretamente) lançará a exceção porque o mock retornou vazio.
             assertThrows(DisciplinaNaoEncontradaException.class, () -> service.executar(command, ID_USUARIO));
             verify(resumoRepository, never()).salvar(any());
         }
@@ -106,6 +129,7 @@ public class DefaultCriarResumoServiceTest {
         @DisplayName("Deve lançar exceção quando o comando de criação for nulo")
         void deveLancarExcecaoQuandoComandoForNulo() {
             // Act & Assert
+            // (Nenhuma mudança necessária aqui, pois a validação ocorre antes das chamadas ao repo)
             assertThrows(NullPointerException.class, () -> service.executar(null, ID_USUARIO));
             verifyNoInteractions(resumoRepository, disciplinaRepository);
         }
@@ -114,8 +138,14 @@ public class DefaultCriarResumoServiceTest {
         @DisplayName("Deve lançar exceção do domínio quando o título for vazio")
         void deveRejeitarTituloVazio() {
             // Arrange
-            when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
             CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, "  ", CONTEUDO);
+
+            // --- CORREÇÃO APLICADA AQUI ---
+            // Precisamos do mock correto para que o código passe pela verificação
+            // da disciplina e chegue à validação do título (que é feita no Resumo.criar).
+            when(disciplinaRepository.findByIdAndUsuarioId(ID_DISCIPLINA, ID_USUARIO))
+                    .thenReturn(Optional.of(disciplinaValida));
+            // --- FIM DA CORREÇÃO ---
 
             // Act & Assert
             assertThrows(CampoVazioException.class, () -> service.executar(command, ID_USUARIO));
@@ -125,8 +155,13 @@ public class DefaultCriarResumoServiceTest {
         @DisplayName("Deve lançar exceção do domínio quando o título for nulo")
         void deveRejeitarTituloNulo() {
             // Arrange
-            when(disciplinaRepository.findById(ID_DISCIPLINA)).thenReturn(Optional.of(disciplinaValida));
             CriarResumoCommand command = new CriarResumoCommand(ID_DISCIPLINA, null, CONTEUDO);
+
+            // --- CORREÇÃO APLICADA AQUI ---
+            // Mesmo caso do teste anterior: mock correto é necessário.
+            when(disciplinaRepository.findByIdAndUsuarioId(ID_DISCIPLINA, ID_USUARIO))
+                    .thenReturn(Optional.of(disciplinaValida));
+            // --- FIM DA CORREÇÃO ---
 
             // Act & Assert
             assertThrows(CampoNuloException.class, () -> service.executar(command, ID_USUARIO));

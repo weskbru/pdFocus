@@ -1,4 +1,4 @@
-package com.pdfocus.core.exceptions;
+package com.pdfocus.core.exceptions.usuario;
 
 /**
  * Exceção lançada ao tentar cadastrar um usuário com um e-mail

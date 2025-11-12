@@ -4,16 +4,24 @@ import com.pdfocus.application.usuario.dto.CadastrarUsuarioCommand;
 import com.pdfocus.core.models.Usuario;
 
 /**
- * Caso de uso para registrar um novo usuário no sistema.
+ * Porta de entrada (Use Case) responsável por registrar um novo usuário no sistema.
+ *
+ * <p>Implementações desta interface devem:
+ * <ul>
+ *     <li>Validar os dados fornecidos no comando;</li>
+ *     <li>Verificar se o e-mail já está cadastrado;</li>
+ *     <li>Persistir o novo usuário no repositório;</li>
+ *     <li>Retornar o {@link Usuario} criado.</li>
+ * </ul></p>
  */
 public interface CadastrarUsuarioUseCase {
 
     /**
-     * Executa o processo de cadastro de um novo usuário.
+     * Executa o cadastro de um novo usuário.
      *
-     * @param command O comando com os dados do usuário a ser registrado.
-     * @return O objeto {@link Usuario} recém-criado e persistido.
-     * @throws // Futuramente, podemos definir exceções como EmailJaCadastradoException.
+     * @param command Comando {@link CadastrarUsuarioCommand} contendo os dados do usuário a ser criado.
+     * @return O {@link Usuario} recém-criado e persistido.
+     * @throws // Futuramente, pode lançar EmailJaCadastradoException se o e-mail já existir.
      */
     Usuario executar(CadastrarUsuarioCommand command);
 }

@@ -3,18 +3,24 @@ package com.pdfocus.application.disciplina.port.entrada;
 import java.util.UUID;
 
 /**
- * Define o contrato (Porta de Entrada) para o caso de uso de apagar
- * uma disciplina existente, garantindo que ela pertença ao
- * utilizador autenticado.
+ * Porta de entrada (caso de uso) responsável pela exclusão de uma disciplina.
+ * <p>
+ * Garante que apenas o utilizador autenticado possa remover uma disciplina
+ * que lhe pertence, respeitando as regras de segurança e integridade de domínio.
  */
 public interface DeletarDisciplinaUseCase {
 
     /**
-     * Executa a lógica de negócio para apagar uma disciplina específica.
-     * A segurança (garantir que a disciplina pertence ao utilizador logado) é uma
-     * responsabilidade da implementação.
+     * Executa o fluxo de exclusão de uma disciplina associada ao utilizador autenticado.
+     * <p>
+     * A implementação deve:
+     * <ul>
+     *   <li>Verificar a propriedade da disciplina.</li>
+     *   <li>Remover a entidade de forma transacional.</li>
+     *   <li>Garantir a exclusão em cascata dos materiais e resumos, se aplicável.</li>
+     * </ul>
      *
-     * @param id O UUID da disciplina a ser apagada.
+     * @param id O identificador único ({@link UUID}) da disciplina a ser removida.
      */
     void executar(UUID id);
 }

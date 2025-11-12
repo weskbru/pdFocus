@@ -2,7 +2,7 @@ package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
 import com.pdfocus.application.resumo.port.saida.TextExtractorPort;
-import com.pdfocus.core.exceptions.TextoNaoPodeSerExtraidoException;
+import com.pdfocus.core.exceptions.resumo.TextoNaoPodeSerExtraidoException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

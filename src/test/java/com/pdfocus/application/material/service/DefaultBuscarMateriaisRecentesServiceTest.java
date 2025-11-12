@@ -30,8 +30,10 @@ import static org.mockito.Mockito.*;
 
 /**
  * Teste unitário para DefaultBuscarMateriaisRecentesService.
- * Foco: Validar a lógica de busca e mapeamento de materiais recentes,
- * incluindo a interação com repositórios dependentes (Usuario, Disciplina).
+ * <p>
+ * (Pilar 4) - Testes atualizados para validar o fluxo de segurança (multi-tenancy)
+ * e a refatoração de performance (N+1 Fix).
+ * </p>
  */
 @ExtendWith(MockitoExtension.class)
 class DefaultBuscarMateriaisRecentesServiceTest {
@@ -42,7 +44,7 @@ class DefaultBuscarMateriaisRecentesServiceTest {
     @Mock
     private MaterialRepository materialRepository;
     @Mock
-    private DisciplinaRepository disciplinaRepository;
+    private DisciplinaRepository disciplinaRepository; // Mock ainda necessário (para o 'never()')
 
     // Instância real do serviço sob teste, com os mocks injetados.
     @InjectMocks
@@ -50,27 +52,31 @@ class DefaultBuscarMateriaisRecentesServiceTest {
 
     private Usuario usuarioTeste;
     private Disciplina disciplinaTeste;
-    private Material materialTeste;
+    private Material materialTesteComDisciplina; // Nomeado para clareza
 
     @BeforeEach
     void setUp() {
         usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Recentes", "recentes@email.com", "hash");
         disciplinaTeste = new Disciplina(UUID.randomUUID(), "Cálculo I", "", usuarioTeste.getId());
 
-        materialTeste = Material.criar(
+        // --- CORREÇÃO NO SETUP ---
+        // Usamos o método de fábrica que anexa a Disciplina,
+        // pois é isso que o Mapper (no Adapter) agora faz.
+        materialTesteComDisciplina = Material.reconstituirComDisciplina(
                 UUID.randomUUID(),
                 "derivadas.pdf",
                 "storage-name.pdf",
                 "application/pdf",
                 1024L,
                 usuarioTeste.getId(),
-                disciplinaTeste.getId(),
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                disciplinaTeste // <-- Anexamos a disciplina
         );
+        // --- FIM DA CORREÇÃO ---
     }
 
     @Test
-    @DisplayName("Deve buscar e mapear corretamente os materiais recentes do usuário logado")
+    @DisplayName("Deve buscar (com JOIN) e mapear corretamente os materiais recentes do usuário")
     void deveBuscarEMapearMateriaisRecentes() {
         // Arrange
         try (MockedStatic<SecurityContextHolder> mockedContext = mockStatic(SecurityContextHolder.class)) {
@@ -83,8 +89,14 @@ class DefaultBuscarMateriaisRecentesServiceTest {
             mockedContext.when(SecurityContextHolder::getContext).thenReturn(securityContextMock);
 
             when(usuarioRepository.buscarPorEmail("recentes@email.com")).thenReturn(Optional.of(usuarioTeste));
-            when(materialRepository.buscar5MaisRecentesPorUsuario(usuarioTeste)).thenReturn(List.of(materialTeste));
-            when(disciplinaRepository.buscarPorId(disciplinaTeste.getId())).thenReturn(Optional.of(disciplinaTeste));
+
+            // --- CORREÇÃO NO MOCK (N+1 FIX) ---
+            // Zombamos (mock) o *novo* método performático (1 query)
+            when(materialRepository.buscar5MaisRecentesPorUsuarioComDisciplina(usuarioTeste))
+                    .thenReturn(List.of(materialTesteComDisciplina));
+
+            // NÃO precisamos mais zombar (mock) o disciplinaRepository.findById()
+            // --- FIM DA CORREÇÃO ---
 
             // Act
             List<MaterialRecenteResponse> resultado = service.executar();
@@ -92,11 +104,19 @@ class DefaultBuscarMateriaisRecentesServiceTest {
             // Assert
             assertNotNull(resultado);
             assertEquals(1, resultado.size());
-            assertEquals(materialTeste.getId(), resultado.get(0).id());
-            assertEquals(disciplinaTeste.getNome(), resultado.get(0).nomeDisciplina());
+            assertEquals(materialTesteComDisciplina.getId(), resultado.get(0).id());
+            assertEquals(disciplinaTeste.getNome(), resultado.get(0).nomeDisciplina()); // O nome veio do JOIN
 
-            verify(materialRepository, times(1)).buscar5MaisRecentesPorUsuario(usuarioTeste);
-            verify(disciplinaRepository, times(1)).buscarPorId(disciplinaTeste.getId());
+            // --- CORREÇÃO NA VERIFICAÇÃO (N+1 FIX) ---
+            // Verificamos se o método RÁPIDO foi chamado
+            verify(materialRepository, times(1)).buscar5MaisRecentesPorUsuarioComDisciplina(usuarioTeste);
+
+            // Verificamos se o método ANTIGO (lento) NÃO foi chamado
+            verify(materialRepository, never()).buscar5MaisRecentesPorUsuario(any());
+
+            // Provamos que o N+1 foi corrigido: o disciplinaRepository NUNCA é chamado
+            verify(disciplinaRepository, never()).findById(any());
+            // --- FIM DA CORREÇÃO ---
         }
     }
 }

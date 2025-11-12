@@ -4,22 +4,54 @@ import com.pdfocus.core.exceptions.ValorInvalidoException;
 import com.pdfocus.core.shared.Validador;
 
 /**
- * DTO para receber dados de feedback do frontend.
- * Segue o mesmo padrão dos outros Command DTOs com validação manual usando seu Validador.
+ * Representa a estrutura de dados para o recebimento de feedbacks enviados
+ * pelo frontend. Esse DTO encapsula as informações essenciais fornecidas pelo
+ * utilizador e realiza validações de domínio antes de ser processado pelo caso de uso.
+ *
+ * <p>Os tipos válidos de feedback são:
+ * <ul>
+ *   <li><b>BUG</b> – Relato de erro ou mau funcionamento</li>
+ *   <li><b>SUGGESTION</b> – Sugestão de melhoria</li>
+ *   <li><b>FEATURE</b> – Solicitação de nova funcionalidade</li>
+ *   <li><b>OTHER</b> – Qualquer outro tipo de feedback</li>
+ * </ul>
+ *
+ * <p>A validação é feita de forma manual através do método {@link #validar()},
+ * seguindo o padrão adotado em toda a aplicação (uso do {@link Validador}).
  */
 public class FeedbackRequest {
 
+    /** Tipo do feedback (ex.: BUG, SUGGESTION, FEATURE, OTHER). */
     private String tipo;
+
+    /** Avaliação numérica opcional (1 a 5). */
     private Integer rating;
+
+    /** Mensagem detalhando o feedback fornecido pelo utilizador. */
     private String mensagem;
+
+    /** Endereço de e-mail opcional do utilizador (se fornecido). */
     private String emailUsuario;
+
+    /** Página ou rota da aplicação onde o feedback foi submetido. */
     private String pagina;
+
+    /** Informações sobre o agente do utilizador (navegador, sistema operacional, etc.). */
     private String userAgent;
 
-    // Construtor padrão para deserialização JSON
+    /** Construtor padrão exigido para a desserialização JSON. */
     public FeedbackRequest() {}
 
-    // Construtor com parâmetros para testes
+    /**
+     * Construtor auxiliar utilizado em testes ou criação manual.
+     *
+     * @param tipo tipo do feedback (BUG, SUGGESTION, FEATURE ou OTHER)
+     * @param rating avaliação opcional de 1 a 5
+     * @param mensagem texto do feedback
+     * @param emailUsuario email do utilizador (opcional)
+     * @param pagina página onde o feedback foi enviado
+     * @param userAgent agente do utilizador (navegador, sistema)
+     */
     public FeedbackRequest(String tipo, Integer rating, String mensagem, String emailUsuario, String pagina, String userAgent) {
         this.tipo = tipo;
         this.rating = rating;
@@ -49,52 +81,47 @@ public class FeedbackRequest {
     public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
 
     /**
-     * Método de validação manual seguindo o padrão do seu projeto.
-     * Usa exatamente os mesmos métodos do Validador existente.
+     * Executa a validação de domínio sobre os campos do DTO.
+     *
+     * <p>Regras principais:
+     * <ul>
+     *   <li>Campos obrigatórios: {@code tipo}, {@code mensagem}, {@code pagina}, {@code userAgent}</li>
+     *   <li>O tipo deve ser um dos valores: BUG, SUGGESTION, FEATURE, OTHER</li>
+     *   <li>O rating (se informado) deve estar entre 1 e 5</li>
+     *   <li>A mensagem deve conter entre 10 e 1000 caracteres</li>
+     *   <li>O e-mail (se informado) deve possuir formato válido</li>
+     * </ul>
+     *
+     * @throws ValorInvalidoException se algum campo não atender às regras de domínio
      */
     public void validar() {
-        // Usa requireNotEmpty do seu Validador (que já valida null e vazio)
         this.tipo = Validador.requireNotEmpty(tipo, "Tipo do feedback");
         this.mensagem = Validador.requireNotEmpty(mensagem, "Mensagem do feedback");
         this.pagina = Validador.requireNotEmpty(pagina, "Página de origem");
         this.userAgent = Validador.requireNotEmpty(userAgent, "User agent");
 
-        // Validar tipo permitido (validação específica do domínio)
         if (!tipo.matches("BUG|SUGGESTION|FEATURE|OTHER")) {
             throw new ValorInvalidoException(
                     "Tipo de feedback deve ser: BUG, SUGGESTION, FEATURE ou OTHER"
             );
         }
 
-        // Validar rating se fornecido
         if (rating != null && (rating < 1 || rating > 5)) {
-            throw new ValorInvalidoException(
-                    "Rating deve estar entre 1 e 5"
-            );
+            throw new ValorInvalidoException("Rating deve estar entre 1 e 5");
         }
 
-        // Validar tamanho da mensagem
         if (mensagem.length() < 10) {
-            throw new ValorInvalidoException(
-                    "Mensagem deve ter pelo menos 10 caracteres"
-            );
+            throw new ValorInvalidoException("Mensagem deve ter pelo menos 10 caracteres");
         }
 
         if (mensagem.length() > 1000) {
-            throw new ValorInvalidoException(
-                    "Mensagem deve ter no máximo 1000 caracteres"
-            );
+            throw new ValorInvalidoException("Mensagem deve ter no máximo 1000 caracteres");
         }
 
-        // Validar email se fornecido (usando requireNotEmpty para null/vazio)
         if (emailUsuario != null && !emailUsuario.isEmpty()) {
             this.emailUsuario = Validador.requireNotEmpty(emailUsuario, "Email do usuário");
-
-            // Validação básica de formato de email
             if (!emailUsuario.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-                throw new ValorInvalidoException(
-                        "Email deve ser válido"
-                );
+                throw new ValorInvalidoException("Email deve ser válido");
             }
         }
     }

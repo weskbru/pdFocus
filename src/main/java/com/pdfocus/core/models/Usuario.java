@@ -1,69 +1,96 @@
 package com.pdfocus.core.models;
 
-
 import java.util.UUID;
 
 /**
- * Representa um usuário no domínio da aplicação.
+ * Representa um <strong>usuário</strong> dentro do domínio central do sistema Pdfocus.
  * <p>
- * Esta é uma classe de modelo "pura", contendo apenas o estado e as
- * informações essenciais de um usuário. É projetada para ser imutável
- * após a sua criação, com todos os campos marcados como {@code final}.
+ * A entidade {@code Usuario} encapsula as informações essenciais de autenticação e identificação
+ * do usuário, sem conter qualquer lógica de infraestrutura ou persistência.
  * </p>
+ *
+ * <h2>Responsabilidades</h2>
+ * <ul>
+ *     <li>Manter os dados fundamentais de um usuário: ID, nome, e-mail e senha (hash).</li>
+ *     <li>Garantir imutabilidade — uma vez criado, o estado do objeto não pode ser alterado.</li>
+ *     <li>Servir como base para o mapeamento de persistência em {@code UsuarioEntity} na camada infra.</li>
+ * </ul>
+ *
+ * <h2>Design</h2>
+ * <p>
+ * Esta classe é simples e livre de anotações do Spring ou JPA,
+ * respeitando o princípio de <em>separação de domínios</em> da Arquitetura Limpa.
+ * </p>
+ *
+ * @see com.pdfocus.infra.persistence.entity.UsuarioEntity
  */
 public class Usuario {
+
+    /** Identificador único e imutável do usuário. */
     private final UUID id;
+
+    /** Nome completo do usuário. */
     private final String nome;
+
+    /** Endereço de e-mail utilizado para login e comunicação. */
     private final String email;
 
     /**
-     * O hash da senha do usuário.
-     * <strong>Importante:</strong> Este campo NUNCA deve conter a senha em texto puro,
-     * apenas a sua versão criptografada (hash).
+     * Hash criptográfico da senha do usuário.
+     * <p><strong>Nunca</strong> deve armazenar a senha em texto puro.</p>
      */
     private final String senhaHash;
 
     /**
-     * Constrói uma nova instância de Usuário.
+     * Cria uma nova instância de {@code Usuario} com todos os campos definidos.
+     *
+     * @param id         Identificador único do usuário.
+     * @param nome       Nome do usuário.
+     * @param email      E-mail utilizado para login.
+     * @param senhaHash  Hash da senha (BCrypt ou equivalente).
+     */
+    public Usuario(UUID id, String nome, String email, String senhaHash) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+    }
+
+    /**
+     * Cria uma nova instância de {@code Usuario} sem ID definido.
      * <p>
-     * Nota: Este construtor não possui validações internas. A responsabilidade de
-     * fornecer dados válidos (não nulos, e-mail em formato correto, etc.)
-     * recai sobre a camada de serviço que o invoca antes de sua criação.
+     * Usado em fluxos de criação, onde o ID será gerado posteriormente
+     * pela camada de persistência.
      * </p>
      *
-     * @param id O ID único para o usuário.
-     * @param nome O nome do usuário.
-     * @param email O e-mail do usuário.
-     * @param senhaHash O hash da senha do usuário.
+     * @param nome       Nome do usuário.
+     * @param email      E-mail utilizado para login.
+     * @param senhaHash  Hash da senha (BCrypt ou equivalente).
      */
-    public Usuario( UUID id, String nome, String email, String senhaHash) {
-        this.id = id ;
-        this.nome = nome;
-        this.email = email;
-        this.senhaHash = senhaHash;
-    }
-
     public Usuario(String nome, String email, String senhaHash) {
-        this.id = null; // O ID é nulo porque ainda não foi gerado pelo banco
+        this.id = null;
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
     }
 
+    /** @return o identificador único do usuário. */
     public UUID getId() {
         return id;
     }
 
+    /** @return o nome completo do usuário. */
     public String getNome() {
         return nome;
     }
 
+    /** @return o e-mail cadastrado do usuário. */
     public String getEmail() {
         return email;
     }
 
+    /** @return o hash da senha do usuário. */
     public String getSenhaHash() {
         return senhaHash;
     }
-
 }

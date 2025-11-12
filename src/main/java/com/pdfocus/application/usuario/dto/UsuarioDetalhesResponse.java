@@ -4,16 +4,21 @@ import com.pdfocus.core.models.Usuario;
 
 /**
  * DTO (Data Transfer Object) que representa os detalhes públicos de um usuário.
- * Usado como resposta para endpoints que retornam informações do usuário logado.
+ *
+ * <p>Este DTO é utilizado em respostas de API para expor informações do
+ * usuário logado, garantindo que dados sensíveis, como senha, não sejam
+ * incluídos.</p>
+ *
+ * @param nome  O nome completo do usuário.
+ * @param email O endereço de e-mail do usuário.
  */
 public record UsuarioDetalhesResponse(String nome, String email) {
 
     /**
-     * Método de fábrica (factory method) para criar uma instância deste DTO
-     * a partir de um objeto de domínio Usuario.
+     * Converte um objeto de domínio {@link Usuario} para este DTO seguro.
      *
      * @param usuario O objeto de domínio a ser convertido.
-     * @return uma nova instância de UsuarioDetalhesResponse.
+     * @return Uma instância de {@link UsuarioDetalhesResponse} contendo apenas os dados públicos.
      */
     public static UsuarioDetalhesResponse fromDomain(Usuario usuario) {
         return new UsuarioDetalhesResponse(usuario.getNome(), usuario.getEmail());

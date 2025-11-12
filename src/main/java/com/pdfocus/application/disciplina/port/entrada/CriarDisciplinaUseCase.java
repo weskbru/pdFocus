@@ -3,22 +3,26 @@ package com.pdfocus.application.disciplina.port.entrada;
 import com.pdfocus.application.disciplina.dto.CriarDisciplinaCommand;
 import com.pdfocus.core.models.Disciplina;
 
-import java.util.UUID;
-
 /**
- * Interface que define o caso de uso para a criação de uma nova {@link Disciplina}.
- * As classes que implementarem esta interface serão responsáveis por orquestrar
- * a lógica necessária para criar uma disciplina no sistema.
+ * Porta de entrada (caso de uso) responsável pela criação de uma nova {@link Disciplina}.
+ * <p>
+ * Define o contrato de negócio que encapsula as regras para criar uma disciplina
+ * associada ao utilizador autenticado, garantindo isolamento entre aplicação e domínio.
  */
 public interface CriarDisciplinaUseCase {
 
     /**
-     * Executa a lógica de negócio para criar e persistir uma nova disciplina.
-     * A identidade do usuário é obtida implicitamente a partir do contexto de
-     * segurança, garantindo que a disciplina seja associada ao proprietário correto.
+     * Executa o fluxo de criação e persistência de uma nova disciplina.
+     * <p>
+     * A implementação deve:
+     * <ul>
+     *   <li>Validar os dados do comando recebido.</li>
+     *   <li>Associar a disciplina ao utilizador autenticado (via contexto de segurança).</li>
+     *   <li>Persistir a nova entidade de domínio.</li>
+     * </ul>
      *
-     * @param command O DTO contendo os dados para a nova disciplina.
-     * @return O objeto de domínio {@link Disciplina} recém-criado.
+     * @param command O comando contendo os dados necessários para criar a disciplina.
+     * @return A entidade {@link Disciplina} criada e persistida.
      */
     Disciplina executar(CriarDisciplinaCommand command);
 }

@@ -12,8 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Controller REST para agrupar os endpoints relacionados ao dashboard.
- * Expõe funcionalidades de visualização de dados agregados para o frontend.
+ * Controlador REST responsável pelos endpoints do dashboard do usuário.
+ * <p>
+ * Atua como ponto de integração entre o frontend e os casos de uso que agregam dados
+ * de disciplinas, resumos e materiais — servindo como base para a tela principal do sistema.
+ * </p>
+ *
+ * <h2>Endpoints</h2>
+ * <ul>
+ *   <li><b>GET /dashboard/estatisticas</b> — Retorna os totais de disciplinas, resumos e materiais do usuário.</li>
+ *   <li><b>GET /dashboard/materiais/recentes</b> — Retorna os últimos materiais enviados.</li>
+ * </ul>
  */
 @RestController
 @RequestMapping("/dashboard")
@@ -22,38 +31,46 @@ public class DashboardController {
     private final BuscarEstatisticasDashboardUseCase buscarEstatisticasDashboardUseCase;
     private final BuscarMateriaisRecentesUseCase buscarMateriaisRecentesUseCase;
 
-    public DashboardController(BuscarEstatisticasDashboardUseCase buscarEstatisticasDashboardUseCase,
-                               BuscarMateriaisRecentesUseCase buscarMateriaisRecentesUseCase) {
+    /**
+     * Construtor com injeção dos casos de uso necessários para a construção do dashboard.
+     *
+     * @param buscarEstatisticasDashboardUseCase Caso de uso para buscar as estatísticas gerais.
+     * @param buscarMateriaisRecentesUseCase Caso de uso para listar os materiais mais recentes.
+     */
+    public DashboardController(
+            BuscarEstatisticasDashboardUseCase buscarEstatisticasDashboardUseCase,
+            BuscarMateriaisRecentesUseCase buscarMateriaisRecentesUseCase
+    ) {
         this.buscarEstatisticasDashboardUseCase = buscarEstatisticasDashboardUseCase;
         this.buscarMateriaisRecentesUseCase = buscarMateriaisRecentesUseCase;
     }
 
     /**
-     * Endpoint para buscar as estatísticas agregadas do usuário logado (total de
-     * disciplinas, resumos e materiais).
+     * Retorna as estatísticas agregadas do dashboard do usuário autenticado.
+     * <p>
+     * O caso de uso {@link BuscarEstatisticasDashboardUseCase} encapsula toda a lógica
+     * de agregação (quantidade de disciplinas, resumos e materiais).
+     * </p>
      *
-     * @return ResponseEntity com status 200 (OK) e o DTO {@link DashboardEstatisticasResponse} no corpo.
+     * @return 200 (OK) com o DTO {@link DashboardEstatisticasResponse} no corpo da resposta.
      */
     @GetMapping("/estatisticas")
     public ResponseEntity<DashboardEstatisticasResponse> buscarEstatisticas() {
-        // Delega a execução da lógica de negócio para a camada de aplicação (Caso de Uso).
         DashboardEstatisticasResponse response = buscarEstatisticasDashboardUseCase.executar();
-
-        // Retorna a resposta encapsulada em um ResponseEntity.
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Endpoint para buscar uma lista dos materiais mais recentes do usuário logado.
+     * Retorna uma lista dos materiais mais recentes do usuário autenticado.
+     * <p>
+     * Este endpoint serve para preencher a seção "Materiais Recentes" do dashboard.
+     * </p>
      *
-     * @return ResponseEntity com status 200 (OK) e uma lista de {@link MaterialRecenteResponse} no corpo.
+     * @return 200 (OK) com uma lista de {@link MaterialRecenteResponse}.
      */
     @GetMapping("/materiais/recentes")
     public ResponseEntity<List<MaterialRecenteResponse>> buscarMateriaisRecentes() {
-        // Delega a execução para o caso de uso específico.
         List<MaterialRecenteResponse> response = buscarMateriaisRecentesUseCase.executar();
-
-        // Retorna a lista na resposta.
         return ResponseEntity.ok(response);
     }
 }

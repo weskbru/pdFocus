@@ -1,7 +1,7 @@
 package com.pdfocus.infra.persistence.adapter;
 
 import com.pdfocus.application.resumo.port.saida.ResumoRepository;
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 import com.pdfocus.core.models.Resumo;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.persistence.entity.ResumoEntity;
@@ -74,16 +74,24 @@ public class ResumoRepositoryAdapter implements ResumoRepository {
         return jpaRepository.countByUsuarioId(usuario.getId());
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Implementa a lógica de "cascade delete" da aplicação.
+     * 1. Encontra todas as entidades filhas (Resumos) usando o JPA.
+     * 2. Deleta todas elas em um lote (batch), que é mais performático.
+     * </p>
+     */
     @Override
     @Transactional
     public void deletarTodosPorDisciplinaId(UUID disciplinaId) {
-        // Busca todos os resumos da disciplina
+        // 1. Busca todos os resumos da disciplina (usando o Passo 2)
         List<ResumoEntity> resumos = jpaRepository.findByDisciplinaId(disciplinaId);
 
-        // Deleta em lote (mais eficiente)
-        jpaRepository.deleteAllInBatch(resumos);
-
-        // Log para debug (opcional)
-        System.out.println("✅ Deletados " + resumos.size() + " resumos da disciplina: " + disciplinaId);
+        // 2. Se houver resumos, deleta em lote
+        if (resumos != null && !resumos.isEmpty()) {
+            jpaRepository.deleteAllInBatch(resumos);
+            // System.out.println("✅ Deletados " + resumos.size() + " resumos da disciplina: " + disciplinaId);
+        }
     }
 }

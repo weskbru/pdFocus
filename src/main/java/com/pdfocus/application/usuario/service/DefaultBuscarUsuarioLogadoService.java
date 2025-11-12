@@ -8,40 +8,53 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementação padrão do caso de uso para buscar o usuário logado.
- * Esta é a nossa "usina elétrica", contendo a lógica real da operação.
+ * Implementação padrão do caso de uso {@link BuscarUsuarioLogadoUseCase}.
+ *
+ * <p>Este serviço é responsável por recuperar o usuário atualmente autenticado
+ * no sistema, utilizando o {@link SecurityContextHolder} do Spring Security.</p>
+ *
+ * <p>Ele atua como uma "usina elétrica", centralizando a lógica necessária
+ * para determinar a identidade do usuário logado e buscar seus dados completos
+ * no repositório.</p>
  */
 @Service
 public class DefaultBuscarUsuarioLogadoService implements BuscarUsuarioLogadoUseCase {
 
     private final UsuarioRepository usuarioRepository;
 
+    /**
+     * Construtor do serviço.
+     *
+     * @param usuarioRepository Repositório para recuperação de usuários.
+     */
     public DefaultBuscarUsuarioLogadoService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Esta implementação usa o SecurityContextHolder do Spring Security para obter
-     * a identidade do usuário que fez a requisição.
-     * </p>
+     * Executa o caso de uso de busca do usuário logado.
+     *
+     * <p>O método realiza os seguintes passos:
+     * <ol>
+     *     <li>Obtém o principal do contexto de segurança do Spring Security;</li>
+     *     <li>Determina o username (e-mail) do usuário autenticado;</li>
+     *     <li>Recupera o {@link Usuario} completo no repositório.</li>
+     * </ol></p>
+     *
+     * @return O {@link Usuario} atualmente autenticado.
+     * @throws IllegalStateException Se o usuário autenticado não for encontrado no banco de dados.
      */
     @Override
     public Usuario executar() {
-        // 1. Acessamos o "painel de controle" do Spring Security para ver quem está logado.
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username;
         if (principal instanceof UserDetails) {
-            // O Spring Security nos entrega um objeto UserDetails com as informações.
             username = ((UserDetails) principal).getUsername();
         } else {
-            // Fallback caso o objeto principal seja apenas uma String.
             username = principal.toString();
         }
 
-        // 2. Com o username (que no nosso sistema é o e-mail), buscamos o usuário completo no banco.
         return usuarioRepository.buscarPorEmail(username)
                 .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado no banco de dados."));
     }

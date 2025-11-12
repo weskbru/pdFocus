@@ -11,6 +11,18 @@ import org.springframework.http.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Serviço responsável pelo envio de feedbacks via e-mail utilizando a API do Resend.
+ *
+ * <p>Esta implementação é voltada para testes utilizando e-mails de teste do Resend.
+ * Em produção, o remetente e o domínio devem ser atualizados para refletir o domínio próprio.</p>
+ *
+ * <p>O serviço também exibe o feedback no console antes do envio, permitindo verificação rápida
+ * durante o desenvolvimento.</p>
+ *
+ * <p>Implementa a interface {@link FeedbackEmailPort}, garantindo compatibilidade com a arquitetura
+ * de portas e adaptadores do PDFocus.</p>
+ */
 @Service
 public class ResendEmailFeedbackService implements FeedbackEmailPort {
 
@@ -18,6 +30,13 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
     private final String apiKey;
     private final String emailDestino;
 
+    /**
+     * Construtor do serviço de envio de feedbacks.
+     *
+     * @param restTemplate O {@link RestTemplate} utilizado para realizar requisições HTTP à API do Resend.
+     * @param apiKey A chave de API do Resend para autenticação.
+     * @param emailDestino O e-mail de destino para onde os feedbacks serão enviados.
+     */
     public ResendEmailFeedbackService(
             RestTemplate restTemplate,
             @Value("${app.resend.api-key}") String apiKey,
@@ -27,17 +46,24 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         this.emailDestino = emailDestino;
     }
 
+    /**
+     * Envia um feedback por e-mail utilizando a API do Resend.
+     *
+     * <p>O feedback é exibido no console antes do envio e é enviado em formato de texto simples.
+     * Caso ocorra algum erro durante o envio, uma {@link EmailFeedbackException} é lançada.</p>
+     *
+     * @param feedback O objeto {@link Feedback} contendo as informações do feedback.
+     * @throws EmailFeedbackException Se houver falha no envio do e-mail via Resend.
+     */
     @Override
     public void enviarEmailFeedback(Feedback feedback) {
-        // Mostra no console
         mostrarNoConsole(feedback);
 
-        // Monta o JSON do Resend usando e-mail de teste do Resend
         Map<String, Object> body = new HashMap<>();
         body.put("from", "PDFocus Test <onboarding@resend.dev>"); // remetente de teste
-        // Depois (domínio próprio)
+        // Para produção, alterar para domínio próprio:
         // body.put("from", "PDFocus <no-reply@seudominio.com>");
-        body.put("to", new String[]{emailDestino});               // seu e-mail de teste
+        body.put("to", new String[]{emailDestino});
         body.put("subject", "📨 Novo Feedback recebido - PDFocus (Teste)");
         body.put("text", montarCorpoEmail(feedback));
 
@@ -62,6 +88,11 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         }
     }
 
+    /**
+     * Exibe os detalhes do feedback no console para fins de teste e depuração.
+     *
+     * @param feedback O feedback a ser exibido.
+     */
     private void mostrarNoConsole(Feedback feedback) {
         System.out.println("\n🎯 ================= FEEDBACK RECEBIDO =================");
         System.out.println("📧 TIPO: " + (feedback.getTipo() != null ? feedback.getTipo() : "Não especificado"));
@@ -75,6 +106,12 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         System.out.println("========================================================\n");
     }
 
+    /**
+     * Monta o corpo do e-mail a partir das informações do feedback.
+     *
+     * @param feedback O feedback a ser transformado em corpo de e-mail.
+     * @return Uma {@link String} formatada com os detalhes do feedback.
+     */
     private String montarCorpoEmail(Feedback feedback) {
         StringBuilder sb = new StringBuilder();
         sb.append("📬 NOVO FEEDBACK RECEBIDO\n\n");

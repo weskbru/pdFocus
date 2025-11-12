@@ -21,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DisciplinaMapperTest {
 
     private final UUID id = UUID.randomUUID();
-    private final UUID usuarioId = UUID.randomUUID(); // Adicionado para o novo construtor
+    private final UUID usuarioId = UUID.randomUUID();
     private final String nome = "Matemática Avançada";
     private final String descricao = "Cálculo, Álgebra Linear e Equações Diferenciais";
 
     /**
      * Testes para o método {@link DisciplinaMapper#toEntity(Disciplina)}.
+     * (Este teste estava correto)
      */
     @Nested
     @DisplayName("Testes para toEntity (Domínio -> JPA)")
@@ -36,7 +37,7 @@ public class DisciplinaMapperTest {
         @DisplayName("Deve converter Disciplina de domínio para DisciplinaEntity corretamente")
         void deveConverterDominioParaEntityCorretamente() {
             // Arrange
-            // A criação da Disciplina agora inclui o usuarioId
+            // A criação da Disciplina de domínio (modelo) está correta.
             Disciplina disciplinaDominio = new Disciplina(id, nome, descricao, usuarioId);
 
             // Act
@@ -47,7 +48,7 @@ public class DisciplinaMapperTest {
             assertEquals(id, disciplinaEntity.getId());
             assertEquals(nome, disciplinaEntity.getNome());
             assertEquals(descricao, disciplinaEntity.getDescricao());
-            assertEquals(usuarioId, disciplinaEntity.getUsuarioId()); // Nova verificação
+            assertEquals(usuarioId, disciplinaEntity.getUsuarioId());
         }
 
         @Test
@@ -69,8 +70,15 @@ public class DisciplinaMapperTest {
         @DisplayName("Deve converter DisciplinaEntity para Disciplina de domínio corretamente")
         void deveConverterEntityParaDominioCorretamente() {
             // Arrange
-            // A criação da DisciplinaEntity agora inclui o usuarioId
-            DisciplinaEntity disciplinaEntity = new DisciplinaEntity(id, nome, descricao, usuarioId);
+            // --- CORREÇÃO (Padrão Setters) ---
+            // 1. Cria a entidade JPA com o construtor vazio (obrigatório pelo JPA)
+            DisciplinaEntity disciplinaEntity = new DisciplinaEntity();
+            // 2. Usa setters para construir o objeto de teste
+            disciplinaEntity.setId(id);
+            disciplinaEntity.setNome(nome);
+            disciplinaEntity.setDescricao(descricao);
+            disciplinaEntity.setUsuarioId(usuarioId);
+            // --- FIM DA CORREÇÃO ---
 
             // Act
             Disciplina disciplinaDominio = DisciplinaMapper.toDomain(disciplinaEntity);
@@ -80,7 +88,7 @@ public class DisciplinaMapperTest {
             assertEquals(id, disciplinaDominio.getId());
             assertEquals(nome, disciplinaDominio.getNome());
             assertEquals(descricao, disciplinaDominio.getDescricao());
-            assertEquals(usuarioId, disciplinaDominio.getUsuarioId()); // Nova verificação
+            assertEquals(usuarioId, disciplinaDominio.getUsuarioId());
         }
 
         @Test
@@ -102,8 +110,20 @@ public class DisciplinaMapperTest {
         @DisplayName("Deve converter lista de DisciplinaEntity para lista de Disciplina de domínio")
         void deveConverterListaEntityParaListaDominio() {
             // Arrange
-            DisciplinaEntity entity1 = new DisciplinaEntity(UUID.randomUUID(), "Nome1", "Desc1", usuarioId);
-            DisciplinaEntity entity2 = new DisciplinaEntity(UUID.randomUUID(), "Nome2", "Desc2", usuarioId);
+            // --- CORREÇÃO (Padrão Setters) ---
+            DisciplinaEntity entity1 = new DisciplinaEntity();
+            entity1.setId(UUID.randomUUID());
+            entity1.setNome("Nome1");
+            entity1.setDescricao("Desc1");
+            entity1.setUsuarioId(usuarioId);
+
+            DisciplinaEntity entity2 = new DisciplinaEntity();
+            entity2.setId(UUID.randomUUID());
+            entity2.setNome("Nome2");
+            entity2.setDescricao("Desc2");
+            entity2.setUsuarioId(usuarioId);
+            // --- FIM DA CORREÇÃO ---
+
             List<DisciplinaEntity> entities = Arrays.asList(entity1, entity2);
 
             // Act

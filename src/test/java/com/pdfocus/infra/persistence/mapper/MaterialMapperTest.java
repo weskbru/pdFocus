@@ -26,6 +26,9 @@ public class MaterialMapperTest {
     private Material materialDominio;
     private DisciplinaEntity disciplinaEntity;
     private MaterialEntity materialEntity;
+    private UUID usuarioId;
+    private UUID disciplinaId;
+    private UUID materialId;
 
     /**
      * Prepara os dados de teste comuns antes da execução de cada teste.
@@ -33,11 +36,19 @@ public class MaterialMapperTest {
     @BeforeEach
     void setUp() {
         // A preparação do usuário e da disciplina continua a mesma.
-        UUID usuarioId = UUID.randomUUID();
-        UUID disciplinaId = UUID.randomUUID();
-        disciplinaEntity = new DisciplinaEntity(disciplinaId, "Cálculo I", "", usuarioId);
+        usuarioId = UUID.randomUUID();
+        disciplinaId = UUID.randomUUID();
+        materialId = UUID.randomUUID();
 
-        UUID materialId = UUID.randomUUID();
+        // --- CORREÇÃO (Padrão Setters) ---
+        // 1. Usa o construtor vazio (exigido pelo JPA)
+        disciplinaEntity = new DisciplinaEntity();
+        // 2. Usa setters para construir o objeto de teste
+        disciplinaEntity.setId(disciplinaId);
+        disciplinaEntity.setNome("Cálculo I");
+        disciplinaEntity.setDescricao("");
+        disciplinaEntity.setUsuarioId(usuarioId);
+        // --- FIM DA CORREÇÃO ---
 
         materialDominio = Material.criar(
                 materialId,
@@ -50,7 +61,7 @@ public class MaterialMapperTest {
                 OffsetDateTime.now() // O oitavo argumento que estava faltando.
         );
 
-
+        // (Este bloco já estava correto, ótimo trabalho!)
         materialEntity = new MaterialEntity();
         materialEntity.setId(materialId);
         materialEntity.setNomeOriginal("diagrama_uml.png");
@@ -59,7 +70,6 @@ public class MaterialMapperTest {
         materialEntity.setTamanho(1024L);
         materialEntity.setUsuarioId(usuarioId);
         materialEntity.setDisciplina(disciplinaEntity);
-
     }
 
     /**

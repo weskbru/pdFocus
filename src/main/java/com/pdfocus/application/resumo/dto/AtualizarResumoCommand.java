@@ -1,10 +1,13 @@
 package com.pdfocus.application.resumo.dto;
 
 /**
- * Comando para carregar os dados necessários para atualizar um resumo.
+ * Comando (DTO) utilizado para transferir os dados necessários
+ * para atualizar um resumo existente.
  *
- * @param titulo   O novo título para o resumo.
- * @param conteudo O novo conteúdo para o resumo.
+ * <p>Contém apenas os campos que podem ser alterados: título e conteúdo.</p>
+ *
+ * @param titulo   O novo título do resumo. Não deve ser nulo nem vazio.
+ * @param conteudo O novo conteúdo do resumo. Pode conter texto longo.
  */
 public record AtualizarResumoCommand(String titulo, String conteudo) {
 

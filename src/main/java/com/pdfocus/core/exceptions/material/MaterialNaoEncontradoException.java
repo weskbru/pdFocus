@@ -1,4 +1,4 @@
-package com.pdfocus.core.exceptions;
+package com.pdfocus.core.exceptions.material;
 
 import java.util.UUID;
 

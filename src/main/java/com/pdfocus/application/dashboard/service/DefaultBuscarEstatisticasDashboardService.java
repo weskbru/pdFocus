@@ -13,18 +13,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Implementação do caso de uso para buscar estatísticas.
- * O nosso "bibliotecário-chefe" que sabe onde encontrar e como contar os dados.
+ * Implementação do caso de uso {@link BuscarEstatisticasDashboardUseCase} para coletar
+ * estatísticas do dashboard do usuário.
+ *
+ * <p>Este serviço atua como um "bibliotecário-chefe", responsável por:
+ * <ul>
+ *     <li>Identificar o usuário autenticado;</li>
+ *     <li>Consultar os repositórios de disciplinas, resumos e materiais;</li>
+ *     <li>Agregar os dados e retornar um relatório consolidado.</li>
+ * </ul></p>
+ *
+ * <p>É anotado com {@link Service} e {@link Transactional(readOnly = true)} para garantir
+ * operações de leitura seguras e consistentes.</p>
  */
 @Service
 public class DefaultBuscarEstatisticasDashboardService implements BuscarEstatisticasDashboardUseCase {
 
-    // O bibliotecário precisa das chaves para todos os fichários.
     private final UsuarioRepository usuarioRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final ResumoRepository resumoRepository;
     private final MaterialRepository materialRepository;
 
+    /**
+     * Construtor do serviço.
+     *
+     * @param usuarioRepository    Repositório de usuários.
+     * @param disciplinaRepository Repositório de disciplinas.
+     * @param resumoRepository     Repositório de resumos.
+     * @param materialRepository   Repositório de materiais.
+     */
     public DefaultBuscarEstatisticasDashboardService(UsuarioRepository usuarioRepository,
                                                      DisciplinaRepository disciplinaRepository,
                                                      ResumoRepository resumoRepository,
@@ -35,20 +52,31 @@ public class DefaultBuscarEstatisticasDashboardService implements BuscarEstatist
         this.materialRepository = materialRepository;
     }
 
+    /**
+     * Executa o caso de uso de busca de estatísticas do dashboard.
+     *
+     * <p>O método realiza os seguintes passos:
+     * <ol>
+     *     <li>Recupera o usuário autenticado a partir do contexto de segurança;</li>
+     *     <li>Consulta os repositórios para contar disciplinas, resumos e materiais;</li>
+     *     <li>Retorna um {@link DashboardEstatisticasResponse} com os dados consolidados.</li>
+     * </ol></p>
+     *
+     * @return Um {@link DashboardEstatisticasResponse} contendo o total de disciplinas,
+     * resumos criados e materiais do usuário.
+     * @throws IllegalStateException Se o usuário autenticado não for encontrado no repositório.
+     */
     @Override
-    @Transactional(readOnly = true) // Boa prática para operações de apenas leitura.
+    @Transactional(readOnly = true)
     public DashboardEstatisticasResponse executar() {
-        // 1. Primeiro, descobrimos para quem é o relatório (o usuário logado).
         String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Usuario usuario = usuarioRepository.buscarPorEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado."));
 
-        // 2. O bibliotecário vai a cada "fichário" e conta os registros daquele usuário.
         long totalDisciplinas = disciplinaRepository.countByUsuario(usuario);
         long resumosCriados = resumoRepository.countByUsuario(usuario);
         long totalMateriais = materialRepository.countByUsuario(usuario);
 
-        // 3. Ele compila tudo no "relatório" final.
         return new DashboardEstatisticasResponse(
                 totalDisciplinas,
                 resumosCriados,

@@ -1,20 +1,26 @@
 package com.pdfocus.application.resumo.port.entrada;
 
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 
 import java.util.UUID;
 
 /**
- * Caso de uso para deletar um resumo existente.
+ * Porta de entrada (Use Case) responsável pela exclusão de um {@code Resumo}.
+ * <p>
+ * Este caso de uso garante que a operação de deleção só será executada
+ * se o resumo pertencer ao usuário autenticado.
+ * </p>
  */
 public interface DeletarResumoUseCase {
 
     /**
-     * Executa a deleção de um resumo, garantindo que ele pertença ao usuário.
+     * Executa a exclusão de um resumo específico, verificando sua associação
+     * com o usuário solicitante.
      *
-     * @param id O ID do resumo a ser deletado.
-     * @param usuarioId O ID do usuário que deve ser o proprietário do resumo.
-     * @throws ResumoNaoEncontradoException se o resumo não for encontrado ou não pertencer ao usuário.
+     * @param id         O identificador único do resumo a ser deletado.
+     * @param usuarioId  O identificador único do usuário proprietário.
+     * @throws ResumoNaoEncontradoException
+     *         Se o resumo não for encontrado ou não pertencer ao usuário informado.
      */
     void executar(UUID id, UUID usuarioId);
 }

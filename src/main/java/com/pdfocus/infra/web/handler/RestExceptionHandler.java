@@ -1,8 +1,8 @@
-package com.pdfocus.infra.web.exception;
+package com.pdfocus.infra.web.handler;
 
-import com.pdfocus.core.exceptions.DisciplinaNaoEncontradaException;
-import com.pdfocus.core.exceptions.EmailJaCadastradoException;
-import com.pdfocus.core.exceptions.ResumoNaoEncontradoException;
+import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
+import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
+import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,39 +14,42 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Handler de exceções global para a API REST.
- * Captura exceções específicas lançadas pelos controllers ou serviços
- * e as converte em respostas HTTP apropriadas e padronizadas.
+ * Handler global de exceções para a API REST do PDFocus.
+ *
+ * <p>Captura exceções lançadas pelos controllers e serviços e as converte
+ * em respostas HTTP apropriadas, garantindo padronização na comunicação
+ * de erros para os clientes da API.</p>
+ *
+ * <p>Registra logs de warnings para monitoramento e depuração.</p>
  */
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(RestExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
 
     /**
-    /**
      * Manipula exceções de "Recurso Não Encontrado" para Disciplina e Resumo.
-     * Retorna o status HTTP 404 (Not Found).
      *
-     * @param ex A exceção capturada (DisciplinaNaoEncontradaException ou ResumoNaoEncontradoException).
+     * <p>Retorna HTTP 404 (Not Found) e registra o aviso no log.</p>
+     *
+     * @param ex A exceção capturada ({@link DisciplinaNaoEncontradaException} ou {@link ResumoNaoEncontradoException}).
      * @param request O contexto da requisição web.
-     * @return Uma resposta HTTP 404.
+     * @return Uma resposta HTTP 404 sem corpo.
      */
     @ExceptionHandler({ DisciplinaNaoEncontradaException.class, ResumoNaoEncontradoException.class})
     protected ResponseEntity<Object> handleNaoEncontrado(RuntimeException ex, WebRequest request) {
         logger.warn("Recurso não encontrado: {}", ex.getMessage());
-
-        // return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         return ResponseEntity.notFound().build();
     }
 
     /**
-     * Manipula exceções de argumento inválido (ex: IDs nulos), que indicam uma requisição malformada.
-     * Retorna o status HTTP 400 (Bad Request).
+     * Manipula exceções de argumento inválido (ex: IDs nulos ou parâmetros incorretos).
      *
-     * @param ex A exceção capturada (IllegalArgumentException ou NullPointerException).
+     * <p>Retorna HTTP 400 (Bad Request) e registra o aviso no log.</p>
+     *
+     * @param ex A exceção capturada ({@link IllegalArgumentException} ou {@link NullPointerException}).
      * @param request O contexto da requisição web.
-     * @return Uma resposta HTTP 400.
+     * @return Uma resposta HTTP 400 sem corpo.
      */
     @ExceptionHandler({ IllegalArgumentException.class, NullPointerException.class })
     protected ResponseEntity<Object> handleArgumentoInvalido(RuntimeException ex, WebRequest request) {
@@ -56,18 +59,25 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Manipula a exceção de e-mail já cadastrado.
-     * Retorna o status HTTP 409 (Conflict).
+     *
+     * <p>Retorna HTTP 409 (Conflict) e envia a mensagem de erro no corpo da resposta.</p>
+     *
+     * @param ex A exceção capturada ({@link EmailJaCadastradoException}).
+     * @return Uma resposta HTTP 409 com a mensagem de erro.
      */
     @ExceptionHandler(EmailJaCadastradoException.class)
     protected ResponseEntity<Object> handleEmailJaCadastrado(EmailJaCadastradoException ex) {
         logger.warn("Tentativa de cadastro com e-mail duplicado: {}", ex.getMessage());
-
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     /**
-     * Manipula falhas de autenticação (ex: login e senha inválidos).
-     * Retorna o status HTTP 401 (Unauthorized).
+     * Manipula falhas de autenticação, como login ou senha inválidos.
+     *
+     * <p>Retorna HTTP 401 (Unauthorized) e envia uma mensagem genérica de erro no corpo da resposta.</p>
+     *
+     * @param ex A exceção capturada ({@link AuthenticationException}).
+     * @return Uma resposta HTTP 401 com mensagem de erro genérica.
      */
     @ExceptionHandler(AuthenticationException.class)
     protected ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex) {

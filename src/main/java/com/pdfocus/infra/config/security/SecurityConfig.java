@@ -1,4 +1,4 @@
-package com.pdfocus.infra.security;
+package com.pdfocus.infra.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,14 +18,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Arrays;
 
 /**
- * Classe de configuração central para o Spring Security.
- * <p>
- * Habilita a segurança web e define a cadeia de filtros de segurança,
- * provedores de autenticação, e outros beans relacionados à segurança.
- * </p>
+ * Classe de configuração central responsável pela segurança da aplicação Pdfocus.
+ *
+ * <p>Essa classe integra o módulo de autenticação e autorização do Spring Security
+ * com a arquitetura da aplicação, definindo filtros, provedores e políticas de acesso.
+ *
+ * <p>Seu objetivo é proteger os endpoints da API e garantir a comunicação segura
+ * entre o frontend (Angular) e o backend (Spring Boot) através de autenticação JWT.
+ *
+ * <p>Pertence à camada <b>infra/config/security</b> dentro da arquitetura Hexagonal.
  */
 @Configuration
 @EnableWebSecurity
@@ -35,10 +40,10 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     /**
-     * Construtor para injeção das dependências de segurança necessárias.
+     * Construtor responsável por injetar as dependências principais do módulo de segurança.
      *
-     * @param userDetailsService O serviço para carregar os detalhes do usuário.
-     * @param jwtAuthFilter O filtro customizado para processar tokens JWT.
+     * @param userDetailsService serviço responsável por carregar usuários a partir da base de dados.
+     * @param jwtAuthFilter filtro responsável por interceptar requisições e validar tokens JWT.
      */
     public SecurityConfig(UserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthFilter) {
         this.userDetailsService = userDetailsService;
@@ -46,38 +51,39 @@ public class SecurityConfig {
     }
 
     /**
-     * Define a configuração de CORS (Cross-Origin Resource Sharing) para a aplicação.
-     * <p>
-     * Este bean é fundamental para permitir que o frontend (rodando em um domínio diferente,
-     * como http://localhost:4200) possa fazer requisições para este backend.
-     * </p>
-     * @return a fonte de configuração de CORS.
+     * Configura as permissões de CORS (Cross-Origin Resource Sharing) da aplicação.
+     *
+     * <p>Permite que o frontend hospedado em um domínio diferente (ex: <code>http://localhost:4200</code>)
+     * consiga se comunicar com este backend, garantindo compatibilidade com navegadores modernos.
+     *
+     * @return configuração de CORS aplicada a todos os endpoints.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Define explicitamente qual origem (frontend) tem permissão
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        // Define os métodos HTTP permitidos (GET, POST, etc.)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Permite todos os cabeçalhos na requisição
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        // Permite o envio de credenciais (como cookies ou tokens de autorização)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplica esta configuração a todos os endpoints da sua API ("/**")
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     /**
-     * Define a cadeia de filtros de segurança (Security Filter Chain) que será aplicada
-     * a todas as requisições HTTP. É o ponto central de configuração de segurança da web.
+     * Define a cadeia de filtros de segurança (Security Filter Chain) aplicada a todas as requisições HTTP.
      *
-     * @param http o objeto {@link HttpSecurity} a ser configurado.
-     * @return a cadeia de filtros de segurança construída.
-     * @throws Exception se ocorrer um erro durante a configuração.
+     * <p>Essa configuração determina:
+     * <ul>
+     *   <li>Quais endpoints são públicos</li>
+     *   <li>Quais rotas exigem autenticação JWT</li>
+     *   <li>Como o Spring gerencia sessões (modo stateless)</li>
+     * </ul>
+     *
+     * @param http configuração do {@link HttpSecurity} a ser aplicada.
+     * @return a cadeia de filtros de segurança configurada.
+     * @throws Exception se ocorrer falha na configuração do Spring Security.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -86,14 +92,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (sem autenticação)
                         .requestMatchers(
-                                "/auth/**",           // Autenticação
-                                "/feedback",          // Feedback dos usuários
-                                "/feedback/**"        // Futuros endpoints de feedback
+                                "/auth/**",
+                                "/feedback",
+                                "/feedback/**"
                         ).permitAll()
-
-                        // Todos os outros endpoints requerem autenticação
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
@@ -102,11 +105,12 @@ public class SecurityConfig {
     }
 
     /**
-     * Cria e configura o provedor de autenticação (Authentication Provider).
-     * Este componente é responsável por conectar o serviço que busca usuários (`UserDetailsService`)
-     * com o mecanismo que verifica as senhas (`PasswordEncoder`).
+     * Cria e registra o provedor de autenticação principal da aplicação.
      *
-     * @return uma instância de {@link AuthenticationProvider}.
+     * <p>Responsável por integrar o {@link UserDetailsService} com o {@link PasswordEncoder},
+     * garantindo a verificação segura das credenciais do usuário.
+     *
+     * @return instância de {@link AuthenticationProvider}.
      */
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -117,10 +121,12 @@ public class SecurityConfig {
     }
 
     /**
-     * Define o bean do codificador de senhas (Password Encoder) para a aplicação.
-     * Utilizamos o BCrypt, que é o padrão recomendado e muito seguro.
+     * Define o codificador de senhas utilizado pelo sistema.
      *
-     * @return uma instância de {@link BCryptPasswordEncoder}.
+     * <p>O algoritmo <b>BCrypt</b> é usado por ser resistente a ataques de força bruta
+     * e recomendado como padrão de mercado para aplicações seguras.
+     *
+     * @return instância de {@link BCryptPasswordEncoder}.
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -128,13 +134,14 @@ public class SecurityConfig {
     }
 
     /**
-     * Expõe o {@link AuthenticationManager} do Spring Security como um Bean.
-     * Este bean é necessário para o nosso serviço de autenticação (`DefaultAutenticarUsuarioService`)
-     * para poder processar as tentativas de login.
+     * Expõe o {@link AuthenticationManager} como bean para uso nos serviços de autenticação.
      *
-     * @param config a configuração de autenticação do Spring.
-     * @return o {@link AuthenticationManager} configurado.
-     * @throws Exception se ocorrer um erro ao obter o AuthenticationManager.
+     * <p>Permite que componentes como {@code DefaultAutenticarUsuarioService} acessem
+     * o mecanismo de autenticação configurado pelo Spring Security.
+     *
+     * @param config configuração base do {@link AuthenticationConfiguration}.
+     * @return instância configurada de {@link AuthenticationManager}.
+     * @throws Exception caso ocorra erro ao obter o gerenciador de autenticação.
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

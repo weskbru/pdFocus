@@ -5,28 +5,33 @@ import com.pdfocus.core.models.Usuario;
 import java.util.Optional;
 
 /**
- * Porta de Saída (Interface de Repositório) para operações de persistência
+ * Porta de saída (Repository Port) para operações de persistência
  * relacionadas à entidade de domínio {@link Usuario}.
- * <p>
- * Define o contrato que a camada de aplicação usa para interagir com a
- * camada de infraestrutura para persistir e recuperar dados de usuários.
- * </p>
+ *
+ * <p>Define o contrato que a camada de aplicação utiliza para interagir
+ * com a camada de infraestrutura, permitindo que diferentes implementações
+ * de repositório (JPA, JDBC, NoSQL, mocks, etc.) possam ser utilizadas
+ * sem alterar a lógica de negócio.</p>
  */
 public interface UsuarioRepository {
 
     /**
-     * Salva (cria ou atualiza) um usuário.
+     * Persiste um usuário no sistema. Pode ser utilizado tanto para criação
+     * quanto para atualização de registros existentes.
      *
      * @param usuario O objeto de domínio {@link Usuario} a ser salvo.
-     * @return O usuário salvo.
+     * @return O usuário persistido, possivelmente com atributos gerados (como ID).
      */
     Usuario salvar(Usuario usuario);
 
     /**
-     * Busca um usuario pelo seu endereço de e-mail.
+     * Busca um usuário pelo seu endereço de e-mail.
      *
-     * @param email O e-mail a ser buscado.
-     * @return um {@link Optional} contendo o {@link Usuario} se encontrado, ou vazio caso contrário.
+     * <p>Retorna um {@link Optional} contendo o usuário se encontrado,
+     * permitindo tratamento elegante de casos onde o usuário não exista.</p>
+     *
+     * @param email O e-mail do usuário a ser buscado.
+     * @return Um {@link Optional} com o {@link Usuario} encontrado, ou vazio caso não exista.
      */
     Optional<Usuario> buscarPorEmail(String email);
 }

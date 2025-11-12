@@ -11,8 +11,16 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Implementação padrão do caso de uso para listar resumos com base em critérios.
- * Este serviço orquestra a validação dos parâmetros e delega a busca ao repositório.
+ * Implementação padrão do caso de uso {@link ListarResumosUseCase}.
+ * <p>
+ * Este serviço é responsável por orquestrar a recuperação de {@link Resumo}s
+ * com base em critérios de busca (usuário e/ou disciplina), garantindo
+ * a integridade e segurança dos dados consultados.
+ * </p>
+ * <p>
+ * Todas as operações são executadas em contexto transacional somente-leitura
+ * para otimização de desempenho e isolamento das transações.
+ * </p>
  */
 @Service
 public class DefaultListarResumosService implements ListarResumosUseCase {
@@ -20,9 +28,9 @@ public class DefaultListarResumosService implements ListarResumosUseCase {
     private final ResumoRepository resumoRepository;
 
     /**
-     * Constrói o serviço com a dependência do repositório de resumos.
+     * Constrói o serviço com o repositório responsável pela leitura de {@link Resumo}s.
      *
-     * @param resumoRepository A porta de saída para a persistência de resumos.
+     * @param resumoRepository A porta de saída para acesso aos dados de resumos.
      */
     public DefaultListarResumosService(ResumoRepository resumoRepository) {
         this.resumoRepository = Objects.requireNonNull(resumoRepository, "ResumoRepository não pode ser nulo.");
@@ -31,8 +39,12 @@ public class DefaultListarResumosService implements ListarResumosUseCase {
     /**
      * {@inheritDoc}
      * <p>
-     * A busca é transacional e somente leitura para otimização.
+     * Retorna todos os resumos pertencentes a um usuário específico.
+     * A operação é transacional e somente leitura.
      * </p>
+     *
+     * @param usuarioId ID do usuário autenticado.
+     * @return Lista de {@link Resumo}s pertencentes ao usuário.
      * @throws IllegalArgumentException se o {@code usuarioId} for nulo.
      */
     @Override
@@ -45,8 +57,13 @@ public class DefaultListarResumosService implements ListarResumosUseCase {
     /**
      * {@inheritDoc}
      * <p>
-     * A busca é transacional e somente leitura para otimização.
+     * Retorna todos os resumos de uma disciplina específica pertencentes ao usuário autenticado.
+     * A operação é transacional e somente leitura.
      * </p>
+     *
+     * @param disciplinaId ID da disciplina a ser filtrada.
+     * @param usuarioId    ID do usuário autenticado.
+     * @return Lista de {@link Resumo}s da disciplina filtrada.
      * @throws IllegalArgumentException se {@code disciplinaId} ou {@code usuarioId} forem nulos.
      */
     @Override

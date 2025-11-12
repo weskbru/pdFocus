@@ -20,8 +20,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controller REST para gerir as operações relacionadas a Materiais de estudo.
- * A lógica de segurança e identificação do utilizador é delegada para a camada de serviço.
+ * Controlador REST responsável pelas operações de materiais de estudo.
+ * <p>
+ * Atua como camada de orquestração entre o frontend e os casos de uso
+ * de upload, listagem, download e exclusão de arquivos. Toda a lógica
+ * de segurança (validação do usuário proprietário) é tratada na camada
+ * de aplicação.
+ * </p>
  */
 @RestController
 @RequestMapping("/materiais")
@@ -44,41 +49,42 @@ public class MaterialController {
     }
 
     /**
-     * Endpoint para listar todos os materiais de uma disciplina específica do utilizador autenticado.
-     * @param disciplinaId O ID da disciplina cujos materiais serão listados (parâmetro de query).
-     * @return Uma lista de materiais.
+     * Lista todos os materiais pertencentes a uma disciplina do usuário autenticado.
+     *
+     * @param disciplinaId UUID da disciplina cujos materiais serão listados.
+     * @return 200 (OK) com lista de {@link Material}.
      */
     @GetMapping
     public ResponseEntity<List<Material>> listarPorDisciplina(@RequestParam UUID disciplinaId) {
-        // A lógica de descobrir o utilizador foi movida para o serviço.
         List<Material> materiais = listarMateriaisUseCase.executar(disciplinaId);
         return ResponseEntity.ok(materiais);
     }
 
     /**
-     * Endpoint para fazer o upload de um novo material.
-     * Recebe um ficheiro e o ID da disciplina como 'multipart/form-data'.
+     * Realiza o upload de um novo material (arquivo PDF, DOCX, etc.).
+     * <p>
+     * O arquivo é recebido como multipart e os metadados são encapsulados
+     * em um {@link UploadMaterialCommand} para o caso de uso responsável.
+     * </p>
      *
-     * @param ficheiro O ficheiro enviado pelo cliente.
-     * @param disciplinaId O UUID da disciplina à qual o material será associado.
-     * @return Resposta 201 (Created) com os metadados do material criado.
-     * @throws IOException se ocorrer um erro ao ler o conteúdo do ficheiro.
+     * @param arquivo Arquivo enviado pelo cliente.
+     * @param disciplinaId UUID da disciplina associada ao material.
+     * @return 201 (Created) com o material criado e o cabeçalho Location apontando para o recurso.
+     * @throws IOException Se ocorrer erro ao ler o conteúdo do arquivo.
      */
     @PostMapping
     public ResponseEntity<Material> uploadMaterial(
-            @RequestParam("arquivo") MultipartFile ficheiro,
+            @RequestParam("arquivo") MultipartFile arquivo,
             @RequestParam("disciplinaId") UUID disciplinaId) throws IOException {
 
-        // Cria o DTO de comando com os dados da requisição.
         UploadMaterialCommand command = new UploadMaterialCommand(
-                ficheiro.getOriginalFilename(),
-                ficheiro.getContentType(),
-                ficheiro.getSize(),
+                arquivo.getOriginalFilename(),
+                arquivo.getContentType(),
+                arquivo.getSize(),
                 disciplinaId,
-                ficheiro.getInputStream()
+                arquivo.getInputStream()
         );
 
-        // Delega a execução para o caso de uso, que agora lida com a lógica de segurança.
         Material novoMaterial = uploadMaterialUseCase.executar(command);
 
         URI location = ServletUriComponentsBuilder
@@ -86,60 +92,57 @@ public class MaterialController {
                 .buildAndExpand(novoMaterial.getId())
                 .toUri();
 
-        // No futuro, podemos criar um DTO de resposta para o Material.
         return ResponseEntity.created(location).body(novoMaterial);
     }
 
     /**
-     * Endpoint para apagar um material existente do utilizador autenticado.
-     * @param id O UUID do material a ser apagado.
-     * @return Resposta 204 (No Content) se a deleção for bem-sucedida.
+     * Exclui um material existente, garantindo que ele pertença ao usuário autenticado.
+     *
+     * @param id UUID do material a ser removido.
+     * @return 204 (No Content) se a exclusão for bem-sucedida.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable UUID id) {
-        // A lógica de segurança para verificar a posse do material foi movida para o serviço.
         deletarMaterialUseCase.executar(id);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * ADICIONE ESTE NOVO MÉTODO:
-     * Endpoint para fazer o download de um arquivo de material.
-     * A segurança (verificação de posse) é garantida pela camada de serviço.
+     * Permite o download de um material previamente enviado.
+     * <p>
+     * O arquivo é retornado como {@link Resource} com cabeçalho
+     * "Content-Disposition: attachment" para forçar o download.
+     * </p>
      *
-     * @param id O UUID do material a ser baixado.
-     * @return ResponseEntity contendo o arquivo como um recurso (Resource).
+     * @param id UUID do material a ser baixado.
+     * @return 200 (OK) com o arquivo binário.
      */
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadMaterial(@PathVariable UUID id) {
-        // 1. Chama o caso de uso para obter o arquivo e seus metadados.
         DownloadMaterialUseCase.DownloadResult result = downloadMaterialUseCase.executar(id);
         Resource resource = result.resource();
         Material material = result.material();
 
-        // 2. Define o tipo de conteúdo (MIME type) da resposta.
-        String contentType = material.getTipoArquivo();
-        if (contentType == null) {
-            contentType = "application/octet-stream"; // Tipo genérico
-        }
+        String contentType = material.getTipoArquivo() != null
+                ? material.getTipoArquivo()
+                : "application/octet-stream";
 
-        // 3. Constrói a resposta HTTP com os cabeçalhos corretos.
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                // Este cabeçalho força o navegador a abrir a caixa de diálogo "Salvar Como...".
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + material.getNomeOriginal() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + material.getNomeOriginal() + "\"")
                 .body(resource);
     }
 
     /**
-     * Endpoint para visualizar um ficheiro de material diretamente no navegador.
-     * A principal diferença é o cabeçalho 'Content-Disposition: inline'.
+     * Exibe o arquivo diretamente no navegador (modo inline).
+     * <p>
+     * Ideal para PDFs e imagens, onde o usuário pode visualizar
+     * o conteúdo sem precisar baixar explicitamente.
+     * </p>
      *
-     * @param id O UUID do material a ser visualizado.
-     * @return ResponseEntity contendo o ficheiro como um recurso para ser exibido.
-     */
-    /**
-     * Endpoint para visualizar um ficheiro de material diretamente no navegador.
+     * @param id UUID do material a ser visualizado.
+     * @return 200 (OK) com o arquivo exibível no corpo da resposta.
      */
     @GetMapping("/{id}/visualizar")
     public ResponseEntity<Resource> visualizarMaterial(@PathVariable UUID id) {
@@ -147,12 +150,14 @@ public class MaterialController {
         Resource resource = result.resource();
         Material material = result.material();
 
-        String contentType = material.getTipoArquivo() != null ? material.getTipoArquivo() : "application/octet-stream";
+        String contentType = material.getTipoArquivo() != null
+                ? material.getTipoArquivo()
+                : "application/octet-stream";
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + material.getNomeOriginal() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + material.getNomeOriginal() + "\"")
                 .body(resource);
     }
 }
-
