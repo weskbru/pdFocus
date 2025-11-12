@@ -60,3 +60,13 @@ tasks.test {
 springBoot {
     mainClass.set("com.pdfocus.boot.PdfocusApplication")
 }
+
+// Isso garante que o "fat jar" (executável) seja criado
+tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    enabled = true
+}
+
+// Isso DESATIVA a criação do "thin jar" (-plain.jar)
+tasks.getByName<org.gradle.api.tasks.bundling.Jar>("jar") {
+    enabled = false
+}
