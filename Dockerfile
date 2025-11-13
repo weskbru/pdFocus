@@ -18,7 +18,7 @@ RUN chmod +x ./gradlew
 
 # [--- CORREÇÃO 2 ---]
 # Usa o wrapper para baixar as dependências.
-RUN ./gradlew dependencies --write-locks
+RUN ./gradlew dependencies
 
 # Copia o código-fonte da nossa aplicação para o container.
 COPY src ./src
