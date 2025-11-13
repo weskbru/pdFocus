@@ -1,3 +1,4 @@
+# --- Cache Buster 1 ---
 # --- Estágio 1: Build da Aplicação com Gradle ---
 # Usamos uma imagem base que já tem o JDK 17 e o Gradle instalados.
 # O 'as builder' dá um nome a este estágio para que possamos nos referir a ele depois.
