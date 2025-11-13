@@ -9,22 +9,22 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Classe principal responsável pela inicialização e configuração base da aplicação Pdfocus.
+ * Classe principal responsavel pela inicializacao e configuracao base da aplicacao Pdfocus.
  *
- * <p>Esta classe atua como ponto de entrada da aplicação Spring Boot e contém
- * as anotações essenciais para a detecção automática de componentes, repositórios
- * e entidades. Em uma arquitetura modularizada, esta configuração garante que o
+ * <p>Esta classe atua como ponto de entrada da aplicacao Spring Boot e contem
+ * as anotacoes essenciais para a deteccao automatica de componentes, repositorios
+ * e entidades. Em uma arquitetura modularizada, esta configuracao garante que o
  * Spring consiga identificar e gerenciar corretamente cada camada do sistema.</p>
  *
  * <p><strong>Arquitetura Modular:</strong></p>
  * <ul>
  *     <li>{@link ComponentScan} - Detecta classes anotadas com {@code @Component}, {@code @Service}, {@code @Controller} e similares.</li>
- *     <li>{@link EnableJpaRepositories} - Habilita e localiza interfaces de repositórios JPA.</li>
+ *     <li>{@link EnableJpaRepositories} - Habilita e localiza interfaces de repositorios JPA.</li>
  *     <li>{@link EntityScan} - Define o pacote base para a varredura de entidades JPA.</li>
  * </ul>
  *
- * <p>Essa combinação é conhecida como a "Trindade da configuração Spring" — o núcleo
- * que conecta domínio, persistência e camada de aplicação.</p>
+ * <p>Essa combinacao e conhecida como a "Trindade da configuracao Spring" — o nucleo
+ * que conecta dominio, persistencia e camada de aplicacao.</p>
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "com.pdfocus")
@@ -33,11 +33,11 @@ import org.springframework.web.client.RestTemplate;
 public class PdfocusApplication {
 
     /**
-     * Ponto de entrada da aplicação Pdfocus.
-     * <p>Responsável por inicializar o contexto do Spring Boot e iniciar
+     * Ponto de entrada da aplicacao Pdfocus.
+     * <p>Responsavel por inicializar o contexto do Spring Boot e iniciar
      * todos os componentes registrados.</p>
      *
-     * @param args Argumentos de linha de comando utilizados na inicialização.
+     * @param args Argumentos de linha de comando utilizados na inicializacao.
      */
     public static void main(String[] args) {
         SpringApplication.run(PdfocusApplication.class, args);
@@ -45,10 +45,10 @@ public class PdfocusApplication {
 
     /**
      * Define um {@link RestTemplate} como bean gerenciado pelo Spring.
-     * <p>Esse bean pode ser injetado em serviços que precisem realizar
-     * requisições HTTP para APIs externas.</p>
+     * <p>Esse bean pode ser injetado em servicos que precisem realizar
+     * requisicoes HTTP para APIs externas.</p>
      *
-     * @return uma instância configurada de {@link RestTemplate}.
+     * @return uma instancia configurada de {@link RestTemplate}.
      */
     @Bean
     public RestTemplate restTemplate() {
