@@ -100,11 +100,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // [CORREÇÃO CORS FINAL] Permite TODOS os pedidos "preflight" (OPTIONS)
+                        // Esta linha é essencial para o navegador
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Suas regras de "permitAll" existentes
                         .requestMatchers(
                                 "/auth/**",
                                 "/feedback",
                                 "/feedback/**"
                         ).permitAll()
+
+                        // O resto das rotas
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
