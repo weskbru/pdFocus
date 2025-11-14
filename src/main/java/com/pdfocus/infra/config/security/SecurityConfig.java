@@ -62,20 +62,20 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // CORREÇÃO: Permite qualquer origem (incluindo localhost e a futura URL do Vercel)
-        // Usamos setAllowedOriginPatterns em vez de setAllowedOrigins para compatibilidade
-        // com setAllowCredentials(true)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",       // Para o seu desenvolvimento local
                 "https://pdfocus.vercel.app"   // Para o seu frontend em produção
         ));
+
+        // Métodos e Headers permitidos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(Arrays.asList("*")); // Permite todos os headers (incluindo 'Authorization')
+
+        // Permitir credenciais (essencial para JWT/Cookies)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", configuration); // Aplica a todos os caminhos
         return source;
     }
 
