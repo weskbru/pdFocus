@@ -43,7 +43,7 @@ class DefaultBuscarUsuarioLogadoServiceTest {
     // Prepara um cenário comum antes da execução de cada teste.
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Teste", "teste@email.com", "senhaHash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Teste", "teste@email.com", "senhaHash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
     }
 
     @Test

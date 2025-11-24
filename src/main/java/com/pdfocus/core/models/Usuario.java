@@ -1,5 +1,6 @@
 package com.pdfocus.core.models;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -41,19 +42,29 @@ public class Usuario {
      */
     private final String senhaHash;
 
+    /** Quantidade de resumos gerados no dia atual. */
+    private Integer resumosHoje;
+
+    /** Data da última vez que o usuário utilizou um recurso limitado. */
+    private LocalDate dataUltimoUso;
+
     /**
      * Cria uma nova instância de {@code Usuario} com todos os campos definidos.
      *
-     * @param id         Identificador único do usuário.
-     * @param nome       Nome do usuário.
-     * @param email      E-mail utilizado para login.
-     * @param senhaHash  Hash da senha (BCrypt ou equivalente).
+     * @param id            Identificador único do usuário.
+     * @param nome          Nome do usuário.
+     * @param email         E-mail utilizado para login.
+     * @param senhaHash     Hash da senha (BCrypt ou equivalente).
+     * @param resumosHoje
+     * @param dataUltimoUso
      */
-    public Usuario(UUID id, String nome, String email, String senhaHash) {
+    public Usuario(UUID id, String nome, String email, String senhaHash, Integer resumosHoje, LocalDate dataUltimoUso) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
+        this.resumosHoje = resumosHoje != null ? resumosHoje : 0;
+        this.dataUltimoUso = dataUltimoUso != null ? dataUltimoUso : LocalDate.now();
     }
 
     /**
@@ -72,6 +83,9 @@ public class Usuario {
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
+        // Valores iniciais padrão para novos usuários
+        this.resumosHoje = 0;
+        this.dataUltimoUso = LocalDate.now();
     }
 
     /** @return o identificador único do usuário. */
@@ -92,5 +106,21 @@ public class Usuario {
     /** @return o hash da senha do usuário. */
     public String getSenhaHash() {
         return senhaHash;
+    }
+
+    public Integer getResumosHoje() {
+        return resumosHoje;
+    }
+
+    public void setResumosHoje(Integer resumosHoje) {
+        this.resumosHoje = resumosHoje;
+    }
+
+    public LocalDate getDataUltimoUso() {
+        return dataUltimoUso;
+    }
+
+    public void setDataUltimoUso(LocalDate dataUltimoUso) {
+        this.dataUltimoUso = dataUltimoUso;
     }
 }

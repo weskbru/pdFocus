@@ -49,7 +49,7 @@ class DefaultCriarDisciplinaServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Create", "create@email.com", "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Create", "create@email.com", "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
     }
 
     @Test

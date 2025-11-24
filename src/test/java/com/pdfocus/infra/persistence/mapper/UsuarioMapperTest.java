@@ -36,7 +36,7 @@ public class UsuarioMapperTest {
         @DisplayName("Deve converter Usuario de domínio para UsuarioEntity corretamente")
         void deveConverterDominioParaEntity() {
             // Arrange
-            Usuario usuarioDominio = new Usuario(id, nome, email, senhaHash);
+            Usuario usuarioDominio = new Usuario(id, nome, email, senhaHash, usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
 
             // Act
             UsuarioEntity usuarioEntity = UsuarioMapper.toEntity(usuarioDominio);

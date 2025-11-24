@@ -52,7 +52,7 @@ class DefaultBuscarEstatisticasDashboardServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Stats", EMAIL_TESTE, "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Stats", EMAIL_TESTE, "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
     }
 
     @Test
