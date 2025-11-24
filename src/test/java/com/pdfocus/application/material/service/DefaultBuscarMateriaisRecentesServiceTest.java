@@ -56,7 +56,7 @@ class DefaultBuscarMateriaisRecentesServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Recentes", "recentes@email.com", "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Recentes", "recentes@email.com", "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
         disciplinaTeste = new Disciplina(UUID.randomUUID(), "Cálculo I", "", usuarioTeste.getId());
 
         // --- CORREÇÃO NO SETUP ---

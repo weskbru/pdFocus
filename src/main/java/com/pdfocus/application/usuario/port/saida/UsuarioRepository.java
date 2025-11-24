@@ -3,6 +3,7 @@ package com.pdfocus.application.usuario.port.saida;
 import com.pdfocus.core.models.Usuario;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Porta de saída (Repository Port) para operações de persistência
@@ -34,4 +35,6 @@ public interface UsuarioRepository {
      * @return Um {@link Optional} com o {@link Usuario} encontrado, ou vazio caso não exista.
      */
     Optional<Usuario> buscarPorEmail(String email);
+
+    Optional<Usuario> buscarPorId(UUID id);
 }

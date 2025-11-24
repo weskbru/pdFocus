@@ -32,7 +32,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
-import java.util.List; // Import necessário
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,7 +65,7 @@ class DefaultObterDisciplinaPorIdServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Get", "get@email.com", "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Get", "get@email.com", "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
 
         disciplinaTeste = new Disciplina(
                 UUID.randomUUID(),

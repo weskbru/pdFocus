@@ -43,3 +43,7 @@ estrutura.txt
 
 /.gradle
 /build
+
+# 🛑 IGNORAR ARQUIVOS DE SEGREDOS
+application-local.properties
+uploads-local/

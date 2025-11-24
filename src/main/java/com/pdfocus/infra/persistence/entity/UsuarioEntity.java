@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -54,6 +55,20 @@ public class UsuarioEntity implements UserDetails {
      */
     @Column(name = "senha_hash", nullable = false, length = 255)
     private String senhaHash;
+
+    /**
+     * Contador de resumos realizados no dia atual.
+     * Reinicia para 0 quando a dataUltimoUso for diferente de hoje.
+     */
+    @Column(name = "resumos_hoje", nullable = false)
+    private Integer resumosHoje = 0;
+
+    /**
+     * Registra a data da última vez que o usuário consumiu um recurso limitado.
+     * Usado para verificar se precisa resetar o contador.
+     */
+    @Column(name = "data_ultimo_uso", nullable = false)
+    private LocalDate dataUltimoUso = LocalDate.now();
 
     // --- MÉTODOS DA INTERFACE UserDetails ---
 

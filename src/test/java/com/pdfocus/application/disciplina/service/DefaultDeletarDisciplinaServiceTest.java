@@ -60,7 +60,7 @@ class DefaultDeletarDisciplinaServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Delete", "delete@email.com", "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Delete", "delete@email.com", "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
         disciplinaTeste = new Disciplina(UUID.randomUUID(), "Disciplina a Apagar", "", usuarioTeste.getId());
     }
 

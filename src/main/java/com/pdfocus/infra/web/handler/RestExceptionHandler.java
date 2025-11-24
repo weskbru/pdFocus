@@ -1,5 +1,6 @@
 package com.pdfocus.infra.web.handler;
 
+import com.pdfocus.core.exceptions.LimiteDiarioExcedidoException;
 import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
 import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
@@ -83,5 +84,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex) {
         logger.warn("Falha na autenticação: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
+    }
+
+    @ExceptionHandler(LimiteDiarioExcedidoException.class)
+    public ResponseEntity<String> handleLimiteDiarioExcedido(LimiteDiarioExcedidoException ex) {
+        // Retorna status 429 (Too Many Requests) com a mensagem
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ex.getMessage());
     }
 }

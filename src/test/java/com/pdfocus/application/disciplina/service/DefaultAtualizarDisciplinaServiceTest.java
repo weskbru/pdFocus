@@ -50,7 +50,7 @@ class DefaultAtualizarDisciplinaServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Update", "update@email.com", "hash");
+        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Update", "update@email.com", "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
         disciplinaExistente = new Disciplina(UUID.randomUUID(), "Nome Antigo", "Descrição Antiga", usuarioTeste.getId());
         comandoAtualizacao = new AtualizarDisciplinaCommand("Nome Novo", "Descrição Nova");
     }

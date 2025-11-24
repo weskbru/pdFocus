@@ -35,7 +35,10 @@ public class UsuarioMapper {
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getSenhaHash()
+                usuario.getSenhaHash(),
+                usuario.getResumosHoje(),
+                usuario.getDataUltimoUso()
+
         );
     }
 
@@ -50,12 +53,14 @@ public class UsuarioMapper {
             return null;
         }
 
-        // Usa o construtor publico do modelo de domínio Usuario
+        // Usa o construtor publico do modelo de domínio Usuario atualizado
         return new Usuario(
                 usuarioEntity.getId(),
                 usuarioEntity.getNome(),
                 usuarioEntity.getEmail(),
-                usuarioEntity.getSenhaHash()
+                usuarioEntity.getSenhaHash(),
+                usuarioEntity.getResumosHoje(),
+                usuarioEntity.getDataUltimoUso()
         );
     }
 
