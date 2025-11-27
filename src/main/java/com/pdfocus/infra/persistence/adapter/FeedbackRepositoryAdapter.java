@@ -8,6 +8,7 @@ import com.pdfocus.infra.persistence.repository.FeedbackJpaRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,5 +77,11 @@ public class FeedbackRepositoryAdapter implements FeedbackRepository {
     @Override
     public List<Feedback> findAll(Sort dataCriacao) {
         return List.of();
+    }
+
+    @Override
+    public long contarPorEmailEPeriodo(String email, LocalDateTime inicio, LocalDateTime fim) {
+        // Chama o JpaRepository
+        return feedbackJpaRepository.contarFeedbacksPorIntervalo(email, inicio, fim);
     }
 }

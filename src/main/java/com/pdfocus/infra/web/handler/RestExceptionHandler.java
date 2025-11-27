@@ -1,6 +1,6 @@
 package com.pdfocus.infra.web.handler;
 
-import com.pdfocus.core.exceptions.LimiteDiarioExcedidoException;
+import com.pdfocus.core.exceptions.LimiteFeedbackExcedidoException;
 import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
 import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handler global de exceções para a API REST do PDFocus.
@@ -86,11 +89,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
     }
 
-    @ExceptionHandler(LimiteDiarioExcedidoException.class)
-    public ResponseEntity<String> handleLimiteDiarioExcedido(LimiteDiarioExcedidoException ex) {
-        // Retorna status 429 (Too Many Requests) com a mensagem
+    /**
+     * Manipula a exceção de limite de feedbacks diários excedido.
+     * Retorna HTTP 429 (Too Many Requests).
+     */
+    @ExceptionHandler(LimiteFeedbackExcedidoException.class)
+    public ResponseEntity<Object> handleLimiteFeedbackExcedido(LimiteFeedbackExcedidoException ex) {
+
+        logger.warn("Limite de feedback atingido: {}", ex.getMessage());
+
+        // Montando um JSON para ficar bonito no log do navegador
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.TOO_MANY_REQUESTS.value()); // 429
+        body.put("error", "Too Many Requests");
+        body.put("message", ex.getMessage());
+
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ex.getMessage());
+                .body(body);
     }
 }

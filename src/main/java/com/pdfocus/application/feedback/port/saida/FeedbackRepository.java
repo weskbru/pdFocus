@@ -3,6 +3,7 @@ package com.pdfocus.application.feedback.port.saida;
 import com.pdfocus.core.models.Feedback;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,4 +43,5 @@ public interface FeedbackRepository {
     boolean existeComMensagem(String mensagem);
 
     List<Feedback> findAll(Sort dataCriacao);
+    long contarPorEmailEPeriodo(String email, LocalDateTime inicio, LocalDateTime fim);
 }

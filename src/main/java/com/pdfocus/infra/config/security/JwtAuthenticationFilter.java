@@ -77,37 +77,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1. Extrai o cabeçalho 'Authorization' da requisição.
         final String authHeader = request.getHeader("Authorization");
 
-        // 2. Se não houver cabeçalho ou se ele não começar com "Bearer ", segue adiante.
+        // 1. Se não tem token, segue vida (Anônimo)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Extrai o token JWT do cabeçalho (removendo o prefixo "Bearer ").
-        final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+        // 2. Tenta processar o token, MAS IGNORA ERROS se ele estiver inválido
+        try {
+            final String jwt = authHeader.substring(7);
+            final String userEmail = jwtService.extractUsername(jwt);
 
-        // 4. Se há um e-mail e o contexto de segurança ainda não possui autenticação...
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // 5. Valida o token e autentica o usuário.
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // [AQUI ESTÁ A CORREÇÃO]
+            // Se o token estiver expirado ou inválido, NÃO LANÇA ERRO.
+            // Apenas logamos (opcional) e deixamos o usuário seguir como "Anônimo".
+            // Se a rota exigir login, o SecurityConfig vai barrar depois.
+            // Se a rota for pública (/feedback), vai passar!
+            System.out.println("⚠️ Token inválido ou expirado recebido na requisição: " + e.getMessage());
         }
 
-        // 6. Continua o fluxo da requisição.
+        // 3. Continua o fluxo da requisição
         filterChain.doFilter(request, response);
     }
 }
