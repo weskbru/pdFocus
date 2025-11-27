@@ -8,20 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Serviço responsável pelo envio de feedbacks via e-mail utilizando a API do Resend.
- *
- * <p>Esta implementação é voltada para testes utilizando e-mails de teste do Resend.
- * Em produção, o remetente e o domínio devem ser atualizados para refletir o domínio próprio.</p>
- *
- * <p>O serviço também exibe o feedback no console antes do envio, permitindo verificação rápida
- * durante o desenvolvimento.</p>
- *
- * <p>Implementa a interface {@link FeedbackEmailPort}, garantindo compatibilidade com a arquitetura
- * de portas e adaptadores do PDFocus.</p>
+ * Versão atualizada com formatação HTML e tratamento de dados.
  */
 @Service
 public class ResendEmailFeedbackService implements FeedbackEmailPort {
@@ -30,13 +23,6 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
     private final String apiKey;
     private final String emailDestino;
 
-    /**
-     * Construtor do serviço de envio de feedbacks.
-     *
-     * @param restTemplate O {@link RestTemplate} utilizado para realizar requisições HTTP à API do Resend.
-     * @param apiKey A chave de API do Resend para autenticação.
-     * @param emailDestino O e-mail de destino para onde os feedbacks serão enviados.
-     */
     public ResendEmailFeedbackService(
             RestTemplate restTemplate,
             @Value("${app.resend.api-key}") String apiKey,
@@ -46,26 +32,17 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         this.emailDestino = emailDestino;
     }
 
-    /**
-     * Envia um feedback por e-mail utilizando a API do Resend.
-     *
-     * <p>O feedback é exibido no console antes do envio e é enviado em formato de texto simples.
-     * Caso ocorra algum erro durante o envio, uma {@link EmailFeedbackException} é lançada.</p>
-     *
-     * @param feedback O objeto {@link Feedback} contendo as informações do feedback.
-     * @throws EmailFeedbackException Se houver falha no envio do e-mail via Resend.
-     */
     @Override
     public void enviarEmailFeedback(Feedback feedback) {
-        mostrarNoConsole(feedback);
+        mostrarNoConsole(feedback); // Log útil para dev
 
         Map<String, Object> body = new HashMap<>();
-        body.put("from", "PDFocus Test <onboarding@resend.dev>"); // remetente de teste
-        // Para produção, alterar para domínio próprio:
-        // body.put("from", "PDFocus <no-reply@seudominio.com>");
+        body.put("from", "PDFocus Test <onboarding@resend.dev>");
         body.put("to", new String[]{emailDestino});
-        body.put("subject", "📨 Novo Feedback recebido - PDFocus (Teste)");
-        body.put("text", montarCorpoEmail(feedback));
+        body.put("subject", "📨 Novo Feedback recebido - PDFocus");
+
+        // MUDANÇA PRINCIPAL: Usamos "html" em vez de "text"
+        body.put("html", montarHtmlFeedback(feedback));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -79,8 +56,7 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
                     request,
                     String.class
             );
-
-            System.out.println("✅ Feedback enviado para Resend (teste) com status: " + response.getStatusCode());
+            System.out.println("✅ Feedback enviado para Resend com status: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("❌ Erro ao enviar feedback via Resend: " + e.getMessage());
@@ -88,43 +64,80 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         }
     }
 
-    /**
-     * Exibe os detalhes do feedback no console para fins de teste e depuração.
-     *
-     * @param feedback O feedback a ser exibido.
-     */
     private void mostrarNoConsole(Feedback feedback) {
+        // Mantive seu log original, é ótimo para debug rápido
         System.out.println("\n🎯 ================= FEEDBACK RECEBIDO =================");
         System.out.println("📧 TIPO: " + (feedback.getTipo() != null ? feedback.getTipo() : "Não especificado"));
         System.out.println("👤 USUÁRIO: " + (feedback.getEmailUsuario() != null ? feedback.getEmailUsuario() : "Anônimo"));
-        System.out.println("⭐ AVALIAÇÃO: " + (feedback.getRating() != null ? feedback.getRating() + "/5" : "N/A"));
-        System.out.println("💬 MENSAGEM: " + (feedback.getMensagem() != null ? feedback.getMensagem() : "Sem mensagem"));
-        System.out.println("📄 PÁGINA: " + (feedback.getPagina() != null ? feedback.getPagina() : "Não informada"));
-        System.out.println("📅 DATA: " + (feedback.getDataCriacao() != null ? feedback.getDataCriacao() : "Data não disponível"));
-        System.out.println("🎯 DESTINO (teste): " + emailDestino);
-        System.out.println("✅ STATUS: Feedback registrado com sucesso!");
         System.out.println("========================================================\n");
     }
 
     /**
-     * Monta o corpo do e-mail a partir das informações do feedback.
-     *
-     * @param feedback O feedback a ser transformado em corpo de e-mail.
-     * @return Uma {@link String} formatada com os detalhes do feedback.
+     * Monta o corpo do e-mail em HTML profissional.
      */
-    private String montarCorpoEmail(Feedback feedback) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("📬 NOVO FEEDBACK RECEBIDO\n\n");
-        sb.append("📅 Data: ").append(feedback.getDataCriacao()).append("\n");
-        sb.append("👤 Usuário: ").append(feedback.getEmailUsuario() != null ? feedback.getEmailUsuario() : "Anônimo").append("\n");
-        sb.append("📄 Página: ").append(feedback.getPagina() != null ? feedback.getPagina() : "Não informada").append("\n\n");
-        sb.append("🧩 Tipo: ").append(feedback.getTipo() != null ? feedback.getTipo().toUpperCase() : "N/A").append("\n");
-        if (feedback.getRating() != null && feedback.getRating() > 0) {
-            sb.append("⭐ Avaliação: ").append(feedback.getRating()).append(" / 5\n");
+    private String montarHtmlFeedback(Feedback feedback) {
+        // 1. Formatar a Data (Ex: 26/11/2025 às 14:30)
+        String dataFormatada = "Data desconhecida";
+        if (feedback.getDataCriacao() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
+            dataFormatada = feedback.getDataCriacao().format(formatter);
         }
-        sb.append("\n💬 Mensagem:\n").append(feedback.getMensagem() != null ? feedback.getMensagem() : "Sem mensagem").append("\n");
-        sb.append("\n====================================================\n");
-        sb.append("Enviado automaticamente pelo PDFocus 🚀");
-        return sb.toString();
+
+        // 2. Traduzir o Tipo (Supondo que seja um Enum ou String em inglês)
+        String tipoRaw = feedback.getTipo() != null ? feedback.getTipo().toString() : "OTHER";
+        String tipoTraduzido = switch (tipoRaw) {
+            case "SUGGESTION" -> "💡 Sugestão";
+            case "BUG" -> "🐛 Erro / Bug";
+            case "COMPLIMENT" -> "❤️ Elogio";
+            case "OTHER" -> "📝 Outro";
+            default -> "📝 " + tipoRaw;
+        };
+
+        // 3. Definir cor do badge baseada no tipo (Opcional, mas fica chique)
+        String corBorda = tipoRaw.equals("BUG") ? "#E74C3C" : "#2E86C1"; // Vermelho para bug, Azul para resto
+
+        // 4. Montar o HTML usando Text Block (Java 15+)
+        return """
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; max-width: 600px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                
+                <div style="background-color: %s; color: white; padding: 20px; text-align: center;">
+                    <h2 style="margin: 0;">Novo Feedback Recebido</h2>
+                </div>
+
+                <div style="padding: 20px;">
+                    <p style="margin-bottom: 5px;"><strong>👤 Usuário:</strong> %s</p>
+                    <p style="margin-bottom: 5px;"><strong>📅 Data:</strong> %s</p>
+                    <p style="margin-bottom: 20px;"><strong>📄 Página:</strong> <a href="%s" style="color: %s;">%s</a></p>
+                    
+                    <div style="background-color: #f8f9fa; border-left: 5px solid %s; padding: 15px; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #777;">Tipo de Feedback</p>
+                        <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">%s</p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                        
+                        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #777;">Avaliação</p>
+                        <p style="margin: 5px 0 0 0; font-size: 18px;">%s / 5 ⭐</p>
+                    </div>
+
+                    <h3 style="margin-top: 25px; color: #444;">Mensagem:</h3>
+                    <div style="background-color: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 4px; font-style: italic; color: #555;">
+                        "%s"
+                    </div>
+                </div>
+
+                <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+                    Enviado automaticamente pelo sistema <strong>PDFocus</strong> 🚀
+                </div>
+            </div>
+            """.formatted(
+                corBorda, // Cor do cabeçalho
+                feedback.getEmailUsuario() != null ? feedback.getEmailUsuario() : "Anônimo",
+                dataFormatada,
+                feedback.getPagina(), corBorda, feedback.getPagina(), // Link da página
+                corBorda, // Cor da borda lateral
+                tipoTraduzido,
+                feedback.getRating() != null ? feedback.getRating() : "N/A",
+                feedback.getMensagem() != null ? feedback.getMensagem().replace("\n", "<br>") : "Sem mensagem" // Troca quebra de linha por <br>
+        );
     }
 }

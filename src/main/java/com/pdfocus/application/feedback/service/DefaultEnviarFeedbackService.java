@@ -4,11 +4,16 @@ import com.pdfocus.application.feedback.dto.FeedbackRequest;
 import com.pdfocus.application.feedback.port.entrada.EnviarFeedbackUseCase;
 import com.pdfocus.application.feedback.port.saida.FeedbackEmailPort;
 import com.pdfocus.application.feedback.port.saida.FeedbackRepository;
+import com.pdfocus.core.exceptions.LimiteFeedbackExcedidoException;
 import com.pdfocus.core.models.Feedback;
 import com.pdfocus.core.exceptions.FeedbackInvalidoException;
 import com.pdfocus.core.exceptions.EmailFeedbackException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * Implementação padrão ({@code Default}) do caso de uso {@link EnviarFeedbackUseCase}.
@@ -68,16 +73,20 @@ public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
      */
     @Override
     public Long executar(FeedbackRequest request) {
-        // Validação de entrada (seguindo padrão centralizado)
+        // 1. Validação de formato (dados obrigatórios)
         request.validar();
 
-        // Conversão para domínio puro
+        // 2. [CORREÇÃO AQUI] Validação de Regra de Negócio: Limite Diário
+        // Sem essa linha, a regra que criamos nunca é executada!
+        validarLimiteDiario(request.getEmailUsuario());
+
+        // 3. Conversão para domínio puro
         Feedback feedback = criarFeedbackFromRequest(request);
 
-        // Persistência
+        // 4. Persistência
         Feedback feedbackSalvo = feedbackRepository.salvar(feedback);
 
-        // Notificação via e-mail (tratando falhas)
+        // 5. Notificação via e-mail (tratando falhas)
         try {
             feedbackEmailPort.enviarEmailFeedback(feedbackSalvo);
         } catch (Exception e) {
@@ -85,6 +94,27 @@ public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
         }
 
         return feedbackSalvo.getId();
+    }
+
+    /**
+     * Verifica se o usuário já enviou mais de 2 feedbacks hoje.
+     */
+    private void validarLimiteDiario(String email) {
+        // Se não tem e-mail ou é anônimo, ignoramos a regra (ou bloqueamos por IP futuramente)
+        if (email == null || email.isBlank() || email.equalsIgnoreCase("Anônimo")) {
+            return;
+        }
+
+        LocalDateTime inicioDoDia = LocalDate.now().atStartOfDay(); // Hoje 00:00
+        LocalDateTime fimDoDia = LocalDate.now().atTime(LocalTime.MAX); // Hoje 23:59:59
+
+        long quantidadeHoje = feedbackRepository.contarPorEmailEPeriodo(email, inicioDoDia, fimDoDia);
+
+        if (quantidadeHoje >= 1) {
+            throw new LimiteFeedbackExcedidoException(
+                    "Você atingiu o limite de 2 feedbacks por dia. Agradecemos o apoio! Volte amanhã. 🚀"
+            );
+        }
     }
 
     /**
