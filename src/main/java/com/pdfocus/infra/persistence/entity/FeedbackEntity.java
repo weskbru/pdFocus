@@ -5,8 +5,7 @@ import java.time.LocalDateTime;
 
 /**
  * Entidade JPA para representar um Feedback no banco de dados.
- * Segue o mesmo padrão das outras entities (DisciplinaEntity, UsuarioEntity, etc).
- * Ajustado para PostgreSQL.
+ * Ajustado para incluir o relacionamento com UsuarioEntity.
  */
 @Entity
 @Table(name = "feedbacks", indexes = {
@@ -41,6 +40,11 @@ public class FeedbackEntity {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
+    // --- NOVO RELACIONAMENTO ---
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id") // Cria a coluna (FK) usuario_id na tabela feedbacks
+    private UsuarioEntity usuario;
+
     /**
      * Construtor padrão exigido pelo JPA.
      */
@@ -50,7 +54,7 @@ public class FeedbackEntity {
      * Construtor com parâmetros para criação manual.
      */
     public FeedbackEntity(String tipo, Integer rating, String mensagem, String emailUsuario,
-                          String pagina, String userAgent, LocalDateTime dataCriacao) {
+                          String pagina, String userAgent, LocalDateTime dataCriacao, UsuarioEntity usuario) {
         this.tipo = tipo;
         this.rating = rating;
         this.mensagem = mensagem;
@@ -58,6 +62,7 @@ public class FeedbackEntity {
         this.pagina = pagina;
         this.userAgent = userAgent;
         this.dataCriacao = dataCriacao;
+        this.usuario = usuario;
     }
 
     /**
@@ -71,6 +76,7 @@ public class FeedbackEntity {
     }
 
     // Getters e Setters
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -95,6 +101,10 @@ public class FeedbackEntity {
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
 
+    // --- GETTER E SETTER DO USUARIO ---
+    public UsuarioEntity getUsuario() { return usuario; }
+    public void setUsuario(UsuarioEntity usuario) { this.usuario = usuario; }
+
     @Override
     public String toString() {
         return "FeedbackEntity{" +
@@ -102,6 +112,8 @@ public class FeedbackEntity {
                 ", tipo='" + tipo + '\'' +
                 ", rating=" + rating +
                 ", dataCriacao=" + dataCriacao +
+                // Evitamos imprimir 'usuario' inteiro para não causar loop infinito ou queries extras
+                ", usuarioId=" + (usuario != null ? usuario.getId() : "null") +
                 '}';
     }
 }

@@ -46,6 +46,9 @@ public class Feedback {
     /** Data e hora em que o feedback foi criado. */
     private final LocalDateTime dataCriacao;
 
+    /** Usuário autenticado que enviou o feedback. */
+    private Usuario usuario;
+
     /**
      * Cria um novo {@code Feedback} com validação completa.
      *
@@ -107,9 +110,13 @@ public class Feedback {
         }
     }
 
-    // --- Getters ---
+    // --- Getters e Setters ---
 
     public Long getId() { return id; }
+
+    // Opcional: Se precisar setar ID manualmente em testes
+    public void setId(Long id) { this.id = id; }
+
     public String getTipo() { return tipo; }
     public Integer getRating() { return rating; }
     public String getMensagem() { return mensagem; }
@@ -117,6 +124,16 @@ public class Feedback {
     public String getPagina() { return pagina; }
     public String getUserAgent() { return userAgent; }
     public LocalDateTime getDataCriacao() { return dataCriacao; }
+
+    // --- MÉTODOS QUE FALTAVAM ---
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
 
     // --- Métodos utilitários ---
 

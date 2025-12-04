@@ -1,6 +1,8 @@
 package com.pdfocus.infra.web.handler;
 
 import com.pdfocus.core.exceptions.LimiteFeedbackExcedidoException;
+import com.pdfocus.core.exceptions.LimiteResumoExcedidoException;
+import com.pdfocus.core.exceptions.ValorInvalidoException; // <--- Importante!
 import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.usuario.EmailJaCadastradoException;
 import com.pdfocus.core.exceptions.resumo.ResumoNaoEncontradoException;
@@ -19,12 +21,6 @@ import java.util.Map;
 
 /**
  * Handler global de exceções para a API REST do PDFocus.
- *
- * <p>Captura exceções lançadas pelos controllers e serviços e as converte
- * em respostas HTTP apropriadas, garantindo padronização na comunicação
- * de erros para os clientes da API.</p>
- *
- * <p>Registra logs de warnings para monitoramento e depuração.</p>
  */
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -32,13 +28,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
 
     /**
-     * Manipula exceções de "Recurso Não Encontrado" para Disciplina e Resumo.
-     *
-     * <p>Retorna HTTP 404 (Not Found) e registra o aviso no log.</p>
-     *
-     * @param ex A exceção capturada ({@link DisciplinaNaoEncontradaException} ou {@link ResumoNaoEncontradoException}).
-     * @param request O contexto da requisição web.
-     * @return Uma resposta HTTP 404 sem corpo.
+     * [NOVO] Manipula erros de validação de domínio (ValorInvalidoException).
+     * Retorna o motivo exato do erro no corpo da resposta (JSON).
+     */
+    @ExceptionHandler(ValorInvalidoException.class)
+    public ResponseEntity<Object> handleValorInvalido(ValorInvalidoException ex) {
+        logger.warn("Erro de validação de domínio: {}", ex.getMessage());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Dados Inválidos");
+        body.put("message", ex.getMessage()); // <--- Aqui vai aparecer "Mensagem deve ter pelo menos 10 caracteres"
+
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    /**
+     * Manipula exceções de "Recurso Não Encontrado".
      */
     @ExceptionHandler({ DisciplinaNaoEncontradaException.class, ResumoNaoEncontradoException.class})
     protected ResponseEntity<Object> handleNaoEncontrado(RuntimeException ex, WebRequest request) {
@@ -47,27 +53,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Manipula exceções de argumento inválido (ex: IDs nulos ou parâmetros incorretos).
-     *
-     * <p>Retorna HTTP 400 (Bad Request) e registra o aviso no log.</p>
-     *
-     * @param ex A exceção capturada ({@link IllegalArgumentException} ou {@link NullPointerException}).
-     * @param request O contexto da requisição web.
-     * @return Uma resposta HTTP 400 sem corpo.
+     * Manipula exceções genéricas de argumento inválido (IllegalArgumentException).
+     * AGORA RETORNA JSON COM O MOTIVO.
      */
     @ExceptionHandler({ IllegalArgumentException.class, NullPointerException.class })
     protected ResponseEntity<Object> handleArgumentoInvalido(RuntimeException ex, WebRequest request) {
-        logger.warn("Requisição inválida: {}", ex.getMessage());
-        return ResponseEntity.badRequest().build();
+        logger.warn("Requisição inválida (Genérico): {}", ex.getMessage());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Erro na Requisição");
+        body.put("message", ex.getMessage()); // <--- Agora vamos ver o erro no console!
+
+        return ResponseEntity.badRequest().body(body);
     }
 
     /**
      * Manipula a exceção de e-mail já cadastrado.
-     *
-     * <p>Retorna HTTP 409 (Conflict) e envia a mensagem de erro no corpo da resposta.</p>
-     *
-     * @param ex A exceção capturada ({@link EmailJaCadastradoException}).
-     * @return Uma resposta HTTP 409 com a mensagem de erro.
      */
     @ExceptionHandler(EmailJaCadastradoException.class)
     protected ResponseEntity<Object> handleEmailJaCadastrado(EmailJaCadastradoException ex) {
@@ -76,12 +78,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Manipula falhas de autenticação, como login ou senha inválidos.
-     *
-     * <p>Retorna HTTP 401 (Unauthorized) e envia uma mensagem genérica de erro no corpo da resposta.</p>
-     *
-     * @param ex A exceção capturada ({@link AuthenticationException}).
-     * @return Uma resposta HTTP 401 com mensagem de erro genérica.
+     * Manipula falhas de autenticação.
      */
     @ExceptionHandler(AuthenticationException.class)
     protected ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex) {
@@ -90,19 +87,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Manipula a exceção de limite de feedbacks diários excedido.
-     * Retorna HTTP 429 (Too Many Requests).
+     * Manipula a exceção de limites excedidos (Resumo ou Feedback).
      */
-    @ExceptionHandler(LimiteFeedbackExcedidoException.class)
-    public ResponseEntity<Object> handleLimiteFeedbackExcedido(LimiteFeedbackExcedidoException ex) {
+    @ExceptionHandler({ LimiteFeedbackExcedidoException.class, LimiteResumoExcedidoException.class })
+    public ResponseEntity<Object> handleLimitesExcedidos(RuntimeException ex) {
 
-        logger.warn("Limite de feedback atingido: {}", ex.getMessage());
+        logger.warn("Limite de uso atingido: {}", ex.getMessage());
 
-        // Montando um JSON para ficar bonito no log do navegador
         Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.TOO_MANY_REQUESTS.value()); // 429
+        body.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
         body.put("error", "Too Many Requests");
         body.put("message", ex.getMessage());
+
+        if (ex instanceof LimiteResumoExcedidoException) {
+            body.put("code", "LIMIT_RESUMO_PREMIUM");
+        } else {
+            body.put("code", "LIMIT_FEEDBACK");
+        }
 
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS)

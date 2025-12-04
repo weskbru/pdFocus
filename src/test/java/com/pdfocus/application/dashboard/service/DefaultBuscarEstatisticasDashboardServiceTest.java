@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,7 +53,19 @@ class DefaultBuscarEstatisticasDashboardServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioTeste = new Usuario(UUID.randomUUID(), "Usuario Stats", EMAIL_TESTE, "hash", usuarioEntity.getResumosHoje(), usuarioEntity.getDataUltimoUso());
+        // CORREÇÃO: Instanciamos o usuário com valores fixos, pois 'usuarioEntity' não existe neste contexto.
+        // O construtor deve bater com a sua classe Usuario atualizada (com campos de resumo e feedback)
+        usuarioTeste = new Usuario(
+                UUID.randomUUID(),      // ID
+                "Usuario Stats",        // Nome
+                EMAIL_TESTE,            // Email
+                "hash",                 // Senha
+                true,                   // Ativo
+                0,                      // Resumos Hoje
+                LocalDate.now(),        // Data Último Uso (Resumo)
+                0,                      // Feedbacks Hoje (NOVO)
+                LocalDate.now()         // Data Último Feedback (NOVO)
+        );
     }
 
     @Test

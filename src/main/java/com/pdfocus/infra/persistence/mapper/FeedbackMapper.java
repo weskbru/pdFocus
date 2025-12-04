@@ -9,6 +9,9 @@ import com.pdfocus.infra.persistence.entity.FeedbackEntity;
  */
 public class FeedbackMapper {
 
+    public FeedbackMapper(UsuarioMapper usuarioMapper) {
+    }
+
     /**
      * Converte uma entidade de domínio Feedback para FeedbackEntity (JPA).
      * Segue o padrão dos outros mappers com método estático.

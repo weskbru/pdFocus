@@ -6,6 +6,7 @@ import com.pdfocus.application.usuario.port.entrada.AutenticarUsuarioUseCase;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.models.Usuario;
 import com.pdfocus.infra.config.security.JwtService;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,8 @@ public class DefaultAutenticarUsuarioService implements AutenticarUsuarioUseCase
     public AuthenticationResponse executar(AutenticarUsuarioCommand command) {
         Objects.requireNonNull(command, "O comando de autenticação não pode ser nulo.");
 
+        // 1. Valida credenciais (Email e Senha)
+        // Se a senha estiver errada, o Spring já lança BadCredentialsException aqui.
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         command.email(),
@@ -74,11 +77,22 @@ public class DefaultAutenticarUsuarioService implements AutenticarUsuarioUseCase
                 )
         );
 
+        // 2. Recupera o usuário
         Usuario usuario = usuarioRepository.buscarPorEmail(command.email())
-                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado após autenticação bem-sucedida."));
+                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado após autenticação."));
 
+        // 3. --- A TRAVA DE SEGURANÇA ---
+        // Verifica se o e-mail foi confirmado.
+        // Se a sua classe Usuario usar 'isEnabled' ou 'getAtivo', ajuste o método abaixo.
+        if (!usuario.isAtivo()) {
+            throw new DisabledException("E-mail não verificado. Por favor, confirme sua conta através do link enviado.");
+        }
+
+        // 4. Se passou, gera o token
         String jwtToken = jwtService.generateToken(usuario.getEmail());
 
-        return new AuthenticationResponse(jwtToken);
+        // Retorna o token (e idealmente nome/email para o front, se seu DTO suportar)
+        return new AuthenticationResponse(jwtToken, usuario.getNome(), usuario.getEmail());
     }
-}
+    }
+

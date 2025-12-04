@@ -37,7 +37,7 @@ public class ResendEmailFeedbackService implements FeedbackEmailPort {
         mostrarNoConsole(feedback); // Log útil para dev
 
         Map<String, Object> body = new HashMap<>();
-        body.put("from", "PDFocus Test <onboarding@resend.dev>");
+        body.put("from", "Suporte PDFocus <suporte@pdfocus.com.br>");
         body.put("to", new String[]{emailDestino});
         body.put("subject", "📨 Novo Feedback recebido - PDFocus");
 
