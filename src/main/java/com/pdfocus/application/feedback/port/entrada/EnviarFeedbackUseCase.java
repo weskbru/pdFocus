@@ -1,6 +1,7 @@
 package com.pdfocus.application.feedback.port.entrada;
 
 import com.pdfocus.application.feedback.dto.FeedbackRequest;
+import com.pdfocus.core.models.Usuario;
 
 /**
  * Define o contrato (Porta de Entrada) para o caso de uso de envio de feedbacks.
@@ -36,5 +37,5 @@ public interface EnviarFeedbackUseCase {
      * @throws com.pdfocus.core.exceptions.FeedbackInvalidoException se os dados forem inválidos
      * @throws com.pdfocus.core.exceptions.EmailFeedbackException se ocorrer erro no envio do e-mail
      */
-    Long executar(FeedbackRequest request);
+    Long executar(FeedbackRequest request, Usuario usuario);
 }

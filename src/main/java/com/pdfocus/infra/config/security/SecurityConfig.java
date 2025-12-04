@@ -63,8 +63,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:4200",       // Para o seu desenvolvimento local
-                "https://pdfocus.vercel.app"   // Para o seu frontend em produção
+                "http://localhost:4200",          // local
+                "https://pdfocus.vercel.app",     // URL padrão da Vercel
+                "https://pdfocus.com.br",         //  NOVO DOMÍNIO
+                "https://www.pdfocus.com.br"      //  NOVO DOMÍNIO (COM WWW)
         ));
 
         // Métodos e Headers permitidos
@@ -106,9 +108,8 @@ public class SecurityConfig {
 
                         // Suas regras de "permitAll" existentes
                         .requestMatchers(
-                                "/auth/**",
-                                "/feedback",
-                                "/feedback/**"
+                                "/auth/**"
+
                         ).permitAll()
 
                         // O resto das rotas

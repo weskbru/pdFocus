@@ -6,12 +6,10 @@ import com.pdfocus.application.usuario.dto.CadastrarUsuarioCommand;
 import com.pdfocus.application.usuario.dto.UsuarioResponse;
 import com.pdfocus.application.usuario.port.entrada.AutenticarUsuarioUseCase;
 import com.pdfocus.application.usuario.port.entrada.CadastrarUsuarioUseCase;
+import com.pdfocus.application.usuario.port.entrada.ConfirmarEmailUseCase;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -19,15 +17,8 @@ import java.net.URI;
 /**
  * Controlador REST responsável pelas operações de autenticação e registro de usuários.
  * <p>
- * Atua como ponto de entrada da API para o módulo de segurança/autenticação,
- * delegando toda a lógica de negócio para os casos de uso da camada de aplicação.
+ * Atua como ponto de entrada da API para o módulo de segurança/autenticação.
  * </p>
- *
- * <h2>Endpoints</h2>
- * <ul>
- *   <li><b>POST /auth/register</b> — Cria um novo usuário.</li>
- *   <li><b>POST /auth/login</b> — Autentica um usuário e retorna um token JWT.</li>
- * </ul>
  */
 @RestController
 @RequestMapping("/auth")
@@ -35,31 +26,25 @@ public class AuthController {
 
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final AutenticarUsuarioUseCase autenticarUsuarioUseCase;
+    private final ConfirmarEmailUseCase confirmarEmailService; // Dependência adicionada
 
     /**
-     * Construtor que injeta as dependências dos casos de uso necessários.
-     *
-     * @param cadastrarUsuarioUseCase Caso de uso responsável por registrar novos usuários.
-     * @param autenticarUsuarioUseCase Caso de uso responsável por autenticar usuários e gerar tokens JWT.
+     * Construtor com todas as dependências injetadas.
+     * Corrigido: Agora inclui o ConfirmarEmailUseCase.
      */
     public AuthController(
             CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
-            AutenticarUsuarioUseCase autenticarUsuarioUseCase
+            AutenticarUsuarioUseCase autenticarUsuarioUseCase,
+            ConfirmarEmailUseCase confirmarEmailService // <--- Adicionado aqui
     ) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.autenticarUsuarioUseCase = autenticarUsuarioUseCase;
+        this.confirmarEmailService = confirmarEmailService; // <--- Inicializado aqui
     }
 
     /**
-     * Endpoint para registrar um novo usuário no sistema.
-     * <p>
-     * Recebe um comando contendo as informações de cadastro,
-     * delega o processamento ao caso de uso e retorna uma resposta
-     * contendo os dados públicos do novo usuário criado.
-     * </p>
-     *
-     * @param command Objeto contendo os dados de cadastro do usuário.
-     * @return 201 (Created) com os dados do usuário criado e o header Location apontando para o recurso recém-criado.
+     * Endpoint para registrar um novo usuário.
+     * Retorna 201 Created.
      */
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> registrar(@RequestBody CadastrarUsuarioCommand command) {
@@ -76,18 +61,25 @@ public class AuthController {
     }
 
     /**
-     * Endpoint para autenticar um usuário e retornar um token JWT.
-     * <p>
-     * O caso de uso {@link AutenticarUsuarioUseCase} é responsável por validar
-     * as credenciais e gerar o token. Nenhuma lógica de autenticação é feita no controller.
-     * </p>
-     *
-     * @param command Objeto contendo e-mail e senha do usuário.
-     * @return 200 (OK) com o token JWT e dados básicos do usuário autenticado.
+     * Endpoint para autenticar (Login).
+     * Retorna 200 OK com Token.
      */
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> autenticar(@RequestBody AutenticarUsuarioCommand command) {
         AuthenticationResponse response = autenticarUsuarioUseCase.executar(command);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Endpoint para confirmar o e-mail via token.
+     * AGORA RETORNA O TOKEN JWT PARA AUTO-LOGIN.
+     */
+    @PostMapping("/confirm-email")
+    public ResponseEntity<AuthenticationResponse> confirmarEmail(@RequestParam("token") String token) {
+        // O service agora retorna um objeto com token, nome e email
+        AuthenticationResponse response = confirmarEmailService.executar(token);
+
+        // Retornamos esse objeto (JSON) para o Frontend
         return ResponseEntity.ok(response);
     }
 }

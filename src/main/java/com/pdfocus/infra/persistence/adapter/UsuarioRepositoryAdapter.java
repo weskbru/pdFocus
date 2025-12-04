@@ -18,37 +18,38 @@ import java.util.UUID;
 @Component
 public class UsuarioRepositoryAdapter implements UsuarioRepository {
 
-    private final UsuarioJpaRepository jpaRepository;
+    private final UsuarioJpaRepository usuarioJpaRepository;
+    private final UsuarioMapper usuarioMapper;
 
-    public UsuarioRepositoryAdapter(UsuarioJpaRepository jpaRepository) {
-        this.jpaRepository = jpaRepository;
+    public UsuarioRepositoryAdapter(UsuarioJpaRepository usuarioJpaRepository, UsuarioMapper usuarioMapper) {
+        this.usuarioJpaRepository = usuarioJpaRepository;
+        this.usuarioMapper = usuarioMapper;
     }
 
     @Override
     @Transactional
     public Usuario salvar(Usuario usuario) {
         // 1. Converte o domínio para entidade (aqui o Mapper DEVE estar levando o resumosHoje)
-        UsuarioEntity usuarioEntity = UsuarioMapper.toEntity(usuario);
+        UsuarioEntity usuarioEntity = usuarioMapper.toEntity(usuario);
 
         // 2. Salva no banco (Insert ou Update)
-        UsuarioEntity savedEntity = jpaRepository.save(usuarioEntity);
+        UsuarioEntity savedEntity = usuarioJpaRepository.save(usuarioEntity);
 
         // 3. Retorna o domínio atualizado
-        return UsuarioMapper.toDomain(savedEntity);
+        return usuarioMapper.toDomain(savedEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorEmail(String email) {
-        Optional<UsuarioEntity> optionalEntity = jpaRepository.findByEmail(email);
-        return optionalEntity.map(UsuarioMapper::toDomain);
+        return usuarioJpaRepository.findByEmail(email)
+                .map(usuarioMapper::toDomain);
     }
 
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorId(UUID id) {
-        Optional<UsuarioEntity> optionalEntity = jpaRepository.findById(id);
-        return optionalEntity.map(UsuarioMapper::toDomain);
-    }
+           return usuarioJpaRepository.findById(id).map(usuarioMapper::toDomain);
+        }
 }

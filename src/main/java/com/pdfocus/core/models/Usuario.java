@@ -42,11 +42,18 @@ public class Usuario {
      */
     private final String senhaHash;
 
+    /** Indica se o usuário confirmou seu e-mail e pode fazer login. */
+    private boolean ativo;
+
     /** Quantidade de resumos gerados no dia atual. */
     private Integer resumosHoje;
 
     /** Data da última vez que o usuário utilizou um recurso limitado. */
     private LocalDate dataUltimoUso;
+
+    // --- Controle de Feedbacks (NOVOS CAMPOS) ---
+    private Integer feedbacksHoje;
+    private LocalDate dataUltimoFeedback;
 
     /**
      * Cria uma nova instância de {@code Usuario} com todos os campos definidos.
@@ -58,13 +65,21 @@ public class Usuario {
      * @param resumosHoje
      * @param dataUltimoUso
      */
-    public Usuario(UUID id, String nome, String email, String senhaHash, Integer resumosHoje, LocalDate dataUltimoUso) {
+    public Usuario(UUID id, String nome, String email, String senhaHash, boolean ativo,
+                   Integer resumosHoje, LocalDate dataUltimoUso,
+                   Integer feedbacksHoje, LocalDate dataUltimoFeedback) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
+        this.ativo = ativo;
+
+        // Inicialização segura para evitar NullPointerException
         this.resumosHoje = resumosHoje != null ? resumosHoje : 0;
         this.dataUltimoUso = dataUltimoUso != null ? dataUltimoUso : LocalDate.now();
+
+        this.feedbacksHoje = feedbacksHoje != null ? feedbacksHoje : 0;
+        this.dataUltimoFeedback = dataUltimoFeedback != null ? dataUltimoFeedback : LocalDate.now();
     }
 
     /**
@@ -83,44 +98,36 @@ public class Usuario {
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
-        // Valores iniciais padrão para novos usuários
+        this.ativo = false;
+
+        // Inicia zerado
         this.resumosHoje = 0;
         this.dataUltimoUso = LocalDate.now();
+        this.feedbacksHoje = 0;
+        this.dataUltimoFeedback = LocalDate.now();
     }
 
-    /** @return o identificador único do usuário. */
-    public UUID getId() {
-        return id;
-    }
+    // --- Getters e Setters ---
 
-    /** @return o nome completo do usuário. */
-    public String getNome() {
-        return nome;
-    }
+    public boolean isAtivo() { return ativo; }
+    public void setAtivo(boolean ativo) { this.ativo = ativo; }
 
-    /** @return o e-mail cadastrado do usuário. */
-    public String getEmail() {
-        return email;
-    }
+    public UUID getId() { return id; }
+    public String getNome() { return nome; }
+    public String getEmail() { return email; }
+    public String getSenhaHash() { return senhaHash; }
 
-    /** @return o hash da senha do usuário. */
-    public String getSenhaHash() {
-        return senhaHash;
-    }
+    // Getters/Setters de Resumo
+    public Integer getResumosHoje() { return resumosHoje; }
+    public void setResumosHoje(Integer resumosHoje) { this.resumosHoje = resumosHoje; }
+    public LocalDate getDataUltimoUso() { return dataUltimoUso; }
+    public void setDataUltimoUso(LocalDate dataUltimoUso) { this.dataUltimoUso = dataUltimoUso; }
 
-    public Integer getResumosHoje() {
-        return resumosHoje;
-    }
+    // Getters/Setters de Feedback (NECESSÁRIOS PARA O SERVICE)
+    public Integer getFeedbacksHoje() { return feedbacksHoje; }
+    public void setFeedbacksHoje(Integer feedbacksHoje) { this.feedbacksHoje = feedbacksHoje; }
 
-    public void setResumosHoje(Integer resumosHoje) {
-        this.resumosHoje = resumosHoje;
-    }
+    public LocalDate getDataUltimoFeedback() { return dataUltimoFeedback; }
+    public void setDataUltimoFeedback(LocalDate dataUltimoFeedback) { this.dataUltimoFeedback = dataUltimoFeedback; }
 
-    public LocalDate getDataUltimoUso() {
-        return dataUltimoUso;
-    }
-
-    public void setDataUltimoUso(LocalDate dataUltimoUso) {
-        this.dataUltimoUso = dataUltimoUso;
-    }
 }

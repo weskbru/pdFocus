@@ -8,7 +8,7 @@ import com.pdfocus.application.resumo.port.saida.ResumoRepository;
 import com.pdfocus.application.resumo.port.saida.TextExtractorPort;
 import com.pdfocus.application.resumo.port.saida.ResumidorIAPort;
 import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
-import com.pdfocus.core.exceptions.LimiteDiarioExcedidoException;
+import com.pdfocus.core.exceptions.LimiteResumoExcedidoException;
 import com.pdfocus.core.exceptions.disciplina.DisciplinaNaoEncontradaException;
 import com.pdfocus.core.exceptions.material.MaterialNaoEncontradoException;
 import com.pdfocus.core.exceptions.resumo.TextoNaoPodeSerExtraidoException;
@@ -176,7 +176,7 @@ public class DefaultGerarResumoAutomaticoService implements GerarResumoAutomatic
         // Verifica se atingiu o limite
         if (usuario.getResumosHoje() >= limiteDiario) {
             System.out.println("🚫 Limite diário atingido para usuário: " + usuario.getId());
-            throw new LimiteDiarioExcedidoException("Você atingiu seu limite de " + limiteDiario + " resumos diários. Volte amanhã!");
+            throw new LimiteResumoExcedidoException("Você atingiu seu limite de " + limiteDiario + " resumos diários. Volte amanhã!");
         }
     }
 
