@@ -1,48 +1,39 @@
-# --- Cache Buster 1 ---
-# --- Estágio 1: Build da Aplicação com Gradle ---
-# Usamos uma imagem base que já tem o JDK 17 e o Gradle instalados.
-# O 'as builder' dá um nome a este estágio para que possamos nos referir a ele depois.
+# --- Estágio 1: Build ---
 FROM gradle:8.5.0-jdk17 AS builder
 
-# Define o diretório de trabalho dentro do container.
 WORKDIR /app
 
-# Copia os arquivos de build do Gradle para o container, incluindo o wrapper.
+# Copia configurações
 COPY build.gradle.kts settings.gradle.kts ./
 COPY gradle ./gradle
 COPY gradlew ./
 
-# [--- CORREÇÃO 1 ---]
-# Torna o wrapper (gradlew) executável.
 RUN chmod +x ./gradlew
 
-# [--- CORREÇÃO 2 ---]
-# Usa o wrapper para baixar as dependências.
+# Baixa dependências (Cache layer)
 RUN ./gradlew dependencies
 
-# Copia o código-fonte da nossa aplicação para o container.
+# Copia o código fonte
 COPY src ./src
 
-# [--- CORREÇÃO 3 ---]
-# Usa o wrapper para construir o projeto (idêntico ao seu build local).
-RUN ./gradlew build -x test
+# [CORREÇÃO CRÍTICA 1]
+# Força 'clean' para limpar lixo antigo e 'bootJar' para criar o executável correto
+RUN ./gradlew clean bootJar -x test
 
+# [CORREÇÃO CRÍTICA 2]
+# Renomeia o JAR gerado para um nome padrão 'app.jar' independente se o projeto se chama 'pdFocus' ou 'pdfocus'
+# Isso evita o erro de "File not found" ou pegar o jar errado
+RUN find build/libs -name "*SNAPSHOT.jar" -not -name "*plain.jar" -exec cp {} app.jar \;
 
-# --- Estágio 2: Criação da Imagem Final ---
-# Usamos uma imagem base muito menor, que contém apenas o necessário para RODAR a aplicação (o Java JRE).
-# Isso torna nossa imagem final muito mais leve e segura.
+# --- Estágio 2: Runtime ---
 FROM eclipse-temurin:17-jre-jammy
 
-# Define o diretório de trabalho.
 WORKDIR /app
 
-# [--- CORREÇÃO 4 ---]
-# Copia o arquivo .jar específico que descobrimos no build local (pdFocus-1.0-SNAPSHOT.jar).
-COPY --from=builder /app/build/libs/pdFocus-1.0-SNAPSHOT.jar app.jar
+# [CORREÇÃO CRÍTICA 3]
+# Copia apenas o app.jar padronizado
+COPY --from=builder /app/app.jar app.jar
 
-# Expõe a porta 8080, informando ao Docker que nossa aplicação escuta nesta porta.
 EXPOSE 8080
 
-# O comando que será executado quando o container iniciar.
-# Inicia a aplicação Java.
 ENTRYPOINT ["java", "-jar", "app.jar"]
