@@ -58,6 +58,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.bootJar {
+    mainClass.set("com.pdfocus.boot.PdfocusApplication")
+}
+
 springBoot {
     mainClass.set("com.pdfocus.boot.PdfocusApplication")
 }
