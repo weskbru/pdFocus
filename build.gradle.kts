@@ -17,72 +17,69 @@ repositories {
 }
 
 val lombokVersion = "1.18.30"
-val junitVersion = "5.10.0"
 
 dependencies {
-    // Web & Security
+    // --- Spring Boot Starters ---
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
-    // Database
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // --- Banco de Dados ---
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2") // Útil para testes locais
+    runtimeOnly("com.h2database:h2")
 
-    // JWT
+    // --- JWT ---
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
-    // PDF Tools
+    // --- PDF Tools ---
     implementation("org.apache.pdfbox:pdfbox:3.0.5")
 
-    // Lombok
+    // --- Lombok ---
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    // Testes
-    testImplementation(platform("org.junit:junit-bom:$junitVersion"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.mockito:mockito-junit-jupiter")
+    // --- Testes ---
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 }
 
-// Configurações de Compilação
+// Configuração para processar anotações (Lombok/MapStruct)
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-Amapstruct.defaultComponentModel=spring")
 }
 
-// Configuração de Testes
 tasks.test {
     useJUnitPlatform()
 }
 
-// --- CONFIGURAÇÃO CRÍTICA PARA O DEPLOY ---
+// --- A CORREÇÃO DEPLOY BLINDADO ---
 
-// 1. Configuração Global do Spring Boot
+// 1. Define a classe principal globalmente
 springBoot {
     mainClass.set("com.pdfocus.boot.PdfocusApplication")
 }
 
-// 2. Configuração Específica da Criação do JAR (A Blindagem)
+// 2. Configura a criação do JAR Executável
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
-    // Garante que o JAR executável saiba onde começar
+    // Garante que o JAR saiba qual classe rodar
     mainClass.set("com.pdfocus.boot.PdfocusApplication")
 
-    // Simplifica a vida: Gera o arquivo já com o nome 'app.jar'
-    // Isso evita problemas de versão ou nome no Dockerfile
+    // Força o nome do arquivo final para 'app.jar'.
+    // Isso facilita muito para o Docker encontrá-lo.
     archiveFileName.set("app.jar")
+
+    // Garante que duplicações de arquivo não quebrem o build
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// 3. Desativa a geração do JAR simples (sem dependências) para não confundir o deploy
+// 3. Desativa a geração do JAR simples (não executável) para não confundir
 tasks.getByName<org.gradle.api.tasks.bundling.Jar>("jar") {
     enabled = false
 }
