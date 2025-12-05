@@ -2,6 +2,7 @@ package com.pdfocus.infra.storage.adapter;
 
 import com.pdfocus.application.material.port.saida.MaterialStoragePort;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import java.nio.file.StandardCopyOption;
  * <p>Este adaptador fornece operações básicas de CRUD para ficheiros:
  * guardar, carregar e apagar.</p>
  */
+@Profile("dev")
 @Component
 public class LocalFileStorageAdapter implements MaterialStoragePort {
 
