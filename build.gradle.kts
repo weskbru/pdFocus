@@ -83,3 +83,9 @@ tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
 tasks.getByName<org.gradle.api.tasks.bundling.Jar>("jar") {
     enabled = false
 }
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    archiveBaseName.set("app")
+    archiveVersion.set("")
+    archiveClassifier.set("")
+}

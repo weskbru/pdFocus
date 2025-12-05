@@ -1,23 +1,19 @@
 # Estágio 1: Build
-FROM gradle:8.5.0-jdk17 AS builder
+FROM gradle:8.7-jdk17 AS builder
 WORKDIR /app
 
-COPY build.gradle.kts settings.gradle.kts ./
-COPY gradle ./gradle
-COPY gradlew ./
-RUN chmod +x ./gradlew
-RUN ./gradlew dependencies
+COPY . .
 
-COPY src ./src
+RUN gradle clean bootJar --no-daemon
 
-RUN ./gradlew clean bootJar -x test
+# Descobre automaticamente o jar gerado e renomeia para app.jar
+RUN cp build/libs/*.jar app.jar
 
 # Estágio 2: Runtime
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copia o JAR correto
-COPY --from=builder /app/build/libs/*SNAPSHOT.jar app.jar
+COPY --from=builder /app/app.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
