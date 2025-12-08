@@ -25,7 +25,6 @@ import java.nio.file.StandardCopyOption;
  * <p>Este adaptador fornece operações básicas de CRUD para ficheiros:
  * guardar, carregar e apagar.</p>
  */
-@Profile("dev")
 @Component
 public class LocalFileStorageAdapter implements MaterialStoragePort {
 
