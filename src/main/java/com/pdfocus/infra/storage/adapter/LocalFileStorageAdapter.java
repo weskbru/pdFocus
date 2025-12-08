@@ -39,7 +39,8 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
      * @param storageDirectory O caminho para o diretório de uploads (ex: "uploads").
      * @throws RuntimeException Se o diretório não puder ser criado.
      */
-    public LocalFileStorageAdapter(@Value("${storage.local.directory}") String storageDirectory) {
+    public LocalFileStorageAdapter(@Value("${storage.local.directory:uploads}") String storageDirectory) {
+        // Adicionei ':uploads' acima como valor padrão caso a variável não exista
         this.rootLocation = Paths.get(storageDirectory);
         try {
             Files.createDirectories(rootLocation);
@@ -47,7 +48,6 @@ public class LocalFileStorageAdapter implements MaterialStoragePort {
             throw new RuntimeException("Não foi possível inicializar o diretório de armazenamento.", e);
         }
     }
-
     /**
      * Guarda um ficheiro no sistema de arquivos local.
      *
