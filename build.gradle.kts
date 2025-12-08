@@ -89,3 +89,7 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     archiveVersion.set("")
     archiveClassifier.set("")
 }
+
+configurations.all {
+    exclude(group = "commons-logging", module = "commons-logging")
+}
