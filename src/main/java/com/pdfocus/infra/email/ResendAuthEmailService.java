@@ -23,15 +23,22 @@ public class ResendAuthEmailService implements AuthEmailPort {
             @Value("${app.resend.api-key}") String apiKey) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
-
-        // --- ALTERAÇÃO AQUI ---
-        // Agora usamos o domínio oficial.
-        // Você pode usar 'suporte', 'seguranca', 'noreply' ou 'nao-responda'.
         this.remetente = "PDFocus Security <suporte@pdfocus.com.br>";
+
+        // --- DEBUG CRÍTICO ---
+        // Vamos imprimir no log as primeiras letras da chave para conferir se o Java pegou a certa
+        if (apiKey != null && apiKey.length() > 5) {
+            System.out.println("🔑 [DEBUG] ResendAuthService iniciou com chave: " + apiKey.substring(0, 5) + "...");
+        } else {
+            System.err.println("❌ [DEBUG] ResendAuthService iniciou SEM CHAVE ou chave inválida!");
+        }
     }
 
     @Override
     public void enviarEmailConfirmacao(String emailDestino, String nomeUsuario, String linkConfirmacao) {
+        // Log antes de tentar enviar
+        System.out.println("🚀 [DEBUG] Tentando enviar e-mail para: " + emailDestino);
+
         Map<String, Object> body = new HashMap<>();
         body.put("from", remetente);
         body.put("to", new String[]{emailDestino});
@@ -52,32 +59,17 @@ public class ResendAuthEmailService implements AuthEmailPort {
             restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
             System.out.println("✅ E-mail de autenticação enviado com sucesso!");
         } catch (Exception e) {
-            // Dica: Imprimir o erro exato ajuda muito se o Resend bloquear
-            System.err.println("❌ Erro ao enviar e-mail Auth: " + e.getMessage());
+            System.err.println("❌ Erro CRÍTICO ao enviar e-mail Auth: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     private String montarHtmlConfirmacao(String nome, String link) {
-        // HTML mantido igual, está ótimo
         return """
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-                <h2 style="color: #ea580c; text-align: center;">Bem-vindo ao PDFocus! 🎓</h2>
-                <p>Olá, <strong>%s</strong>!</p>
-                <p>Obrigado por criar sua conta. Para começar a organizar seus estudos, por favor, confirme seu e-mail clicando no botão abaixo:</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="%s" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                        Confirmar Meu E-mail
-                    </a>
-                </div>
-                
-                <p style="font-size: 12px; color: #666;">Ou copie e cole este link no navegador:</p>
-                <p style="font-size: 12px; color: #666; word-break: break-all;">%s</p>
-                
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="text-align: center; font-size: 12px; color: #999;">Se você não criou esta conta, apenas ignore este e-mail.</p>
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd;">
+                <h2>Olá %s!</h2>
+                <p>Confirme seu email: <a href="%s">Clicar aqui</a></p>
             </div>
-            """.formatted(nome, link, link);
+            """.formatted(nome, link);
     }
 }
