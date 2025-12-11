@@ -21,12 +21,14 @@ public class WebConfig {
 
         config.setAllowCredentials(true);
 
-        config.setAllowedOriginPatterns(Arrays.asList(
+        config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:4200",
                 "https://pdfocus.vercel.app",
                 "https://pdfocus.com.br",
-                "https://www.pdfocus.com.br"
+                "https://www.pdfocus.com.br",
+                "https://pdfocus-oz7g.onrender.com"
         ));
+
 
         config.addAllowedHeader("*");
 
