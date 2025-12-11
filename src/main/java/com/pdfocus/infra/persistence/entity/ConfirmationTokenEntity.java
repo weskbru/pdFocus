@@ -10,7 +10,7 @@ public class ConfirmationTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // Estamos usando Long para combinar com o JpaRepository
 
     @Column(nullable = false)
     private String token;
@@ -23,38 +23,29 @@ public class ConfirmationTokenEntity {
 
     private LocalDateTime confirmedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "usuario_id")
     private UsuarioEntity usuario;
 
+    // Construtor vazio obrigatório para o Hibernate
     public ConfirmationTokenEntity() {}
 
-    public ConfirmationTokenEntity(UsuarioEntity usuario) {
-        this.usuario = usuario;
-        this.token = UUID.randomUUID().toString();
-        this.createdAt = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusMinutes(15);
-    }
-
-    // Getters
+    // Getters e Setters
     public Long getId() { return id; }
-    public String getToken() { return token; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public LocalDateTime getConfirmedAt() { return confirmedAt; }
-    public UsuarioEntity getUsuario() { return usuario; }
+    public void setId(Long id) { this.id = id; }
 
-    // Setters (ADICIONADOS AGORA)
+    public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
-    public void setCreatedAt(LocalDateTime createdAt) { // <--- O QUE FALTAVA
-        this.createdAt = createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setExpiresAt(LocalDateTime expiresAt) { // <--- O QUE FALTAVA
-        this.expiresAt = expiresAt;
-    }
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
 
+    public LocalDateTime getConfirmedAt() { return confirmedAt; }
     public void setConfirmedAt(LocalDateTime confirmedAt) { this.confirmedAt = confirmedAt; }
+
+    public UsuarioEntity getUsuario() { return usuario; }
     public void setUsuario(UsuarioEntity usuario) { this.usuario = usuario; }
 }

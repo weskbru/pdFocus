@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DefaultConfirmarEmailService implements ConfirmarEmailUseCase {
 
     private final ConfirmationTokenRepository tokenRepository;
-    private final UsuarioRepository usuarioRepository; // Necessário para salvar o status 'ativo'
-    private final JwtService jwtService; // Necessário para gerar o token de auto-login
+    private final UsuarioRepository usuarioRepository;
+    private final JwtService jwtService;
 
     public DefaultConfirmarEmailService(
             ConfirmationTokenRepository tokenRepository,
@@ -28,27 +28,25 @@ public class DefaultConfirmarEmailService implements ConfirmarEmailUseCase {
     @Override
     @Transactional
     public AuthenticationResponse executar(String token) {
-        // 1. Valida se o token existe, não expirou e não foi usado
+        // 1. Usa o método que definimos na Interface (Passo 1)
         if (!tokenRepository.isTokenValido(token)) {
             throw new IllegalArgumentException("Token inválido, expirado ou já utilizado.");
         }
 
-        // 2. Busca o dono do token para ativá-lo
+        // 2. Busca o dono do token
         Usuario usuario = tokenRepository.buscarUsuarioPorToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado para este token."));
 
-        // 3. Ativa o usuário (Agora ele pode logar)
+        // 3. Ativa o usuário
         usuario.setAtivo(true);
         usuarioRepository.salvar(usuario);
 
-        // 4. Marca o token como usado (Queima o cartucho)
+        // 4. Marca o token como usado
         tokenRepository.confirmarToken(token);
 
-        // 5. Gera o Token JWT para o Auto-Login (A Mágica!)
-        // Nota: Ajuste se o seu JwtService pedir o objeto Usuario ou apenas o email
+        // 5. Gera o Token JWT para login automático
         String jwtToken = jwtService.generateToken(usuario.getEmail());
 
-        // 6. Retorna os dados para o Frontend entrar no Dashboard
         return new AuthenticationResponse(jwtToken, usuario.getNome(), usuario.getEmail());
     }
 }
