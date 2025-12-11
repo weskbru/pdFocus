@@ -15,23 +15,31 @@ public class WebConfig {
 
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
+
         config.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",
                 "https://pdfocus.vercel.app",
                 "https://pdfocus.com.br",
                 "https://www.pdfocus.com.br"
         ));
+
         config.addAllowedHeader("*");
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
+
+        config.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
+        ));
 
         source.registerCorsConfiguration("/**", config);
 
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        // 👇 ISSO GARANTE QUE O FILTRO RODE ANTES DO SPRING SECURITY
+        FilterRegistrationBean<CorsFilter> bean =
+                new FilterRegistrationBean<>(new CorsFilter(source));
+
+        // ESSENCIAL: rodar ANTES do SecurityFilterChain
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
         return bean;

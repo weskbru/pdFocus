@@ -1,5 +1,6 @@
 package com.pdfocus.infra.config.security;
 
+import com.pdfocus.infra.config.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,25 +28,32 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    // ❌ REMOVI O BEAN corsConfigurationSource() DAQUI.
-    // AGORA QUEM MANDA É O WEBCONFIG.
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // 👇 AQUI ESTÁ A MÁGICA: DESLIGAMOS O CORS DO SECURITY
-                // Isso diz: "Security, não se meta no CORS. O WebConfig vai cuidar disso antes de você."
+                // Spring Security não controla CORS — o WebConfig cuida de tudo
                 .cors(cors -> cors.disable())
 
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
                 .authorizeHttpRequests(auth -> auth
+                        // Preflight sempre permitido
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Endpoints públicos
                         .requestMatchers("/auth/**").permitAll()
+
+                        // Qualquer outra rota requer JWT
                         .anyRequest().authenticated()
                 )
+
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
                 .build();
     }
 
