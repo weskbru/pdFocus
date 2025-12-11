@@ -2,6 +2,7 @@ package com.pdfocus.infra.email;
 
 import com.pdfocus.application.usuario.port.saida.AuthEmailPort;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,24 +19,20 @@ public class ResendAuthEmailService implements AuthEmailPort {
     private final String apiKey;
     private final String remetente;
 
+    // Injeção limpa via @Value
     public ResendAuthEmailService(
             RestTemplate restTemplate,
-            @Value("${app.resend.api-key}") String apiKeyInjetada) {
+            @Value("${app.resend.api-key}") String apiKey) {
         this.restTemplate = restTemplate;
-
-        // --- 🛠️ FIX HARDCODED: Usando a chave que funcionou no PowerShell ---
-        // Assim garantimos que o Java use a chave correta, ignorando problemas de variável de ambiente
-        this.apiKey = "re_c2xt2Tqx_Kyt2LYyhoDjt8y6Pdn3wioD8";
-
+        this.apiKey = apiKey;
         this.remetente = "PDFocus Security <suporte@pdfocus.com.br>";
-
-        // Log para confirmar no Render que a alteração subiu
-        System.out.println("🔑 [DEBUG MARRETA] Usando chave FIXA: " + this.apiKey);
     }
 
     @Override
+    @Async // Mantém o envio rápido (assíncrono)
     public void enviarEmailConfirmacao(String emailDestino, String nomeUsuario, String linkConfirmacao) {
-        System.out.println("🚀 Iniciando envio para: " + emailDestino);
+        // Log discreto (sem mostrar a chave inteira)
+        System.out.println("🚀 [EMAIL] Iniciando envio assíncrono para: " + emailDestino);
 
         Map<String, Object> body = new HashMap<>();
         body.put("from", remetente);
@@ -49,15 +46,15 @@ public class ResendAuthEmailService implements AuthEmailPort {
     private void enviarParaResend(Map<String, Object> body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+        headers.setBearerAuth(apiKey); // Usa a chave da variável de ambiente
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
             restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
-            System.out.println("✅ SUCESSO! E-mail de autenticação enviado.");
+            System.out.println("✅ [EMAIL] Enviado com sucesso!");
         } catch (Exception e) {
-            System.err.println("❌ ERRO ao enviar e-mail Auth: " + e.getMessage());
+            System.err.println("❌ [EMAIL] Erro no envio: " + e.getMessage());
             e.printStackTrace();
         }
     }
