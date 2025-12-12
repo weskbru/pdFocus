@@ -4,11 +4,9 @@ import com.pdfocus.application.feedback.dto.FeedbackRequest;
 import com.pdfocus.application.feedback.port.entrada.EnviarFeedbackUseCase;
 import com.pdfocus.application.feedback.port.saida.FeedbackEmailPort;
 import com.pdfocus.application.feedback.port.saida.FeedbackRepository;
-import com.pdfocus.application.usuario.port.saida.UsuarioRepository; // <--- NOVO IMPORT
+import com.pdfocus.application.usuario.port.saida.UsuarioRepository;
 import com.pdfocus.core.exceptions.LimiteFeedbackExcedidoException;
 import com.pdfocus.core.models.Feedback;
-import com.pdfocus.core.exceptions.FeedbackInvalidoException;
-import com.pdfocus.core.exceptions.EmailFeedbackException;
 import com.pdfocus.core.models.Usuario;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +19,8 @@ public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
 
     private final FeedbackRepository feedbackRepository;
     private final FeedbackEmailPort feedbackEmailPort;
-    private final UsuarioRepository usuarioRepository; // <--- Dependência Nova
+    private final UsuarioRepository usuarioRepository;
 
-    // Atualize o construtor para incluir o UsuarioRepository
     public DefaultEnviarFeedbackService(
             FeedbackRepository feedbackRepository,
             FeedbackEmailPort feedbackEmailPort,
@@ -37,83 +34,68 @@ public class DefaultEnviarFeedbackService implements EnviarFeedbackUseCase {
     public Long executar(FeedbackRequest request, Usuario usuario) {
         System.out.println("---- DEBUG INICIADO ----");
 
-        // 1. Verificar se o Usuário chegou
+        // 1. Validações iniciais
         if (usuario == null) {
             System.out.println("❌ ERRO: O objeto 'usuario' chegou NULO no Service!");
-            // Isso causaria NullPointerException logo abaixo
+            throw new IllegalArgumentException("Usuário não pode ser nulo");
         } else {
             System.out.println("✅ Usuário recebido: " + usuario.getEmail());
         }
 
-        // 2. Verificar o Request
         System.out.println("📋 Validando Request: " + request);
-        try {
-            request.validar();
-            System.out.println("✅ Validação do Request: SUCESSO");
-        } catch (Exception e) {
-            System.out.println("❌ ERRO NA VALIDAÇÃO: " + e.getMessage());
-            throw e; // Re-lança para o controller pegar
-        }
+        request.validar(); // Se falhar, solta exception aqui
 
-        // 3. Validação de Limite
+        // 2. Validação de Limite
         System.out.println("⏳ Verificando limite diário...");
         validarLimiteDiario(usuario);
         System.out.println("✅ Limite diário: OK");
 
-        // ... resto do código
-
+        // 3. Montagem e Salvamento
         System.out.println("💾 Salvando feedback...");
+
+        // Convertendo DTO para Dominio e associando o usuário
         Feedback feedback = request.toDomain();
         feedback.setUsuario(usuario);
 
         Feedback feedbackSalvo = feedbackRepository.salvar(feedback);
         System.out.println("✅ Feedback salvo com ID: " + feedbackSalvo.getId());
 
+        // 4. Atualiza contador do usuário
         incrementarContadorFeedback(usuario);
 
-        // ... envio de email
+        // 5. ENVIO DE E-MAIL (A PEÇA QUE FALTAVA) 🚀
+        try {
+            System.out.println("📨 [SERVICE] Chamando porta de e-mail...");
+            feedbackEmailPort.enviarEmailFeedback(feedbackSalvo);
+            System.out.println("✅ [SERVICE] Solicitação de envio realizada.");
+        } catch (Exception e) {
+            // Importante: O try-catch garante que se o e-mail falhar,
+            // o feedback continua salvo no banco (não faz rollback).
+            System.err.println("⚠️ [SERVICE] Erro ao tentar enviar e-mail: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         return feedbackSalvo.getId();
     }
 
-    /**
-     * Verifica o limite olhando para o estado do usuário.
-     * Realiza o "Lazy Reset" se o dia tiver mudado.
-     */
     private void validarLimiteDiario(Usuario usuario) {
         LocalDate hoje = LocalDate.now();
-        int LIMITE = 2; // Limite de 2 feedbacks por dia
+        int LIMITE = 2;
 
-        // Se a data do último feedback não for hoje, reseta o contador
         if (usuario.getDataUltimoFeedback() == null || !hoje.equals(usuario.getDataUltimoFeedback())) {
             usuario.setFeedbacksHoje(0);
             usuario.setDataUltimoFeedback(hoje);
-            // O save será chamado no final do fluxo, ou podemos salvar aqui se preferir
         }
 
         if (usuario.getFeedbacksHoje() >= LIMITE) {
             throw new LimiteFeedbackExcedidoException(
-                    "Você atingiu o limite de " + LIMITE + " feedbacks por dia. Agradecemos o apoio! Volte amanhã. 🚀"
+                    "Você atingiu o limite de " + LIMITE + " feedbacks por dia. Volte amanhã! 🚀"
             );
         }
     }
 
-    /**
-     * Incrementa o contador e persiste o usuário atualizado.
-     */
     private void incrementarContadorFeedback(Usuario usuario) {
         usuario.setFeedbacksHoje(usuario.getFeedbacksHoje() + 1);
         usuarioRepository.salvar(usuario);
-    }
-
-    private Feedback criarFeedbackFromRequest(FeedbackRequest request) {
-        return new Feedback(
-                request.getTipo(),
-                request.getRating(),
-                request.getMensagem(),
-                request.getEmailUsuario(),
-                request.getPagina(),
-                request.getUserAgent()
-        );
     }
 }
